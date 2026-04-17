@@ -191,104 +191,145 @@ const GroupDetails: React.FC = () => {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '2.5rem' }}>
           
-          {/* Matches Section: Matrix View */}
-          <section>
-            <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
-              <Activity color="var(--primary)" /> Matriz de Juegos
-            </h2>
-            <div className="glass-card fadeIn" style={{ padding: '2rem', overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    <th style={{ padding: '15px', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}></th>
-                    {group?.pairs.map(p => (
-                      <th key={p.id} style={{ padding: '15px', border: '1px solid rgba(255,255,255,0.05)', fontSize: '0.8rem', minWidth: '100px' }}>
-                        {p.name}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {group?.pairs.map(rowPair => (
-                    <tr key={rowPair.id}>
-                      <td style={{ padding: '15px', border: '1px solid rgba(255,255,255,0.05)', fontWeight: 'bold', fontSize: '0.8rem', background: 'rgba(255,255,255,0.02)' }}>
-                        {rowPair.name}
-                      </td>
-                      {group?.pairs.map(colPair => {
-                        if (rowPair.id === colPair.id) {
-                          return <td key={colPair.id} style={{ border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.05)' }}></td>;
-                        }
-                        
-                        const match = group.matches.find(m => 
-                          (m.pairA.id === rowPair.id && m.pairB.id === colPair.id) ||
-                          (m.pairA.id === colPair.id && m.pairB.id === rowPair.id)
-                        );
-
-                        if (!match) return <td key={colPair.id} style={{ border: '1px solid rgba(255,255,255,0.05)' }}></td>;
-
-                        const isWinner = match.winnerId === rowPair.id;
-                        const isFinished = !!match.winnerId;
-
-                        return (
-                          <td 
-                            key={colPair.id} 
-                            onClick={() => {
-                              if (isAdmin) {
-                                const isRowPairA = match.pairA.id === rowPair.id;
-                                setResultModal({
-                                  show: true,
-                                  match,
-                                  rowPair,
-                                  colPair,
-                                  scoreRow: String(isRowPairA ? match.pointsA : match.pointsB),
-                                  scoreCol: String(isRowPairA ? match.pointsB : match.pointsA)
-                                });
-                              }
-                            }}
-                            style={{ 
-                              border: '1px solid rgba(255,255,255,0.05)', 
-                              textAlign: 'center', 
-                              padding: '10px',
-                              cursor: isAdmin ? 'pointer' : 'default',
-                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-                            }}
-                            onMouseEnter={(e) => {
-                              if (isAdmin) {
-                                e.currentTarget.style.background = 'rgba(0, 242, 254, 0.1)';
-                                e.currentTarget.style.boxShadow = 'inset 0 0 10px rgba(0, 242, 254, 0.2)';
-                                e.currentTarget.style.transform = 'scale(1.05)';
-                                e.currentTarget.style.zIndex = '10';
-                                e.currentTarget.style.position = 'relative';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (isAdmin) {
-                                e.currentTarget.style.background = 'transparent';
-                                e.currentTarget.style.boxShadow = 'none';
-                                e.currentTarget.style.transform = 'scale(1)';
-                                e.currentTarget.style.zIndex = '1';
-                              }
-                            }}
-                          >
-                            {isFinished && (
-                              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                <Trophy size={20} color={isWinner ? '#4ade80' : '#ff4b2b'} />
-                              </div>
-                            )}
-                          </td>
-                        );
-                      })}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            {/* Matches Section: Matrix View */}
+            <section>
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+                <Activity color="var(--primary)" /> Matriz de Juegos
+              </h2>
+              <div className="glass-card fadeIn" style={{ padding: '2rem', overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ padding: '15px', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}></th>
+                      {group?.pairs.map(p => (
+                        <th key={p.id} style={{ padding: '15px', border: '1px solid rgba(255,255,255,0.05)', fontSize: '0.8rem', minWidth: '100px' }}>
+                          {p.name}
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              {group?.matches.length === 0 && (
-                <div style={{ padding: '3rem', textAlign: 'center', opacity: 0.4 }}>
-                  Asigna al menos 2 jugadores para visualizar la matriz de juegos.
-                </div>
-              )}
-            </div>
-          </section>
+                  </thead>
+                  <tbody>
+                    {group?.pairs.map(rowPair => (
+                      <tr key={rowPair.id}>
+                        <td style={{ padding: '15px', border: '1px solid rgba(255,255,255,0.05)', fontWeight: 'bold', fontSize: '0.8rem', background: 'rgba(255,255,255,0.02)' }}>
+                          {rowPair.name}
+                        </td>
+                        {group?.pairs.map(colPair => {
+                          if (rowPair.id === colPair.id) {
+                            return <td key={colPair.id} style={{ border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.05)' }}></td>;
+                          }
+                          
+                          const match = group.matches.find(m => 
+                            (m.pairA.id === rowPair.id && m.pairB.id === colPair.id) ||
+                            (m.pairA.id === colPair.id && m.pairB.id === rowPair.id)
+                          );
+
+                          if (!match) return <td key={colPair.id} style={{ border: '1px solid rgba(255,255,255,0.05)' }}></td>;
+
+                          const isWinner = match.winnerId === rowPair.id;
+                          const isFinished = !!match.winnerId;
+
+                          return (
+                            <td 
+                              key={colPair.id} 
+                              onClick={() => {
+                                if (isAdmin) {
+                                  const isRowPairA = match.pairA.id === rowPair.id;
+                                  setResultModal({
+                                    show: true,
+                                    match,
+                                    rowPair,
+                                    colPair,
+                                    scoreRow: String(isRowPairA ? match.pointsA : match.pointsB),
+                                    scoreCol: String(isRowPairA ? match.pointsB : match.pointsA)
+                                  });
+                                }
+                              }}
+                              style={{ 
+                                border: '1px solid rgba(255,255,255,0.05)', 
+                                textAlign: 'center', 
+                                padding: '10px',
+                                cursor: isAdmin ? 'pointer' : 'default',
+                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                              }}
+                              onMouseEnter={(e) => {
+                                if (isAdmin) {
+                                  e.currentTarget.style.background = 'rgba(0, 242, 254, 0.1)';
+                                  e.currentTarget.style.boxShadow = 'inset 0 0 10px rgba(0, 242, 254, 0.2)';
+                                  e.currentTarget.style.transform = 'scale(1.05)';
+                                  e.currentTarget.style.zIndex = '10';
+                                  e.currentTarget.style.position = 'relative';
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (isAdmin) {
+                                  e.currentTarget.style.background = 'transparent';
+                                  e.currentTarget.style.boxShadow = 'none';
+                                  e.currentTarget.style.transform = 'scale(1)';
+                                  e.currentTarget.style.zIndex = '1';
+                                }
+                              }}
+                            >
+                              {isFinished && (
+                                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                  <Trophy size={20} color={isWinner ? '#4ade80' : '#ff4b2b'} />
+                                </div>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {group?.matches.length === 0 && (
+                  <div style={{ padding: '3rem', textAlign: 'center', opacity: 0.4 }}>
+                    Asigna al menos 2 jugadores para visualizar la matriz de juegos.
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Matches List: Detailed View */}
+            <section className="fadeIn">
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+                <CheckCircle2 color="var(--primary)" /> Detalle de Resultados
+              </h2>
+              <div className="glass-card" style={{ padding: '1.5rem' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ textAlign: 'left', opacity: 0.5, fontSize: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                      <th style={{ padding: '12px' }}>Partido</th>
+                      <th style={{ padding: '12px', textAlign: 'center' }}>Marcador</th>
+                      <th style={{ padding: '12px', textAlign: 'right' }}>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {group?.matches.map(match => (
+                      <tr key={match.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ padding: '15px 12px' }}>
+                          <span style={{ fontWeight: match.winnerId === match.pairA.id ? 'bold' : 'normal', color: match.winnerId === match.pairA.id ? 'var(--primary)' : 'inherit' }}>{match.pairA.name}</span>
+                          <span style={{ margin: '0 10px', opacity: 0.3 }}>vs</span>
+                          <span style={{ fontWeight: match.winnerId === match.pairB.id ? 'bold' : 'normal', color: match.winnerId === match.pairB.id ? 'var(--primary)' : 'inherit' }}>{match.pairB.name}</span>
+                        </td>
+                        <td style={{ padding: '15px 12px', textAlign: 'center', fontWeight: 'bold', letterSpacing: '2px' }}>
+                          {match.winnerId ? `${match.pointsA} - ${match.pointsB}` : '-- : --'}
+                        </td>
+                        <td style={{ padding: '15px 12px', textAlign: 'right' }}>
+                          {match.winnerId ? (
+                            <span style={{ fontSize: '0.75rem', background: 'rgba(74, 222, 128, 0.1)', color: '#4ade80', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold' }}>Finalizado</span>
+                          ) : (
+                            <span style={{ fontSize: '0.75rem', background: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255,255,255,0.3)', padding: '4px 10px', borderRadius: '12px' }}>Pendiente</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
 
           {/* Standings Sidebar */}
           <aside>
