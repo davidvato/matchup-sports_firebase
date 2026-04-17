@@ -19,36 +19,64 @@ model User {
 model Tournament {
   id          String   @id @default(cuid())
   name        String
+  location    String?
+  startDate   DateTime?
+  endDate     DateTime?
   sport       String?
   createdAt   DateTime @default(now())
   creatorId   Int
   creator     User     @relation(fields: [creatorId], references: [id])
-  groups      Group[]
+  categories  Category[]
+}
+
+model Category {
+  id           String     @id @default(cuid())
+  name         String
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  groups       Group[]
+  brackets     Bracket[]
+  pairs        Pair[]
+  createdAt    DateTime   @default(now())
 }
 
 model Group {
   id           String     @id @default(cuid())
   name         String
-  tournamentId String
-  createdAt    DateTime   @default(now())
-  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  categoryId   String
+  category     Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   matches      Match[]
   pairs        Pair[]
+  createdAt    DateTime   @default(now())
+}
+
+model Bracket {
+  id           String     @id @default(cuid())
+  name         String
+  categoryId   String
+  category     Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  matches      BracketMatch[]
+  createdAt    DateTime   @default(now())
 }
 
 model Pair {
   id           String   @id @default(cuid())
   name         String
-  groupId      String
-  group        Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  categoryId   String
+  category     Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  groupId      String?
+  group        Group?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   scores       Score[]
   totalScore   Int      @default(0)
   
   // Relations for matches
   matchesAsA   Match[]  @relation("PairAMatches")
   matchesAsB   Match[]  @relation("PairBMatches")
+  
+  bracketMatchesAsA BracketMatch[] @relation("BPairAMatches")
+  bracketMatchesAsB BracketMatch[] @relation("BPairBMatches")
 
-  @@unique([groupId, name])
+  @@unique([categoryId, name])
 }
 
 model Match {
@@ -65,6 +93,25 @@ model Match {
   group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, pairAId, pairBId])
+}
+
+model BracketMatch {
+  id          String   @id @default(cuid())
+  bracketId   String
+  bracket     Bracket  @relation(fields: [bracketId], references: [id], onDelete: Cascade)
+  round       Int      // 1: Final, 2: Semis, 4: Quarters, etc.
+  matchIndex  Int      // Position in the round
+  pairAId     String?
+  pairBId     String?
+  winnerId    String?
+  pointsA     Int      @default(0)
+  pointsB     Int      @default(0)
+  createdAt   DateTime @default(now())
+  
+  pairA       Pair?    @relation("BPairAMatches", fields: [pairAId], references: [id])
+  pairB       Pair?    @relation("BPairBMatches", fields: [pairBId], references: [id])
+  
+  nextMatchId String?  // ID of the match the winner goes to
 }
 
 model Score {

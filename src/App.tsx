@@ -4,12 +4,13 @@ import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import TournamentCreation from './pages/TournamentCreation';
+import TournamentDetails from './pages/TournamentDetails';
 import LoginPage from './pages/LoginPage';
 import SportPage from './pages/SportPage';
 import ExploreSports from './pages/ExploreSports';
-import TournamentDetails from './pages/TournamentDetails';
-import GroupDetails from './pages/GroupDetails';
 
+import GroupDetails from './pages/GroupDetails';
+import BracketDetails from './pages/BracketDetails';
 const AppContent: React.FC = () => {
   const location = useLocation();
   const showNavbar = location.pathname !== '/login' && 
@@ -27,6 +28,7 @@ const AppContent: React.FC = () => {
         <Route path="/create" element={<TournamentCreation />} />
         <Route path="/tournament/:id" element={<TournamentDetails />} />
         <Route path="/group/:id" element={<GroupDetails />} />
+        <Route path="/bracket/:id" element={<BracketDetails />} />
         <Route path="/sport/:sportId" element={<SportPage />} />
       </Routes>
     </div>

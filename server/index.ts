@@ -29,12 +29,13 @@ app.post('/api/login', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error de servidor' });
   }
 });
-
-// Tournaments: Get all
+// Tournaments: Get all
 app.get('/api/tournaments', async (req, res) => {
   try {
     const tournaments = await prisma.tournament.findMany({
-      include: { _count: { select: { groups: true } } }
+      include: { 
+        _count: { select: { categories: true } } 
+      }
     });
     res.json(tournaments);
   } catch (error) {
@@ -44,16 +45,114 @@ app.get('/api/tournaments', async (req, res) => {
 
 // Tournaments: Create
 app.post('/api/tournaments', async (req, res) => {
-  const { name, sport, creatorId } = req.body;
+  const { 
+    name, location, startDate, endDate, sport, creatorId, 
+    categories 
+  } = req.body;
+  
+  // categories: Array of { name, hasGroups, groupCount, hasBrackets, bracketSize, participants }
+  
   try {
-    const newTournament = await prisma.tournament.create({
-      data: {
-        name,
-        sport: sport || 'General',
-        creatorId: parseInt(creatorId)
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Create Tournament
+      const tournament = await tx.tournament.create({
+        data: {
+          name,
+          location,
+          startDate: startDate ? new Date(startDate) : null,
+          endDate: endDate ? new Date(endDate) : null,
+          sport,
+          creatorId: parseInt(creatorId)
+        }
+      });
+
+      // 2. Process each Category
+      for (const catData of categories) {
+        const category = await tx.category.create({
+          data: {
+            name: catData.name,
+            tournamentId: tournament.id
+          }
+        });
+
+        // 3. Create Pairs for this category
+        const pairMap = new Map();
+        for (const pName of catData.participants) {
+          const pair = await tx.pair.create({
+            data: { 
+              name: pName, 
+              categoryId: category.id 
+            }
+          });
+          pairMap.set(pName, pair.id);
+        }
+
+        // 4. Create Groups if requested
+        if (catData.hasGroups) {
+          for (let i = 0; i < catData.groupCount; i++) {
+            await tx.group.create({
+              data: {
+                name: `Grupo ${String.fromCharCode(65 + i)}`,
+                categoryId: category.id
+              }
+            });
+          }
+        }
+
+        // 5. Create Bracket if requested
+        if (catData.hasBrackets) {
+          const bracket = await tx.bracket.create({
+            data: {
+              name: 'Eliminatorias',
+              categoryId: category.id
+            }
+          });
+
+          const size = catData.bracketSize;
+          let round = Math.log2(size);
+          let currentRoundMatches: any[] = [];
+          let nextRoundMatches: any[] = [];
+
+          // Create matches from Final down to Quarters
+          // Actually easier to create them and store them in a map to link them
+          const matchMap = new Map<string, string>(); // round-index -> matchId
+
+          for (let r = 1; r <= round; r++) {
+            const matchesInRound = Math.pow(2, round - r);
+            for (let i = 0; i < matchesInRound; i++) {
+              const match = await tx.bracketMatch.create({
+                data: {
+                  bracketId: bracket.id,
+                  round: r,
+                  matchIndex: i,
+                  // We'll update nextMatchId in a second pass or by logic
+                }
+              });
+              matchMap.set(`${r}-${i}`, match.id);
+            }
+          }
+
+          // Second pass: Link nextMatchId
+          for (let r = round; r > 1; r--) {
+            const matchesInRound = Math.pow(2, round - r);
+            for (let i = 0; i < matchesInRound; i++) {
+              const currentId = matchMap.get(`${r}-${i}`);
+              const nextId = matchMap.get(`${r - 1}-${Math.floor(i / 2)}`);
+              if (currentId && nextId) {
+                await tx.bracketMatch.update({
+                  where: { id: currentId },
+                  data: { nextMatchId: nextId }
+                });
+              }
+            }
+          }
+        }
       }
+
+      return tournament;
     });
-    res.json(newTournament);
+
+    res.json(result);
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false });
@@ -66,9 +165,19 @@ app.get('/api/tournaments/:id', async (req, res) => {
     const tournament = await prisma.tournament.findUnique({
       where: { id: req.params.id },
       include: {
-        groups: {
+        categories: {
           include: {
-            _count: { select: { pairs: true, matches: true } }
+            groups: {
+              include: {
+                _count: { select: { pairs: true, matches: true } }
+              }
+            },
+            brackets: {
+              include: {
+                _count: { select: { matches: true } }
+              }
+            },
+            pairs: true
           }
         }
       }
@@ -116,18 +225,19 @@ app.get('/api/groups/:id', async (req, res) => {
   }
 });
 
-// Pairs: Create (+ Auto-matches)
+// Pairs: Assign to Group
 app.post('/api/groups/:id/pairs', async (req, res) => {
-  const { name } = req.body;
+  const { pairId } = req.body;
   const groupId = req.params.id;
   try {
     const result = await prisma.$transaction(async (tx) => {
-      const newPair = await tx.pair.create({
-        data: { name, groupId, totalScore: 0 }
+      const updatedPair = await tx.pair.update({
+        where: { id: pairId },
+        data: { groupId }
       });
 
       const existingPairs = await tx.pair.findMany({
-        where: { groupId, id: { not: newPair.id } }
+        where: { groupId, id: { not: pairId } }
       });
 
       for (const p of existingPairs) {
@@ -135,15 +245,59 @@ app.post('/api/groups/:id/pairs', async (req, res) => {
           data: {
             groupId,
             pairAId: p.id,
-            pairBId: newPair.id
+            pairBId: pairId
           }
         });
       }
-      return newPair;
+      return updatedPair;
     });
     res.json(result);
   } catch (error) {
-    res.status(400).json({ success: false, message: 'Nombre ya existe o error' });
+    res.status(400).json({ success: false, message: 'Error al asignar pareja' });
+  }
+});
+
+// Brackets: Get detail
+app.get('/api/brackets/:id', async (req, res) => {
+  try {
+    const bracket = await prisma.bracket.findUnique({
+      where: { id: req.params.id },
+      include: {
+        matches: {
+          include: {
+            pairA: true,
+            pairB: true
+          }
+        }
+      }
+    });
+    res.json(bracket);
+  } catch (error) {
+    res.status(500).json({ success: false });
+  }
+});
+
+// Brackets: Update Match Result
+app.post('/api/bracket-matches/:id/result', async (req, res) => {
+  const { winnerId, pointsA, pointsB, nextMatchId, nextMatchPos } = req.body;
+  // nextMatchPos: 'pairAId' or 'pairBId'
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.bracketMatch.update({
+        where: { id: req.params.id },
+        data: { winnerId, pointsA, pointsB }
+      });
+
+      if (nextMatchId && winnerId) {
+        await tx.bracketMatch.update({
+          where: { id: nextMatchId },
+          data: { [nextMatchPos]: winnerId }
+        });
+      }
+    });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false });
   }
 });
 
@@ -228,3 +382,4 @@ app.delete('/api/tournaments/:id', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+

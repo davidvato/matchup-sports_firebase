@@ -76,7 +76,7 @@ const Navbar: React.FC = () => {
         {isAdmin ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>{user?.username}</span>
-            <button className="btn-primary" onClick={logout} style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <button className="btn-primary" onClick={() => { logout(); navigate('/'); }} style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <LogOut size={16} /> Salir
             </button>
           </div>

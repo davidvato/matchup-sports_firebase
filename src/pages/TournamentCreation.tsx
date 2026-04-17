@@ -1,158 +1,376 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  Trophy, Users, Layout, Plus, Trash2, 
+  ArrowRight, CheckCircle2, MapPin, Calendar, 
+  ChevronRight, ChevronLeft, Tags
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Navigate, Link } from 'react-router-dom';
-import { PlusCircle, Trophy, FolderOpen, Trash2, Calendar } from 'lucide-react';
 
-interface Tournament {
-  id: string;
+interface CategoryConfig {
   name: string;
-  sport: string;
-  createdAt: string;
-  _count: { groups: number };
+  hasGroups: boolean;
+  groupCount: number;
+  hasBrackets: boolean;
+  bracketSize: number;
+  participants: string[];
 }
 
 const TournamentCreation: React.FC = () => {
-  const { isAdmin, user } = useAuth();
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [newTournamentName, setNewTournamentName] = useState('');
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchTournaments();
-  }, []);
+  // Section 1: Basic Info
+  const [name, setName] = useState('');
+  const [location, setLocation] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [sport, setSport] = useState('Tenis');
 
-  const fetchTournaments = async () => {
+  // Section 2: Categories
+  const [categories, setCategories] = useState<CategoryConfig[]>([]);
+  const [newCatName, setNewCatName] = useState('');
+
+  const addCategory = () => {
+    if (!newCatName.trim()) return;
+    setCategories([...categories, {
+      name: newCatName,
+      hasGroups: true,
+      groupCount: 2,
+      hasBrackets: false,
+      bracketSize: 4,
+      participants: ['', '']
+    }]);
+    setNewCatName('');
+  };
+
+  const removeCategory = (index: number) => {
+    const newCats = [...categories];
+    newCats.splice(index, 1);
+    setCategories(newCats);
+  };
+
+  // Section 3 & 4 helpers
+  const updateCategory = (index: number, updates: Partial<CategoryConfig>) => {
+    const newCats = [...categories];
+    newCats[index] = { ...newCats[index], ...updates };
+    setCategories(newCats);
+  };
+
+  const handleParticipantChange = (catIdx: number, pIdx: number, value: string) => {
+    const newCats = [...categories];
+    const newParticipants = [...newCats[catIdx].participants];
+    newParticipants[pIdx] = value;
+    newCats[catIdx].participants = newParticipants;
+    setCategories(newCats);
+  };
+
+  const addParticipant = (catIdx: number) => {
+    const newCats = [...categories];
+    newCats[catIdx].participants.push('');
+    setCategories(newCats);
+  };
+
+  const removeParticipant = (catIdx: number, pIdx: number) => {
+    const newCats = [...categories];
+    newCats[catIdx].participants.splice(pIdx, 1);
+    setCategories(newCats);
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
     try {
-      const res = await fetch('http://localhost:3001/api/tournaments');
-      const data = await res.json();
-      setTournaments(data);
-    } catch (err) {
-      console.error(err);
+      const response = await fetch('http://localhost:3001/api/tournaments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          location,
+          startDate,
+          endDate,
+          sport,
+          creatorId: user?.id,
+          categories: categories.map(cat => ({
+            ...cat,
+            participants: cat.participants.filter(p => p.trim() !== '')
+          }))
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        navigate(`/tournament/${data.id}`);
+      }
+    } catch (error) {
+      console.error('Error creating tournament:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateTournament = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTournamentName.trim()) return;
-
-    try {
-      const res = await fetch('http://localhost:3001/api/tournaments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          name: newTournamentName, 
-          creatorId: user?.id 
-        })
-      });
-      if (res.ok) {
-        setNewTournamentName('');
-        fetchTournaments();
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('¿Estás seguro de eliminar este torneo?')) return;
-    try {
-      await fetch(`http://localhost:3001/api/tournaments/${id}`, { method: 'DELETE' });
-      fetchTournaments();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  if (!isAdmin) {
-    return <Navigate to="/" />;
-  }
+  const nextStep = () => setStep(step + 1);
+  const prevStep = () => setStep(step - 1);
 
   return (
     <div style={{
-      minHeight: '100vh',
-      padding: '120px 2rem 50px',
-      backgroundImage: 'linear-gradient(135deg, #0c0e14 0%, #1a1d23 100%)',
-      color: 'white'
+      minHeight: '100vh', padding: '120px 2rem 50px',
+      backgroundImage: 'linear-gradient(135deg, #0c0e14 0%, #1a1d23 100%)', color: 'white'
     }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <header style={{ marginBottom: '3rem', textAlign: 'center' }}>
-          <h1 className="gradient-text" style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>Gestión de Torneos</h1>
-          <p style={{ opacity: 0.7 }}>Bienvenido, {user?.username}. Aquí puedes crear y administrar tus eventos deportivos.</p>
+      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+        <header style={{ textAlign: 'center', marginBottom: '4rem' }}>
+          <h1 className="gradient-text" style={{ fontSize: '3.5rem', margin: '0 0 1rem' }}>MatchUp Tournament</h1>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+            <StepIndicator current={step} target={1} label="Información" />
+            <StepIndicator current={step} target={2} label="Categorías" />
+            <StepIndicator current={step} target={3} label="Configuración" />
+            <StepIndicator current={step} target={4} label="Participantes" />
+          </div>
         </header>
 
-        {/* Create Tournament Form */}
-        <section className="glass-card fadeIn" style={{ padding: '2rem', marginBottom: '3rem' }}>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <PlusCircle color="var(--primary)" /> Nuevo Torneo
-          </h2>
-          <form onSubmit={handleCreateTournament} style={{ display: 'flex', gap: '1rem' }}>
-            <input 
-              type="text" 
-              className="input-field"
-              placeholder="Ej: Liga de Verano 2026"
-              value={newTournamentName}
-              onChange={(e) => setNewTournamentName(e.target.value)}
-              required
-              style={{ flex: 1 }}
-            />
-            <button type="submit" className="btn-primary" style={{ padding: '0 2rem' }}>Crear</button>
-          </form>
-        </section>
-
-        {/* Tournaments Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
-          {tournaments.map((t) => (
-            <div key={t.id} className="glass-card fadeIn" style={{ 
-              padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem',
-              border: '1px solid rgba(255,255,255,0.05)'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div className="glass-card fadeIn" style={{ padding: '3.5rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+          
+          {/* STEP 1: BASIC INFO */}
+          {step === 1 && (
+            <div className="slideIn">
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2.5rem' }}>
+                <Trophy color="var(--primary)" size={28} /> Información Básica
+              </h2>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ display: 'block', marginBottom: '0.8rem', opacity: 0.7 }}>Nombre del Torneo</label>
+                  <input type="text" className="input-field" placeholder="Ej: Torneo Relámpago 2024" value={name} onChange={(e) => setName(e.target.value)} />
+                </div>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ display: 'block', marginBottom: '0.8rem', opacity: 0.7 }}>Lugar / Ubicación</label>
+                  <div style={{ position: 'relative' }}>
+                    <MapPin size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
+                    <input type="text" className="input-field" style={{ paddingLeft: '40px' }} placeholder="Club Deportivo, Ciudad..." value={location} onChange={(e) => setLocation(e.target.value)} />
+                  </div>
+                </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.4rem' }}>{t.name}</h3>
-                  <span style={{ fontSize: '0.8rem', opacity: 0.5, display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <Calendar size={12} /> {new Date(t.createdAt).toLocaleDateString()}
-                  </span>
+                  <label style={{ display: 'block', marginBottom: '0.8rem', opacity: 0.7 }}>Fecha Inicio</label>
+                  <div style={{ position: 'relative' }}>
+                    <Calendar size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
+                    <input type="date" className="input-field" style={{ paddingLeft: '40px' }} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                  </div>
                 </div>
-                <div style={{ background: 'rgba(0, 242, 254, 0.1)', padding: '8px', borderRadius: '10px' }}>
-                  <Trophy size={20} color="#00f2fe" />
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.8rem', opacity: 0.7 }}>Fecha Fin</label>
+                  <div style={{ position: 'relative' }}>
+                    <Calendar size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
+                    <input type="date" className="input-field" style={{ paddingLeft: '40px' }} value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                  </div>
+                </div>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ display: 'block', marginBottom: '0.8rem', opacity: 0.7 }}>Deporte</label>
+                  <select className="input-field" value={sport} onChange={(e) => setSport(e.target.value)}>
+                    <option>Basquetball</option>
+                    <option>Front Tenis</option>
+                    <option>Futbol</option>
+                    <option>Padel</option>
+                    <option>Pickleball</option>
+                    <option>Racquetball</option>
+                    <option>Squash</option>
+                    <option>Tenis</option>
+                  </select>
                 </div>
               </div>
+              <button className="btn-primary" onClick={nextStep} disabled={!name} style={{ width: '100%', marginTop: '3rem', padding: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                Continuar a Categorías <ArrowRight size={20} />
+              </button>
+            </div>
+          )}
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'rgba(255,255,255,0.7)' }}>
-                <span style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <FolderOpen size={16} /> {t._count.groups} Grupos
-                </span>
+          {/* STEP 2: CATEGORIES */}
+          {step === 2 && (
+            <div className="slideIn">
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
+                <Tags color="var(--primary)" size={28} /> Categorías
+              </h2>
+              <p style={{ opacity: 0.6, marginBottom: '2.5rem' }}>Define los grupos de competencia (ej: Rama Varonil, Sub-20, etc.)</p>
+              
+              <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="Nombre de la categoría..." 
+                  value={newCatName} 
+                  onChange={(e) => setNewCatName(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && addCategory()}
+                />
+                <button onClick={addCategory} className="btn-primary" style={{ padding: '0 2rem' }}>
+                   <Plus size={24} />
+                </button>
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', marginTop: 'auto' }}>
-                <Link to={`/tournament/${t.id}`} className="btn-primary" style={{ 
-                  flex: 1, textAlign: 'center', textDecoration: 'none', padding: '0.8rem', fontSize: '0.9rem' 
-                }}>
-                  Administrar
-                </Link>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', minHeight: '100px' }}>
+                {categories.map((cat, idx) => (
+                  <div key={idx} className="glass-card fadeIn" style={{ 
+                    padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '15px',
+                    background: 'rgba(0, 242, 254, 0.05)', border: '1px solid var(--primary)33'
+                  }}>
+                    <span style={{ fontWeight: 'bold' }}>{cat.name}</span>
+                    <button onClick={() => removeCategory(idx)} style={{ background: 'none', border: 'none', color: '#ff4b2b', cursor: 'pointer', display: 'flex' }}>
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+                {categories.length === 0 && (
+                  <div style={{ width: '100%', textAlign: 'center', padding: '2rem', opacity: 0.3, border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '16px' }}>
+                    No has añadido ninguna categoría todavía.
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: '1.5rem', marginTop: '4rem' }}>
+                <button className="btn-primary" onClick={prevStep} style={{ background: 'rgba(255,255,255,0.05)', flex: 1 }}>Atrás</button>
+                <button className="btn-primary" onClick={nextStep} disabled={categories.length === 0} style={{ flex: 2 }}>Configurar Estructuras</button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: CONFIGURATION PER CATEGORY */}
+          {step === 3 && (
+            <div className="slideIn">
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2.5rem' }}>
+                <Layout color="var(--primary)" size={28} /> Configuración por Categoría
+              </h2>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+                {categories.map((cat, idx) => (
+                  <div key={idx} className="glass-card" style={{ padding: '2rem', background: 'rgba(255,255,255,0.02)' }}>
+                    <h3 style={{ margin: '0 0 1.5rem', color: 'var(--primary)' }}>{cat.name}</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                      <div 
+                        onClick={() => updateCategory(idx, { hasGroups: !cat.hasGroups })}
+                        style={{ 
+                          padding: '1.5rem', borderRadius: '12px', cursor: 'pointer', border: '1px solid',
+                          borderColor: cat.hasGroups ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
+                          background: cat.hasGroups ? 'rgba(0, 242, 254, 0.05)' : 'transparent'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
+                          <Users size={20} /> <strong>Fase de Grupos</strong>
+                        </div>
+                        {cat.hasGroups && (
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <label style={{ fontSize: '0.8rem', opacity: 0.7 }}>Grupos</label>
+                            <input type="number" min="1" max="8" className="input-field" style={{ marginTop: '0.5rem' }} value={cat.groupCount} onChange={(e) => updateCategory(idx, { groupCount: parseInt(e.target.value) })} />
+                          </div>
+                        )}
+                      </div>
+                      <div 
+                        onClick={() => updateCategory(idx, { hasBrackets: !cat.hasBrackets })}
+                        style={{ 
+                          padding: '1.5rem', borderRadius: '12px', cursor: 'pointer', border: '1px solid',
+                          borderColor: cat.hasBrackets ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
+                          background: cat.hasBrackets ? 'rgba(0, 242, 254, 0.05)' : 'transparent'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
+                          <Trophy size={20} /> <strong>Eliminatorias</strong>
+                        </div>
+                        {cat.hasBrackets && (
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <label style={{ fontSize: '0.8rem', opacity: 0.7 }}>Tamaño</label>
+                            <select className="input-field" style={{ marginTop: '0.5rem' }} value={cat.bracketSize} onChange={(e) => updateCategory(idx, { bracketSize: parseInt(e.target.value) })}>
+                              <option value={2}>Final</option>
+                              <option value={4}>Semis</option>
+                              <option value={8}>Cuartos</option>
+                              <option value={16}>Octavos</option>
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', gap: '1.5rem', marginTop: '4rem' }}>
+                <button className="btn-primary" onClick={prevStep} style={{ background: 'rgba(255,255,255,0.05)', flex: 1 }}>Atrás</button>
+                <button className="btn-primary" onClick={nextStep} style={{ flex: 2 }}>Registrar Participantes</button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 4: PARTICIPANTS PER CATEGORY */}
+          {step === 4 && (
+            <div className="slideIn">
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2.5rem' }}>
+                <Users color="var(--primary)" size={28} /> Registro de Participantes
+              </h2>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+                {categories.map((cat, catIdx) => (
+                  <div key={catIdx}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                      <h3 style={{ margin: 0 }}>{cat.name}</h3>
+                      <button onClick={() => addParticipant(catIdx)} className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <Plus size={14} /> Añadir
+                      </button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      {cat.participants.map((p, pIdx) => (
+                        <div key={pIdx} style={{ display: 'flex', gap: '8px' }}>
+                          <input 
+                            type="text" 
+                            className="input-field" 
+                            placeholder={`Participante ${pIdx + 1}`} 
+                            value={p} 
+                            onChange={(e) => handleParticipantChange(catIdx, pIdx, e.target.value)}
+                          />
+                          {cat.participants.length > 2 && (
+                            <button onClick={() => removeParticipant(catIdx, pIdx)} style={{ background: 'none', border: 'none', color: 'rgba(255,75,43,0.5)', cursor: 'pointer' }}>
+                              <Trash2 size={18} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', gap: '1.5rem', marginTop: '5rem' }}>
+                <button className="btn-primary" onClick={prevStep} style={{ background: 'rgba(255,255,255,0.05)', flex: 1 }}>Atrás</button>
                 <button 
-                  onClick={() => handleDelete(t.id)}
-                  style={{ 
-                    background: 'rgba(255, 75, 43, 0.1)', border: 'none', borderRadius: '8px', 
-                    padding: '0.8rem', cursor: 'pointer', color: '#ff4b2b'
-                  }}
+                  className="btn-primary" 
+                  onClick={handleSubmit} 
+                  disabled={loading}
+                  style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
                 >
-                  <Trash2 size={20} />
+                  {loading ? 'Procesando...' : 'Crear Torneo'} <CheckCircle2 size={20} />
                 </button>
               </div>
             </div>
-          ))}
+          )}
         </div>
-
-        {loading && <p style={{ textAlign: 'center', marginTop: '2rem' }}>Cargando torneos...</p>}
-        {!loading && tournaments.length === 0 && (
-          <div className="glass-card" style={{ padding: '4rem', textAlign: 'center', opacity: 0.5 }}>
-            <p>Aún no tienes torneos creados. ¡Comienza creando uno arriba!</p>
-          </div>
-        )}
       </div>
+    </div>
+  );
+};
+
+const StepIndicator = ({ current, target, label }: { current: number, target: number, label: string }) => {
+  const isActive = current === target;
+  const isCompleted = current > target;
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', opacity: isActive || isCompleted ? 1 : 0.35 }}>
+      <div style={{ 
+        width: '32px', height: '32px', borderRadius: '50%', 
+        background: isCompleted ? 'var(--primary)' : (isActive ? 'var(--primary)' : 'transparent'),
+        border: '2px solid var(--primary)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem',
+        color: isCompleted || isActive ? '#000' : 'var(--primary)',
+        fontWeight: 'bold'
+      }}>
+        {isCompleted ? <CheckCircle2 size={18} /> : target}
+      </div>
+      <span style={{ fontSize: '1rem', fontWeight: isActive ? 'bold' : 'normal', display: 'inline-block' }}>{label}</span>
+      {target < 4 && <ChevronRight size={16} style={{ marginLeft: '5px', opacity: 0.3 }} />}
     </div>
   );
 };

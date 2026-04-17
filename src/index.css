@@ -25,7 +25,7 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  background-image: 
+  background-image:
     radial-gradient(circle at 20% 20%, rgba(0, 242, 254, 0.05) 0%, transparent 40%),
     radial-gradient(circle at 80% 80%, rgba(79, 172, 254, 0.05) 0%, transparent 40%);
   background-attachment: fixed;
@@ -64,7 +64,7 @@ body {
 }
 
 .input-field {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--glass-border);
   border-radius: 8px;
   padding: 0.8rem 1rem;
@@ -79,7 +79,9 @@ body {
   border-color: var(--primary);
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   font-family: 'Outfit', sans-serif;
   letter-spacing: -0.02em;
 }
@@ -91,8 +93,15 @@ h1, h2, h3 {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .fadeIn {
