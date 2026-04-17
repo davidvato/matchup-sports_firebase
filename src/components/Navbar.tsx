@@ -35,8 +35,10 @@ const Navbar: React.FC = () => {
           <h2 className="gradient-text" style={{ margin: 0, fontSize: '1.8rem' }}>MatchUp</h2>
         </Link>
       </div>
-
       <div className="nav-links" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+        <Link to="/" style={{ color: 'white', textDecoration: 'none', fontWeight: 600 }}>
+           Inicio
+        </Link>
         {isAdmin && (
           <Link to="/create" style={{ color: 'white', textDecoration: 'none', fontWeight: 600 }}>
              Panel Admin

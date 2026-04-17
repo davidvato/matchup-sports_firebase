@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Trophy, Users, Layout, Plus, Trash2, 
+  Trophy, Users, Plus, Trash2, 
   ArrowRight, CheckCircle2, MapPin, Calendar, 
   ChevronRight, ChevronLeft, Tags
 } from 'lucide-react';
@@ -37,10 +37,10 @@ const TournamentCreation: React.FC = () => {
     if (!newCatName.trim()) return;
     setCategories([...categories, {
       name: newCatName,
-      hasGroups: true,
-      groupCount: 2,
+      hasGroups: false, // Default to false as requested to remove config
+      groupCount: 0,
       hasBrackets: false,
-      bracketSize: 4,
+      bracketSize: 0,
       participants: ['', '']
     }]);
     setNewCatName('');
@@ -49,13 +49,6 @@ const TournamentCreation: React.FC = () => {
   const removeCategory = (index: number) => {
     const newCats = [...categories];
     newCats.splice(index, 1);
-    setCategories(newCats);
-  };
-
-  // Section 3 & 4 helpers
-  const updateCategory = (index: number, updates: Partial<CategoryConfig>) => {
-    const newCats = [...categories];
-    newCats[index] = { ...newCats[index], ...updates };
     setCategories(newCats);
   };
 
@@ -124,8 +117,7 @@ const TournamentCreation: React.FC = () => {
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
             <StepIndicator current={step} target={1} label="Información" />
             <StepIndicator current={step} target={2} label="Categorías" />
-            <StepIndicator current={step} target={3} label="Configuración" />
-            <StepIndicator current={step} target={4} label="Participantes" />
+            <StepIndicator current={step} target={3} label="Participantes" />
           </div>
         </header>
 
@@ -146,7 +138,7 @@ const TournamentCreation: React.FC = () => {
                   <label style={{ display: 'block', marginBottom: '0.8rem', opacity: 0.7 }}>Lugar / Ubicación</label>
                   <div style={{ position: 'relative' }}>
                     <MapPin size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
-                    <input type="text" className="input-field" style={{ paddingLeft: '40px' }} placeholder="Club Deportivo, Ciudad..." value={location} onChange={(e) => setLocation(e.target.value)} />
+                    <input type="text" className="input-field" style={{ paddingLeft: '40px' }} placeholder="Escribe la ubicación..." value={location} onChange={(e) => setLocation(e.target.value)} />
                   </div>
                 </div>
                 <div>
@@ -226,78 +218,13 @@ const TournamentCreation: React.FC = () => {
 
               <div style={{ display: 'flex', gap: '1.5rem', marginTop: '4rem' }}>
                 <button className="btn-primary" onClick={prevStep} style={{ background: 'rgba(255,255,255,0.05)', flex: 1 }}>Atrás</button>
-                <button className="btn-primary" onClick={nextStep} disabled={categories.length === 0} style={{ flex: 2 }}>Configurar Estructuras</button>
+                <button className="btn-primary" onClick={nextStep} disabled={categories.length === 0} style={{ flex: 2 }}>Registrar Participantes</button>
               </div>
             </div>
           )}
 
-          {/* STEP 3: CONFIGURATION PER CATEGORY */}
+          {/* STEP 3: PARTICIPANTS PER CATEGORY */}
           {step === 3 && (
-            <div className="slideIn">
-              <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2.5rem' }}>
-                <Layout color="var(--primary)" size={28} /> Configuración por Categoría
-              </h2>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-                {categories.map((cat, idx) => (
-                  <div key={idx} className="glass-card" style={{ padding: '2rem', background: 'rgba(255,255,255,0.02)' }}>
-                    <h3 style={{ margin: '0 0 1.5rem', color: 'var(--primary)' }}>{cat.name}</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                      <div 
-                        onClick={() => updateCategory(idx, { hasGroups: !cat.hasGroups })}
-                        style={{ 
-                          padding: '1.5rem', borderRadius: '12px', cursor: 'pointer', border: '1px solid',
-                          borderColor: cat.hasGroups ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
-                          background: cat.hasGroups ? 'rgba(0, 242, 254, 0.05)' : 'transparent'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
-                          <Users size={20} /> <strong>Fase de Grupos</strong>
-                        </div>
-                        {cat.hasGroups && (
-                          <div onClick={(e) => e.stopPropagation()}>
-                            <label style={{ fontSize: '0.8rem', opacity: 0.7 }}>Grupos</label>
-                            <input type="number" min="1" max="8" className="input-field" style={{ marginTop: '0.5rem' }} value={cat.groupCount} onChange={(e) => updateCategory(idx, { groupCount: parseInt(e.target.value) })} />
-                          </div>
-                        )}
-                      </div>
-                      <div 
-                        onClick={() => updateCategory(idx, { hasBrackets: !cat.hasBrackets })}
-                        style={{ 
-                          padding: '1.5rem', borderRadius: '12px', cursor: 'pointer', border: '1px solid',
-                          borderColor: cat.hasBrackets ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
-                          background: cat.hasBrackets ? 'rgba(0, 242, 254, 0.05)' : 'transparent'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
-                          <Trophy size={20} /> <strong>Eliminatorias</strong>
-                        </div>
-                        {cat.hasBrackets && (
-                          <div onClick={(e) => e.stopPropagation()}>
-                            <label style={{ fontSize: '0.8rem', opacity: 0.7 }}>Tamaño</label>
-                            <select className="input-field" style={{ marginTop: '0.5rem' }} value={cat.bracketSize} onChange={(e) => updateCategory(idx, { bracketSize: parseInt(e.target.value) })}>
-                              <option value={2}>Final</option>
-                              <option value={4}>Semis</option>
-                              <option value={8}>Cuartos</option>
-                              <option value={16}>Octavos</option>
-                            </select>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ display: 'flex', gap: '1.5rem', marginTop: '4rem' }}>
-                <button className="btn-primary" onClick={prevStep} style={{ background: 'rgba(255,255,255,0.05)', flex: 1 }}>Atrás</button>
-                <button className="btn-primary" onClick={nextStep} style={{ flex: 2 }}>Registrar Participantes</button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 4: PARTICIPANTS PER CATEGORY */}
-          {step === 4 && (
             <div className="slideIn">
               <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2.5rem' }}>
                 <Users color="var(--primary)" size={28} /> Registro de Participantes
@@ -370,7 +297,7 @@ const StepIndicator = ({ current, target, label }: { current: number, target: nu
         {isCompleted ? <CheckCircle2 size={18} /> : target}
       </div>
       <span style={{ fontSize: '1rem', fontWeight: isActive ? 'bold' : 'normal', display: 'inline-block' }}>{label}</span>
-      {target < 4 && <ChevronRight size={16} style={{ marginLeft: '5px', opacity: 0.3 }} />}
+      {target < 3 && <ChevronRight size={16} style={{ marginLeft: '5px', opacity: 0.3 }} />}
     </div>
   );
 };

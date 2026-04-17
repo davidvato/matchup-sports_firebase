@@ -188,7 +188,73 @@ app.get('/api/tournaments/:id', async (req, res) => {
   }
 });
 
-// Groups: Create
+// Categories: Create Group
+app.post('/api/categories/:id/groups', async (req, res) => {
+  const { name } = req.body;
+  try {
+    const group = await prisma.group.create({
+      data: {
+        name: name || 'Nuevo Grupo',
+        categoryId: req.params.id
+      }
+    });
+    res.json(group);
+  } catch (error) {
+    res.status(500).json({ success: false });
+  }
+});
+
+// Categories: Create Bracket
+app.post('/api/categories/:id/brackets', async (req, res) => {
+  const { name, size } = req.body;
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const bracket = await tx.bracket.create({
+        data: {
+          name: name || 'Eliminatorias',
+          categoryId: req.params.id
+        }
+      });
+
+      let round = Math.log2(size);
+      const matchMap = new Map();
+
+      for (let r = 1; r <= round; r++) {
+        const matchesInRound = Math.pow(2, round - r);
+        for (let i = 0; i < matchesInRound; i++) {
+          const match = await tx.bracketMatch.create({
+            data: {
+              bracketId: bracket.id,
+              round: r,
+              matchIndex: i
+            }
+          });
+          matchMap.set(`${r}-${i}`, match.id);
+        }
+      }
+
+      for (let r = round; r > 1; r--) {
+        const matchesInRound = Math.pow(2, round - r);
+        for (let i = 0; i < matchesInRound; i++) {
+          const currentId = matchMap.get(`${r}-${i}`);
+          const nextId = matchMap.get(`${r - 1}-${Math.floor(i / 2)}`);
+          if (currentId && nextId) {
+            await tx.bracketMatch.update({
+              where: { id: currentId },
+              data: { nextMatchId: nextId }
+            });
+          }
+        }
+      }
+      return bracket;
+    });
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false });
+  }
+});
+
+// Groups: Create (Legacy/Alternative)
 app.post('/api/tournaments/:id/groups', async (req, res) => {
   const { name } = req.body;
   try {
@@ -364,6 +430,46 @@ app.post('/api/groups/:id/reset', async (req, res) => {
       });
     });
     res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false });
+  }
+});
+
+// Groups: Delete
+app.delete('/api/groups/:id', async (req, res) => {
+  try {
+    await prisma.group.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false });
+  }
+});
+
+// Brackets: Delete
+app.delete('/api/brackets/:id', async (req, res) => {
+  try {
+    await prisma.bracket.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false });
+  }
+});
+
+// Tournaments: Update
+app.patch('/api/tournaments/:id', async (req, res) => {
+  const { name, location, startDate, endDate, sport } = req.body;
+  try {
+    const tournament = await prisma.tournament.update({
+      where: { id: req.params.id },
+      data: {
+        name,
+        location,
+        startDate: startDate ? new Date(startDate) : undefined,
+        endDate: endDate ? new Date(endDate) : undefined,
+        sport
+      }
+    });
+    res.json(tournament);
   } catch (error) {
     res.status(500).json({ success: false });
   }
