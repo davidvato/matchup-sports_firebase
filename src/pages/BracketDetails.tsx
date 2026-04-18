@@ -400,9 +400,9 @@ const BracketDetails: React.FC = () => {
             <div style={{ display: 'inline-block', padding: '2rem', background: 'rgba(0, 242, 254, 0.1)', borderRadius: '20px', border: '2px solid var(--primary)' }}>
                <Trophy size={48} color="var(--primary)" style={{ marginBottom: '1rem' }} />
                <h4 style={{ margin: 0, opacity: 0.5 }}>Ganador</h4>
-               <h2 style={{ margin: '0.5rem 0 0', color: 'var(--primary)' }}>
-                 {rounds[1]?.[0]?.winnerId ? (rounds[1][0].winnerId === rounds[1][0].pairA?.id ? rounds[1][0].pairA.name : rounds[1][0].pairB?.name) : '---'}
-               </h2>
+                <h2 style={{ margin: '0.5rem 0 0', color: 'var(--primary)' }}>
+                  {rounds[maxRound]?.[0]?.winnerId ? (rounds[maxRound][0].winnerId === rounds[maxRound][0].pairA?.id ? rounds[maxRound][0].pairA.name : rounds[maxRound][0].pairB?.name) : '---'}
+                </h2>
             </div>
           </div>
         </div>
