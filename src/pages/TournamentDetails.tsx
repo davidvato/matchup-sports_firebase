@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, Users, Trophy, Activity, 
   ArrowRight, Settings, MapPin, Calendar, 
-  Layers, Trash2, AlertTriangle
+  Layers, Trash2, AlertTriangle, Plus, RotateCcw
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -82,15 +82,8 @@ const TournamentDetails: React.FC = () => {
   });
 
   // Custom Bracket Modal State
-  const [bracketModal, setBracketModal] = useState<{
-    show: boolean;
-    categoryId: string;
-    size: number;
-  }>({
-    show: false,
-    categoryId: '',
-    size: 4
-  });
+  const [bracketModal, setBracketModal] = useState({ show: false, categoryId: '', size: 8 });
+  const [newCategoryModal, setNewCategoryModal] = useState({ show: false, name: '' });
 
   const handleDeleteTournament = async () => {
     setConfirmModal({
@@ -191,6 +184,64 @@ const TournamentDetails: React.FC = () => {
       onConfirm: async () => {
         try {
           const res = await fetch(`http://localhost:3001/api/brackets/${bracketId}`, { method: 'DELETE' });
+          if (res.ok) fetchTournament();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    });
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    setConfirmModal({
+      show: true,
+      title: 'Eliminar Categoría',
+      message: '¿Estás seguro de eliminar esta CATEGORÍA? Se perderán TODOS los grupos, brackets y participantes asociados de forma permanente.',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`http://localhost:3001/api/categories/${categoryId}`, { method: 'DELETE' });
+          if (res.ok) {
+            // Adjust active tab if needed
+            if (activeTab > 0 && activeTab === (tournament?.categories.length || 0) - 1) {
+              setActiveTab(activeTab - 1);
+            }
+            fetchTournament();
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    });
+  };
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryModal.name.trim()) return;
+    try {
+      const res = await fetch(`http://localhost:3001/api/tournaments/${id}/categories`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newCategoryModal.name })
+      });
+      if (res.ok) {
+        setNewCategoryModal({ show: false, name: '' });
+        fetchTournament();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleResetGroups = async () => {
+    if (!currentCategory) return;
+    setConfirmModal({
+      show: true,
+      title: 'Reiniciar Fase',
+      message: '¿Estás seguro de reiniciar todos los resultados y borrar los brackets de esta categoría? Esta acción no se puede deshacer.',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`http://localhost:3001/api/categories/${currentCategory.id}/reset`, { 
+            method: 'POST' 
+          });
           if (res.ok) fetchTournament();
         } catch (err) {
           console.error(err);
@@ -351,12 +402,52 @@ const TournamentDetails: React.FC = () => {
                 style={{
                   padding: '1rem 2rem', background: 'none', border: 'none', color: activeTab === idx ? 'var(--primary)' : 'rgba(255,255,255,0.5)',
                   cursor: 'pointer', borderBottom: activeTab === idx ? '3px solid var(--primary)' : '3px solid transparent',
-                  fontWeight: activeTab === idx ? 'bold' : 'normal', transition: 'all 0.3s'
+                  fontWeight: activeTab === idx ? 'bold' : 'normal', transition: 'all 0.3s',
+                  display: 'flex', alignItems: 'center', gap: '10px'
                 }}
               >
                 {cat.name}
+                {isAdmin && activeTab === idx && (
+                  <span 
+                    onClick={(e) => { e.stopPropagation(); handleDeleteCategory(cat.id); }}
+                    style={{ 
+                      padding: '4px', borderRadius: '4px', 
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'rgba(255,75,43,0.1)', color: '#ff4b2b',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,75,43,0.2)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,75,43,0.1)'}
+                    title="Eliminar categoría"
+                  >
+                    <Trash2 size={12} />
+                  </span>
+                )}
               </button>
             ))}
+            {isAdmin && (
+                  <button
+                    onClick={() => setNewCategoryModal({ show: true, name: '' })}
+                    className="glass-card"
+                    style={{
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: 'white',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      height: '42px',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                  >
+                    <Plus size={18} /> Nueva Categoría
+                  </button>
+                )}
           </div>
         </header>
 
@@ -366,9 +457,34 @@ const TournamentDetails: React.FC = () => {
             {/* Groups Section */}
             {currentCategory?.groups && currentCategory.groups.length > 0 && (
               <section className="fadeIn">
-                <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
-                  <Users color="var(--primary)" /> Fase de Grupos
-                </h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
+                    <Users color="var(--primary)" /> Fase de Grupos
+                  </h2>
+                  {isAdmin && (
+                    <button 
+                      onClick={handleResetGroups}
+                      className="glass-card"
+                      style={{ 
+                        background: 'rgba(255,75,43,0.1)', 
+                        border: '1px solid rgba(255,75,43,0.2)', 
+                        color: '#ff4b2b', 
+                        cursor: 'pointer', 
+                        fontSize: '0.8rem',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        transition: 'all 0.3s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,75,43,0.2)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,75,43,0.1)'}
+                    >
+                      <RotateCcw size={14} /> Reiniciar Fase
+                    </button>
+                  )}
+                </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
                   {currentCategory.groups.map(group => (
                     <div key={group.id} className="glass-card" style={{ padding: '1.5rem', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -377,9 +493,20 @@ const TournamentDetails: React.FC = () => {
                         {isAdmin && (
                           <button 
                             onClick={(e) => { e.preventDefault(); handleDeleteGroup(group.id); }}
-                            style={{ background: 'none', border: 'none', color: 'rgba(255,75,43,0.5)', cursor: 'pointer', padding: '5px' }}
-                            onMouseEnter={(e) => e.currentTarget.style.color = '#ff4b2b'}
-                            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,75,43,0.5)'}
+                            style={{ 
+                              background: '#ff4b2b', 
+                              border: 'none', 
+                              color: 'white', 
+                              cursor: 'pointer', 
+                              padding: '8px',
+                              borderRadius: '8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              boxShadow: '0 2px 10px rgba(255, 75, 43, 0.3)',
+                              zIndex: 5
+                            }}
+                            title="Eliminar grupo"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -401,9 +528,34 @@ const TournamentDetails: React.FC = () => {
             {/* Brackets Section */}
             {currentCategory?.brackets && currentCategory.brackets.length > 0 && (
               <section className="fadeIn">
-                <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
-                  <Trophy color="var(--primary)" /> Fase de Brackets
-                </h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
+                    <Trophy color="var(--primary)" /> Fase de Brackets
+                  </h2>
+                  {isAdmin && (
+                    <button 
+                      onClick={handleResetGroups}
+                      className="glass-card"
+                      style={{ 
+                        background: 'rgba(255,75,43,0.1)', 
+                        border: '1px solid rgba(255,75,43,0.2)', 
+                        color: '#ff4b2b', 
+                        cursor: 'pointer', 
+                        fontSize: '0.8rem',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        transition: 'all 0.3s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,75,43,0.2)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,75,43,0.1)'}
+                    >
+                      <RotateCcw size={14} /> Reiniciar Brackets
+                    </button>
+                  )}
+                </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
                   {currentCategory.brackets.map(bracket => (
                     <div key={bracket.id} className="glass-card" style={{ padding: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -413,11 +565,22 @@ const TournamentDetails: React.FC = () => {
                           {isAdmin && (
                             <button 
                               onClick={(e) => { e.preventDefault(); handleDeleteBracket(bracket.id); }}
-                              style={{ background: 'none', border: 'none', color: 'rgba(255,75,43,0.5)', cursor: 'pointer', padding: '5px', display: 'flex' }}
-                              onMouseEnter={(e) => e.currentTarget.style.color = '#ff4b2b'}
-                              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,75,43,0.5)'}
+                            style={{ 
+                                background: '#ff4b2b', 
+                                border: 'none', 
+                                color: 'white', 
+                                cursor: 'pointer', 
+                                padding: '10px',
+                                borderRadius: '10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 2px 10px rgba(255, 75, 43, 0.3)',
+                                zIndex: 5
+                              }}
+                              title="Eliminar bracket"
                             >
-                              <Trash2 size={16} />
+                              <Trash2 size={18} />
                             </button>
                           )}
                         </div>
@@ -435,22 +598,22 @@ const TournamentDetails: React.FC = () => {
             {(!currentCategory?.groups?.length && !currentCategory?.brackets?.length) ? (
                 <div className="glass-card fadeIn" style={{ padding: '5rem 4rem', textAlign: 'center', border: '2px dashed rgba(255,255,255,0.05)' }}>
                     <h3 style={{ opacity: 0.5, marginBottom: '2rem' }}>No hay estructura definida para esta categoría</h3>
-                    {isAdmin && (
+                    {isAdmin && currentCategory && (
                       <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center' }}>
-                        <button onClick={() => handleAddGroup(currentCategory!.id)} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <button onClick={() => handleAddGroup(currentCategory.id)} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <Users size={18} /> Crear Fase de Grupos
                         </button>
-                        <button onClick={() => handleAddBracket(currentCategory!.id)} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <button onClick={() => handleAddBracket(currentCategory.id)} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <Trophy size={18} /> Crear Brackets
                         </button>
                       </div>
                     )}
                 </div>
             ) : (
-              isAdmin && (
+              isAdmin && currentCategory && (
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                   <button onClick={() => handleAddGroup(currentCategory!.id)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>+ Añadir Grupo</button>
-                   <button onClick={() => handleAddBracket(currentCategory!.id)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>+ Añadir Bracket</button>
+                   <button onClick={() => handleAddGroup(currentCategory.id)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>+ Añadir Grupo</button>
+                   <button onClick={() => handleAddBracket(currentCategory.id)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>+ Añadir Bracket</button>
                 </div>
               )
             )}
@@ -614,6 +777,56 @@ const TournamentDetails: React.FC = () => {
                 style={{ flex: 1 }}
               >
                 Generar Bracket
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Category Modal */}
+      {newCategoryModal.show && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div className="glass-card fadeIn" style={{ padding: '2.5rem', maxWidth: '450px', width: '100%', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <h2 style={{ marginTop: 0, color: 'white', marginBottom: '1.5rem' }}>Nueva Categoría</h2>
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.8rem', opacity: 0.7, fontSize: '0.9rem' }}>Nombre de la categoría</label>
+              <input 
+                type="text" 
+                value={newCategoryModal.name}
+                onChange={(e) => setNewCategoryModal({ ...newCategoryModal, name: e.target.value })}
+                placeholder="Ej: Categoría A, Open, etc."
+                style={{
+                  width: '100%',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '12px',
+                  padding: '1rem',
+                  color: 'white',
+                  fontSize: '1rem'
+                }}
+                autoFocus
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button 
+                className="btn-primary" 
+                onClick={() => setNewCategoryModal({ show: false, name: '' })} 
+                style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
+              >
+                Cancelar
+              </button>
+              <button 
+                className="btn-primary" 
+                onClick={handleCreateCategory}
+                style={{ flex: 1 }}
+                disabled={!newCategoryModal.name.trim()}
+              >
+                Crear Categoría
               </button>
             </div>
           </div>

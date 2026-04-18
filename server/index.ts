@@ -133,11 +133,11 @@ app.post('/api/tournaments', async (req, res) => {
           }
 
           // Second pass: Link nextMatchId
-          for (let r = round; r > 1; r--) {
+          for (let r = 1; r < round; r++) {
             const matchesInRound = Math.pow(2, round - r);
             for (let i = 0; i < matchesInRound; i++) {
               const currentId = matchMap.get(`${r}-${i}`);
-              const nextId = matchMap.get(`${r - 1}-${Math.floor(i / 2)}`);
+              const nextId = matchMap.get(`${r + 1}-${Math.floor(i / 2)}`);
               if (currentId && nextId) {
                 await tx.bracketMatch.update({
                   where: { id: currentId },
@@ -210,7 +210,13 @@ app.get('/api/categories/:id', async (req, res) => {
     const category = await prisma.category.findUnique({
       where: { id: req.params.id },
       include: {
-        pairs: true,
+        pairs: {
+          include: {
+            group: true,
+            bracketMatchesAsA: { include: { bracket: true } },
+            bracketMatchesAsB: { include: { bracket: true } }
+          }
+        },
         groups: true,
         brackets: true
       }
@@ -266,11 +272,11 @@ app.post('/api/categories/:id/brackets', async (req, res) => {
         }
       }
 
-      for (let r = round; r > 1; r--) {
+      for (let r = 1; r < round; r++) {
         const matchesInRound = Math.pow(2, round - r);
         for (let i = 0; i < matchesInRound; i++) {
           const currentId = matchMap.get(`${r}-${i}`);
-          const nextId = matchMap.get(`${r - 1}-${Math.floor(i / 2)}`);
+          const nextId = matchMap.get(`${r + 1}-${Math.floor(i / 2)}`);
           if (currentId && nextId) {
             await tx.bracketMatch.update({
               where: { id: currentId },
@@ -309,7 +315,7 @@ app.get('/api/groups/:id', async (req, res) => {
     const group = await prisma.group.findUnique({
       where: { id: req.params.id },
       include: {
-        category: true,
+        category: { include: { tournament: true } },
         pairs: { include: { _count: { select: { scores: true } } } },
         matches: {
           include: {
@@ -402,6 +408,109 @@ app.post('/api/bracket-matches/:id/result', async (req, res) => {
   }
 });
 
+// Brackets: Update Match Pairs (Manual)
+app.patch('/api/bracket-matches/:id', async (req, res) => {
+  const { pairAId, pairBId } = req.body;
+  try {
+    const match = await prisma.bracketMatch.update({
+      where: { id: req.params.id },
+      data: { 
+        pairAId: pairAId === null ? null : pairAId,
+        pairBId: pairBId === null ? null : pairBId
+      }
+    });
+    res.json(match);
+  } catch (error) {
+    res.status(500).json({ success: false });
+  }
+});
+
+// Brackets: Reset all matches in a bracket
+app.post('/api/brackets/:id/reset', async (req, res) => {
+  const bracketId = req.params.id;
+  try {
+    await prisma.$transaction(async (tx) => {
+      // 1. Reset all match results
+      await tx.bracketMatch.updateMany({
+        where: { bracketId },
+        data: {
+          pointsA: 0,
+          pointsB: 0,
+          winnerId: null
+        }
+      });
+
+      // 2. Clear advancement (pairs in rounds > 1)
+      await tx.bracketMatch.updateMany({
+        where: { 
+          bracketId,
+          round: { gt: 1 }
+        },
+        data: {
+          pairAId: null,
+          pairBId: null
+        }
+      });
+    });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error resetting bracket:', error);
+    res.status(500).json({ success: false });
+  }
+});
+
+// Brackets: Random Seed
+app.post('/api/brackets/:id/seed', async (req, res) => {
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const bracket = await tx.bracket.findUnique({
+        where: { id: req.params.id },
+        include: { matches: true }
+      });
+
+      if (!bracket) throw new Error('Bracket not found');
+
+      // Get pairs in category NOT in any group
+      const pairs = await tx.pair.findMany({
+        where: { 
+          categoryId: bracket.categoryId,
+          groupId: null
+        }
+      });
+
+      // Find the first round matches (Always Round 1)
+      const firstRoundMatches = await tx.bracketMatch.findMany({
+        where: { bracketId: bracket.id, round: 1 },
+        orderBy: { matchIndex: 'asc' }
+      });
+
+      // Shuffle pairs
+      const shuffledPairs = [...pairs].sort(() => Math.random() - 0.5);
+
+      // Assign to matches
+      for (let i = 0; i < firstRoundMatches.length; i++) {
+        const match = firstRoundMatches[i];
+        const pA = shuffledPairs[i * 2] || null;
+        const pB = shuffledPairs[i * 2 + 1] || null;
+
+        await tx.bracketMatch.update({
+          where: { id: match.id },
+          data: {
+            pairAId: pA?.id || null,
+            pairBId: pB?.id || null
+          }
+        });
+      }
+
+      return { success: true };
+    });
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false });
+  }
+});
+
 // Matches: Update Result
 app.post('/api/matches/:id/result', async (req, res) => {
   const { winnerId, pointsA, pointsB, pairAId, pairBId } = req.body;
@@ -410,18 +519,40 @@ app.post('/api/matches/:id/result', async (req, res) => {
   try {
     await prisma.$transaction(async (tx) => {
       // 1. Update Match
-      await tx.match.update({
+      const match = await tx.match.update({
         where: { id: matchId },
-        data: { winnerId, pointsA, pointsB }
+        data: { winnerId, pointsA, pointsB },
+        include: { group: { include: { category: { include: { tournament: true } } } } }
       });
 
+      const sport = match.group.category.tournament.sport?.toLowerCase();
+
+      // Helper to calculate total points for a pair in a sport
+      const calculateStats = (matches: any[], pairId: string, currentSport: string | undefined) => {
+        return matches.reduce((total, m) => {
+          if (!m.winnerId && m.pointsA === 0 && m.pointsB === 0) return total; // Match not played
+
+          if (currentSport === 'futbol') {
+            const isPairA = m.pairAId === pairId;
+            const myPoints = isPairA ? m.pointsA : m.pointsB;
+            const opponentPoints = isPairA ? m.pointsB : m.pointsA;
+
+            if (myPoints > opponentPoints) return total + 3;
+            if (myPoints === opponentPoints) return total + 1;
+            return total;
+          } else {
+            // Default: sum of points scored
+            return total + (m.pairAId === pairId ? m.pointsA : m.pointsB);
+          }
+        }, 0);
+      };
+
       // 2. Recalculate totalScore for Pair A
-      const matchesA = await tx.match.findMany({ where: { pairAId } });
-      const matchesB_asA = await tx.match.findMany({ where: { pairBId: pairAId } });
+      const matchesA_all = await tx.match.findMany({
+        where: { OR: [{ pairAId }, { pairBId: pairAId }] }
+      });
       
-      const totalA = [...matchesA, ...matchesB_asA].reduce((sum, m) => {
-        return sum + (m.pairAId === pairAId ? m.pointsA : m.pointsB);
-      }, 0);
+      const totalA = calculateStats(matchesA_all, pairAId, sport);
 
       await tx.pair.update({
         where: { id: pairAId },
@@ -429,12 +560,11 @@ app.post('/api/matches/:id/result', async (req, res) => {
       });
 
       // 3. Recalculate totalScore for Pair B
-      const matchesB = await tx.match.findMany({ where: { pairBId } });
-      const matchesA_asB = await tx.match.findMany({ where: { pairAId: pairBId } });
+      const matchesB_all = await tx.match.findMany({
+        where: { OR: [{ pairAId: pairBId }, { pairBId }] }
+      });
       
-      const totalB = [...matchesB, ...matchesA_asB].reduce((sum, m) => {
-        return sum + (m.pairBId === pairBId ? m.pointsB : m.pointsA);
-      }, 0);
+      const totalB = calculateStats(matchesB_all, pairBId, sport);
 
       await tx.pair.update({
         where: { id: pairBId },
@@ -443,6 +573,7 @@ app.post('/api/matches/:id/result', async (req, res) => {
     });
     res.json({ success: true });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false });
   }
 });
@@ -532,6 +663,54 @@ app.post('/api/groups/:id/reset', async (req, res) => {
   }
 });
 
+// Categories: Reset (Groups results and delete brackets)
+app.post('/api/categories/:id/reset', async (req, res) => {
+  const { id: categoryId } = req.params;
+  try {
+    await prisma.$transaction(async (tx) => {
+      // 1. Reset all groups in this category
+      const groups = await tx.group.findMany({ where: { categoryId } });
+      for (const group of groups) {
+        const pairs = await tx.pair.findMany({ where: { groupId: group.id } });
+        for (const pair of pairs) {
+          await tx.score.deleteMany({ where: { pairId: pair.id } });
+          await tx.pair.update({
+            where: { id: pair.id },
+            data: { totalScore: 0 }
+          });
+        }
+        await tx.match.updateMany({
+          where: { groupId: group.id },
+          data: { winnerId: null, pointsA: 0, pointsB: 0 }
+        });
+      }
+      // 2. Delete all brackets in this category
+      await tx.bracket.deleteMany({ where: { categoryId } });
+    });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error resetting category:', error);
+    res.status(500).json({ success: false });
+  }
+});
+
+// Categories: Delete
+app.delete('/api/categories/:id', async (req, res) => {
+  const { id: categoryId } = req.params;
+  try {
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete all brackets and their matches first
+      await tx.bracket.deleteMany({ where: { categoryId } });
+      // 2. Delete the category (this will cascade to groups, pairs, etc.)
+      await tx.category.delete({ where: { id: categoryId } });
+    });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting category:', error);
+    res.status(500).json({ success: false });
+  }
+});
+
 // Groups: Delete
 app.delete('/api/groups/:id', async (req, res) => {
   try {
@@ -548,6 +727,23 @@ app.delete('/api/brackets/:id', async (req, res) => {
     await prisma.bracket.delete({ where: { id: req.params.id } });
     res.json({ success: true });
   } catch (error) {
+    res.status(500).json({ success: false });
+  }
+});
+
+// Tournaments: Create Category
+app.post('/api/tournaments/:id/categories', async (req, res) => {
+  const { name } = req.body;
+  try {
+    const category = await prisma.category.create({
+      data: {
+        name,
+        tournamentId: req.params.id
+      }
+    });
+    res.json(category);
+  } catch (error) {
+    console.error('Error creating category:', error);
     res.status(500).json({ success: false });
   }
 });

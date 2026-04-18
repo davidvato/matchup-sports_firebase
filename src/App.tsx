@@ -13,10 +13,10 @@ import GroupDetails from './pages/GroupDetails';
 import BracketDetails from './pages/BracketDetails';
 const AppContent: React.FC = () => {
   const location = useLocation();
-  const showNavbar = location.pathname !== '/login' && 
-                     location.pathname !== '/explore' &&
-                     !location.pathname.startsWith('/tournament/') &&
-                     !location.pathname.startsWith('/group/');
+  const showNavbar = location.pathname !== '/login' &&
+    location.pathname !== '/explore' &&
+    !location.pathname.startsWith('/tournament/') &&
+    !location.pathname.startsWith('/group/');
 
   return (
     <div style={{ minHeight: '100vh', width: '100%' }}>

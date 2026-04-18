@@ -19,7 +19,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const API_URL = 'http://localhost:3001/api';
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('matchup_user');
+    return saved ? JSON.parse(saved) : null;
+  });
 
   const login = async (username: string, password: string) => {
     try {
@@ -31,6 +34,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const data = await response.json();
       if (data.success) {
         setUser(data.user);
+        localStorage.setItem('matchup_user', JSON.stringify(data.user));
         return true;
       }
       return false;
@@ -57,6 +61,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('matchup_user');
   };
 
   return (

@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, Users, Trophy, Activity, CheckCircle2, RotateCcw, Plus, X, AlertTriangle } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ChevronLeft, Users, Trophy, Activity, CheckCircle2, RotateCcw, Plus, X, AlertTriangle, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface Pair {
   id: string;
   name: string;
   totalScore: number;
+}
+
+interface FootballStats {
+  pj: number;
+  g: number;
+  e: number;
+  p: number;
+  gf: number;
+  gc: number;
+  dg: number;
+  pts: number;
 }
 
 interface Match {
@@ -22,13 +33,17 @@ interface Group {
   id: string;
   name: string;
   categoryId: string;
-  category: { tournamentId: string };
+  category: { 
+    tournamentId: string;
+    tournament: { sport: string };
+  };
   pairs: Pair[];
   matches: Match[];
 }
 
 const GroupDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const [group, setGroup] = useState<Group | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,6 +99,16 @@ const GroupDetails: React.FC = () => {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!window.confirm('¿Estás seguro de eliminar este grupo?')) return;
+    try {
+      const res = await fetch(`http://localhost:3001/api/groups/${id}`, { method: 'DELETE' });
+      if (res.ok) navigate(`/tournament/${group?.category.tournamentId}`);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -160,7 +185,52 @@ const GroupDetails: React.FC = () => {
 
   if (loading) return <div style={{ color: 'white', textAlign: 'center', padding: '100px' }}>Cargando grupo...</div>;
 
-  const standings = [...(group?.pairs || [])].sort((a, b) => b.totalScore - a.totalScore);
+  const isFootball = group?.category?.tournament?.sport?.toLowerCase() === 'futbol';
+
+  const getFootballStats = (pairId: string): FootballStats => {
+    const stats = { pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, dg: 0, pts: 0 };
+    if (!group) return stats;
+
+    group.matches.forEach(m => {
+      if (!m.winnerId && m.pointsA === 0 && m.pointsB === 0) return; // Match not played
+      
+      const isPairA = m.pairA.id === pairId;
+      const isPairB = m.pairB.id === pairId;
+      if (!isPairA && !isPairB) return;
+
+      stats.pj++;
+      const selfPoints = isPairA ? m.pointsA : m.pointsB;
+      const oppPoints = isPairA ? m.pointsB : m.pointsA;
+
+      stats.gf += selfPoints;
+      stats.gc += oppPoints;
+
+      if (selfPoints > oppPoints) {
+        stats.g++;
+        stats.pts += 3;
+      } else if (selfPoints === oppPoints) {
+        stats.e++;
+        stats.pts += 1;
+      } else {
+        stats.p++;
+      }
+    });
+
+    stats.dg = stats.gf - stats.gc;
+    return stats;
+  };
+
+  const standings = [...(group?.pairs || [])].sort((a, b) => {
+    if (isFootball) {
+      const statsA = getFootballStats(a.id);
+      const statsB = getFootballStats(b.id);
+      
+      if (statsB.pts !== statsA.pts) return statsB.pts - statsA.pts;
+      if (statsB.dg !== statsA.dg) return statsB.dg - statsA.dg;
+      return statsB.gf - statsA.gf;
+    }
+    return b.totalScore - a.totalScore;
+  });
 
   return (
     <div style={{
@@ -173,7 +243,31 @@ const GroupDetails: React.FC = () => {
             <Link to={group ? `/tournament/${group.category.tournamentId}` : '/'} style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.5)', textDecoration: 'none', marginBottom: '1rem' }}>
               <ChevronLeft size={18} /> Volver al Torneo
             </Link>
-            <h1 className="gradient-text" style={{ fontSize: '3rem', margin: 0 }}>{group?.name}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+              <h1 className="gradient-text" style={{ fontSize: '3rem', margin: 0 }}>{group?.name}</h1>
+              {isAdmin && (
+                <button 
+                  onClick={handleDeleteGroup}
+                  style={{ 
+                    background: 'rgba(255, 71, 87, 0.1)', 
+                    border: '1px solid rgba(255, 71, 87, 0.3)', 
+                    color: '#ff4757', 
+                    padding: '8px', 
+                    borderRadius: '8px', 
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.3s ease'
+                  }}
+                  title="Eliminar grupo"
+                  onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 71, 87, 0.2)'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 71, 87, 0.1)'}
+                >
+                  <Trash2 size={20} />
+                </button>
+              )}
+            </div>
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
             {isAdmin && (
@@ -339,20 +433,49 @@ const GroupDetails: React.FC = () => {
               </h2>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ textAlign: 'left', opacity: 0.5, fontSize: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                    <th style={{ padding: '10px' }}>#</th>
-                    <th style={{ padding: '10px' }}>Pareja</th>
-                    <th style={{ padding: '10px', textAlign: 'right' }}>Pts</th>
+                  <tr style={{ textAlign: 'left', opacity: 0.5, fontSize: '0.7rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    <th style={{ padding: '10px 5px' }}>#</th>
+                    <th style={{ padding: '10px 5px' }}>Pareja</th>
+                    {isFootball ? (
+                      <>
+                        <th style={{ padding: '10px 5px', textAlign: 'center' }}>PJ</th>
+                        <th style={{ padding: '10px 5px', textAlign: 'center' }}>G</th>
+                        <th style={{ padding: '10px 5px', textAlign: 'center' }}>E</th>
+                        <th style={{ padding: '10px 5px', textAlign: 'center' }}>P</th>
+                        <th style={{ padding: '10px 5px', textAlign: 'center' }}>GF</th>
+                        <th style={{ padding: '10px 5px', textAlign: 'center' }}>GC</th>
+                        <th style={{ padding: '10px 5px', textAlign: 'center' }}>DG</th>
+                        <th style={{ padding: '10px 5px', textAlign: 'right' }}>Pts</th>
+                      </>
+                    ) : (
+                      <th style={{ padding: '10px 5px', textAlign: 'right' }}>Pts</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
-                  {standings.map((pair, idx) => (
-                    <tr key={pair.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: idx === 0 ? 'rgba(0, 242, 254, 0.05)' : 'transparent' }}>
-                      <td style={{ padding: '15px 10px', opacity: 0.5 }}>{idx + 1}</td>
-                      <td style={{ padding: '15px 10px', fontWeight: idx === 0 ? 'bold' : 'normal' }}>{pair.name}</td>
-                      <td style={{ padding: '15px 10px', textAlign: 'right', color: 'var(--primary)', fontWeight: 'bold' }}>{pair.totalScore}</td>
-                    </tr>
-                  ))}
+                  {standings.map((pair, idx) => {
+                    const stats = isFootball ? getFootballStats(pair.id) : null;
+                    return (
+                      <tr key={pair.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: idx === 0 ? 'rgba(0, 242, 254, 0.05)' : 'transparent' }}>
+                        <td style={{ padding: '12px 5px', opacity: 0.5, fontSize: '0.8rem' }}>{idx + 1}</td>
+                        <td style={{ padding: '12px 5px', fontWeight: idx === 0 ? 'bold' : 'normal', fontSize: '0.8rem', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pair.name}</td>
+                        {isFootball && stats ? (
+                          <>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{stats.pj}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{stats.g}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{stats.e}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{stats.p}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{stats.gf}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{stats.gc}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{stats.dg}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'right', color: 'var(--primary)', fontWeight: 'bold' }}>{stats.pts}</td>
+                          </>
+                        ) : (
+                          <td style={{ padding: '12px 5px', textAlign: 'right', color: 'var(--primary)', fontWeight: 'bold' }}>{pair.totalScore}</td>
+                        )}
+                      </tr>
+                    );
+                  })}
                   {standings.length === 0 && (
                     <tr>
                       <td colSpan={3} style={{ padding: '2rem', textAlign: 'center', opacity: 0.3 }}>Sin jugadores</td>
