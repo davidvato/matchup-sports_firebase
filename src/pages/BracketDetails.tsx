@@ -595,51 +595,6 @@ const BracketDetails: React.FC = () => {
         </div>
       )}
 
-      {/* Custom Confirmation Modal */}
-      {confirmModal.show && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', zIndex: 5000, padding: '2rem', backdropFilter: 'blur(8px)'
-        }}>
-          <div className="glass-card fadeIn" style={{ 
-            padding: '3rem', maxWidth: '450px', width: '100%', 
-            backgroundColor: '#1a1d23', textAlign: 'center',
-            border: '1px solid rgba(255,75,43,0.3)'
-          }}>
-            <div style={{ 
-              width: '64px', height: '64px', borderRadius: '50%', 
-              backgroundColor: 'rgba(255,75,43,0.1)', display: 'flex', 
-              alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem',
-              color: '#ff4b2b'
-            }}>
-              <AlertTriangle size={32} />
-            </div>
-            <h2 style={{ marginBottom: '1rem', color: 'white' }}>{confirmModal.title}</h2>
-            <p style={{ opacity: 0.7, marginBottom: '2.5rem', lineHeight: '1.6' }}>{confirmModal.message}</p>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
-                className="btn-primary" 
-                onClick={() => setConfirmModal({ ...confirmModal, show: false })} 
-                style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
-              >
-                Cancelar
-              </button>
-              <button 
-                className="btn-primary" 
-                onClick={() => {
-                  confirmModal.onConfirm();
-                  setConfirmModal({ ...confirmModal, show: false });
-                }} 
-                style={{ flex: 1, background: '#ff4b2b', border: 'none' }}
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {resultModal.show && resultModal.match && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -755,6 +710,50 @@ const BracketDetails: React.FC = () => {
                 style={{ flex: 1 }}
               >
                 Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Custom Confirmation Modal */}
+      {confirmModal.show && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 9999, padding: '2rem', backdropFilter: 'blur(8px)'
+        }}>
+          <div className="glass-card fadeIn" style={{ 
+            padding: '3rem', maxWidth: '450px', width: '100%', 
+            backgroundColor: '#1a1d23', textAlign: 'center',
+            border: '1px solid rgba(255,75,43,0.3)'
+          }}>
+            <div style={{ 
+              width: '64px', height: '64px', borderRadius: '50%', 
+              backgroundColor: 'rgba(255,75,43,0.1)', display: 'flex', 
+              alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem',
+              color: '#ff4b2b'
+            }}>
+              <AlertTriangle size={32} />
+            </div>
+            <h2 style={{ marginBottom: '1rem', color: 'white' }}>{confirmModal.title}</h2>
+            <p style={{ opacity: 0.7, marginBottom: '2.5rem', lineHeight: '1.6' }}>{confirmModal.message}</p>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button 
+                className="btn-primary" 
+                onClick={() => setConfirmModal({ ...confirmModal, show: false })} 
+                style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
+              >
+                Cancelar
+              </button>
+              <button 
+                className="btn-primary" 
+                onClick={() => {
+                  confirmModal.onConfirm();
+                  setConfirmModal({ ...confirmModal, show: false });
+                }} 
+                style={{ flex: 1, background: '#ff4b2b', border: 'none' }}
+              >
+                Confirmar
               </button>
             </div>
           </div>
