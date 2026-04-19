@@ -49,6 +49,12 @@ interface Match {
   winnerId: string | null;
   pointsA: number;
   pointsB: number;
+  set1A: number;
+  set1B: number;
+  set2A: number;
+  set2B: number;
+  set3A: number;
+  set3B: number;
 }
 
 interface Group {
@@ -57,7 +63,7 @@ interface Group {
   categoryId: string;
   category: { 
     tournamentId: string;
-    tournament: { sport: string };
+    tournament: { sport: string; description: string };
   };
   pairs: Pair[];
   matches: Match[];
@@ -80,13 +86,25 @@ const GroupDetails: React.FC = () => {
     colPair: Pair | null;
     scoreRow: string;
     scoreCol: string;
+    set1Row: string;
+    set1Col: string;
+    set2Row: string;
+    set2Col: string;
+    set3Row: string;
+    set3Col: string;
   }>({
     show: false,
     match: null,
     rowPair: null,
     colPair: null,
     scoreRow: '0',
-    scoreCol: '0'
+    scoreCol: '0',
+    set1Row: '0',
+    set1Col: '0',
+    set2Row: '0',
+    set2Col: '0',
+    set3Row: '0',
+    set3Col: '0'
   });
   const [confirmModal, setConfirmModal] = useState<{
     show: boolean;
@@ -204,7 +222,13 @@ const GroupDetails: React.FC = () => {
     }
   };
 
-  const handleUpdateResult = async (matchId: string, pairAId: string, pairBId: string, pointsA: number, pointsB: number) => {
+  const handleUpdateResult = async (
+    matchId: string, pairAId: string, pairBId: string, 
+    pointsA: number, pointsB: number,
+    set1A?: number, set1B?: number,
+    set2A?: number, set2B?: number,
+    set3A?: number, set3B?: number
+  ) => {
     if ((isBasketball || isRacquetball) && pointsA === pointsB) {
       setConfirmModal({
         show: true,
@@ -220,7 +244,10 @@ const GroupDetails: React.FC = () => {
       const res = await fetch(`http://localhost:3001/api/matches/${matchId}/result`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ winnerId, pointsA, pointsB, pairAId, pairBId })
+        body: JSON.stringify({ 
+          winnerId, pointsA, pointsB, pairAId, pairBId,
+          set1A, set1B, set2A, set2B, set3A, set3B
+        })
       });
       if (res.ok) fetchGroup();
     } catch (err) {
@@ -249,6 +276,7 @@ const GroupDetails: React.FC = () => {
   const isFootball = group?.category?.tournament?.sport?.toLowerCase() === 'futbol';
   const isBasketball = group?.category?.tournament?.sport?.toLowerCase() === 'basquetball';
   const isRacquetball = group?.category?.tournament?.sport?.toLowerCase() === 'racquetball';
+  const isRacquetball2Of3 = isRacquetball && group?.category?.tournament?.description === '2 de 3 sets a 15 puntos con cambios';
 
   const getFootballStats = (pairId: string): FootballStats => {
     const stats = { pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, dg: 0, pts: 0 };
@@ -478,7 +506,13 @@ const GroupDetails: React.FC = () => {
                                     rowPair,
                                     colPair,
                                     scoreRow: String(isRowPairA ? match.pointsA : match.pointsB),
-                                    scoreCol: String(isRowPairA ? match.pointsB : match.pointsA)
+                                    scoreCol: String(isRowPairA ? match.pointsB : match.pointsA),
+                                    set1Row: String(isRowPairA ? match.set1A : match.set1B),
+                                    set1Col: String(isRowPairA ? match.set1B : match.set1A),
+                                    set2Row: String(isRowPairA ? match.set2A : match.set2B),
+                                    set2Col: String(isRowPairA ? match.set2B : match.set2A),
+                                    set3Row: String(isRowPairA ? match.set3A : match.set3B),
+                                    set3Col: String(isRowPairA ? match.set3B : match.set3A)
                                   });
                                 }
                               }}
@@ -553,8 +587,17 @@ const GroupDetails: React.FC = () => {
                           <span style={{ margin: '0 10px', opacity: 0.3 }}>vs</span>
                           <span style={{ fontWeight: match.winnerId === match.pairB.id ? 'bold' : 'normal', color: match.winnerId === match.pairB.id ? 'var(--primary)' : 'inherit' }}>{match.pairB.name}</span>
                         </td>
-                        <td style={{ padding: '15px 12px', textAlign: 'center', fontWeight: 'bold', letterSpacing: '2px' }}>
-                          {match.winnerId ? `${match.pointsA} - ${match.pointsB}` : '-- : --'}
+                        <td style={{ padding: '15px 12px', textAlign: 'center', fontWeight: 'bold' }}>
+                          {match.winnerId ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                              <span>{match.pointsA} - {match.pointsB}</span>
+                              {isRacquetball2Of3 && (
+                                <span style={{ fontSize: '0.7rem', opacity: 0.5, fontWeight: 'normal' }}>
+                                  ({match.set1A}-{match.set1B}, {match.set2A}-{match.set2B}, {match.set3A}-{match.set3B})
+                                </span>
+                              )}
+                            </div>
+                          ) : '-- : --'}
                         </td>
                         <td style={{ padding: '15px 12px', textAlign: 'right' }}>
                           {match.winnerId ? (
@@ -777,30 +820,65 @@ const GroupDetails: React.FC = () => {
           }}>
             <h2 style={{ marginBottom: '2rem', color: 'white' }}>Registrar Resultado</h2>
             
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', marginBottom: '3rem' }}>
-              <div style={{ flex: 1, textAlign: 'right' }}>
-                <div style={{ fontSize: '1.2rem', marginBottom: '10px', fontWeight: 'bold' }}>{resultModal.rowPair?.name}</div>
-                <input 
-                  type="number" 
-                  className="input-field"
-                  style={{ width: '80px', fontSize: '2rem', textAlign: 'center', padding: '0.5rem' }}
-                  value={resultModal.scoreRow}
-                  onChange={(e) => setResultModal({ ...resultModal, scoreRow: e.target.value })}
-                  autoFocus
-                />
+            {!isRacquetball2Of3 ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', marginBottom: '3rem' }}>
+                <div style={{ flex: 1, textAlign: 'right' }}>
+                  <div style={{ fontSize: '1.2rem', marginBottom: '10px', fontWeight: 'bold' }}>{resultModal.rowPair?.name}</div>
+                  <input 
+                    type="number" 
+                    className="input-field"
+                    style={{ width: '80px', fontSize: '2rem', textAlign: 'center', padding: '0.5rem' }}
+                    value={resultModal.scoreRow}
+                    onChange={(e) => setResultModal({ ...resultModal, scoreRow: e.target.value })}
+                    autoFocus
+                  />
+                </div>
+                <div style={{ fontSize: '2rem', opacity: 0.3 }}>-</div>
+                <div style={{ flex: 1, textAlign: 'left' }}>
+                  <div style={{ fontSize: '1.2rem', marginBottom: '10px', fontWeight: 'bold' }}>{resultModal.colPair?.name}</div>
+                  <input 
+                    type="number" 
+                    className="input-field"
+                    style={{ width: '80px', fontSize: '2rem', textAlign: 'center', padding: '0.5rem' }}
+                    value={resultModal.scoreCol}
+                    onChange={(e) => setResultModal({ ...resultModal, scoreCol: e.target.value })}
+                  />
+                </div>
               </div>
-              <div style={{ fontSize: '2rem', opacity: 0.3 }}>-</div>
-              <div style={{ flex: 1, textAlign: 'left' }}>
-                <div style={{ fontSize: '1.2rem', marginBottom: '10px', fontWeight: 'bold' }}>{resultModal.colPair?.name}</div>
-                <input 
-                  type="number" 
-                  className="input-field"
-                  style={{ width: '80px', fontSize: '2rem', textAlign: 'center', padding: '0.5rem' }}
-                  value={resultModal.scoreCol}
-                  onChange={(e) => setResultModal({ ...resultModal, scoreCol: e.target.value })}
-                />
+            ) : (
+              <div style={{ marginBottom: '3rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1.5fr', gap: '1rem', alignItems: 'center', marginBottom: '1rem', opacity: 0.5, fontSize: '0.8rem' }}>
+                  <div style={{ textAlign: 'right' }}>Jugador A</div>
+                  <div style={{ textAlign: 'center' }}>Set A</div>
+                  <div style={{ textAlign: 'center' }}>Set B</div>
+                  <div style={{ textAlign: 'left' }}>Jugador B</div>
+                </div>
+
+                <SetRow label="Set 1" valA={resultModal.set1Row} valB={resultModal.set1Col} onChangeA={(v) => setResultModal({...resultModal, set1Row: v})} onChangeB={(v) => setResultModal({...resultModal, set1Col: v})} />
+                <SetRow label="Set 2" valA={resultModal.set2Row} valB={resultModal.set2Col} onChangeA={(v) => setResultModal({...resultModal, set2Row: v})} onChangeB={(v) => setResultModal({...resultModal, set2Col: v})} />
+                <SetRow label="Set 3" valA={resultModal.set3Row} valB={resultModal.set3Col} onChangeA={(v) => setResultModal({...resultModal, set3Row: v})} onChangeB={(v) => setResultModal({...resultModal, set3Col: v})} />
+
+                <div style={{ 
+                  marginTop: '2rem', padding: '1.5rem', background: 'rgba(255,255,255,0.02)', 
+                  borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  border: '1px solid rgba(255,255,255,0.05)'
+                }}>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontSize: '0.8rem', opacity: 0.5 }}>Total {resultModal.rowPair?.name}</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--primary)' }}>
+                      {(parseInt(resultModal.set1Row)||0) + (parseInt(resultModal.set2Row)||0) + (parseInt(resultModal.set3Row)||0)}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '1.2rem', opacity: 0.2 }}>Suma PF-PC</div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.8rem', opacity: 0.5 }}>Total {resultModal.colPair?.name}</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--primary)' }}>
+                      {(parseInt(resultModal.set1Col)||0) + (parseInt(resultModal.set2Col)||0) + (parseInt(resultModal.set3Col)||0)}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
 
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button 
@@ -814,9 +892,57 @@ const GroupDetails: React.FC = () => {
                 className="btn-primary" 
                 onClick={async () => {
                   const isRowPairA = resultModal.match!.pairA.id === resultModal.rowPair!.id;
-                  const pA = isRowPairA ? parseInt(resultModal.scoreRow) : parseInt(resultModal.scoreCol);
-                  const pB = isRowPairA ? parseInt(resultModal.scoreCol) : parseInt(resultModal.scoreRow);
-                  await handleUpdateResult(resultModal.match!.id, resultModal.match!.pairA.id, resultModal.match!.pairB.id, pA, pB);
+                  
+                  let pA, pB, s1A, s1B, s2A, s2B, s3A, s3B;
+
+                  if (isRacquetball2Of3) {
+                    s1A = isRowPairA ? parseInt(resultModal.set1Row)||0 : parseInt(resultModal.set1Col)||0;
+                    s1B = isRowPairA ? parseInt(resultModal.set1Col)||0 : parseInt(resultModal.set1Row)||0;
+                    s2A = isRowPairA ? parseInt(resultModal.set2Row)||0 : parseInt(resultModal.set2Col)||0;
+                    s2B = isRowPairA ? parseInt(resultModal.set2Col)||0 : parseInt(resultModal.set2Row)||0;
+                    s3A = isRowPairA ? parseInt(resultModal.set3Row)||0 : parseInt(resultModal.set3Col)||0;
+                    s3B = isRowPairA ? parseInt(resultModal.set3Col)||0 : parseInt(resultModal.set3Row)||0;
+
+                    // Validación de empates en sets
+                    if ((s1A === s1B && s1A + s1B > 0) || (s2A === s2B && s2A + s2B > 0) || (s3A === s3B && s3A + s3B > 0)) {
+                      alert("No se permiten empates en los sets.");
+                      return;
+                    }
+
+                    // Lógica de Ganador por Sets (2 de 3)
+                    const setsA = (s1A > s1B ? 1 : 0) + (s2A > s2B ? 1 : 0) + (s3A > s3B ? 1 : 0);
+                    const setsB = (s1B > s1A ? 1 : 0) + (s2B > s2A ? 1 : 0) + (s3B > s3A ? 1 : 0);
+
+                    if (setsA < 2 && setsB < 2) {
+                      alert("Un jugador debe ganar al menos 2 sets.");
+                      return;
+                    }
+
+                    // Si alguien ganó 2-0, el 3er set debe ser 0-0
+                    const winner20 = (s1A > s1B && s2A > s2B) || (s1B > s1A && s2B > s2A);
+                    if (winner20 && (s3A !== 0 || s3B !== 0)) {
+                      alert("Si un jugador ganó los primeros 2 sets, el 3er set debe quedar 0-0.");
+                      return;
+                    }
+                    
+                    // Si van 1-1, el 3er set es obligatorio
+                    const tieBreakerNeeded = (s1A > s1B && s2B > s2A) || (s1B > s1A && s2A > s2B);
+                    if (tieBreakerNeeded && s3A === 0 && s3B === 0) {
+                      alert("El tercer set es obligatorio ya que van 1-1.");
+                      return;
+                    }
+
+                    pA = s1A + s2A + s3A;
+                    pB = s1B + s2B + s3B;
+                  } else {
+                    pA = isRowPairA ? parseInt(resultModal.scoreRow) : parseInt(resultModal.scoreCol);
+                    pB = isRowPairA ? parseInt(resultModal.scoreCol) : parseInt(resultModal.scoreRow);
+                  }
+
+                  await handleUpdateResult(
+                    resultModal.match!.id, resultModal.match!.pairA.id, resultModal.match!.pairB.id, 
+                    pA, pB, s1A, s1B, s2A, s2B, s3A, s3B
+                  );
                   setResultModal({ ...resultModal, show: false });
                 }}
                 style={{ flex: 1 }}
@@ -921,5 +1047,20 @@ const GroupDetails: React.FC = () => {
     </div>
   );
 };
+
+const SetRow: React.FC<{ label: string; valA: string; valB: string; onChangeA: (v: string) => void; onChangeB: (v: string) => void }> = ({ label, valA, valB, onChangeA, onChangeB }) => (
+  <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1.5fr', gap: '1rem', alignItems: 'center', marginBottom: '0.8rem' }}>
+    <div style={{ textAlign: 'right', fontSize: '0.9rem', opacity: 0.7 }}>{label}</div>
+    <input 
+      type="number" className="input-field" style={{ textAlign: 'center', padding: '0.5rem' }} 
+      value={valA} onChange={(e) => onChangeA(e.target.value)} 
+    />
+    <input 
+      type="number" className="input-field" style={{ textAlign: 'center', padding: '0.5rem' }} 
+      value={valB} onChange={(e) => onChangeB(e.target.value)} 
+    />
+    <div />
+  </div>
+);
 
 export default GroupDetails;

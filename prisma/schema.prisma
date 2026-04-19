@@ -88,6 +88,12 @@ model Match {
   winnerId  String?
   pointsA   Int      @default(0)
   pointsB   Int      @default(0)
+  set1A     Int      @default(0)
+  set1B     Int      @default(0)
+  set2A     Int      @default(0)
+  set2B     Int      @default(0)
+  set3A     Int      @default(0)
+  set3B     Int      @default(0)
   createdAt DateTime @default(now())
   pairB     Pair     @relation("PairBMatches", fields: [pairBId], references: [id], onDelete: Cascade)
   pairA     Pair     @relation("PairAMatches", fields: [pairAId], references: [id], onDelete: Cascade)
@@ -107,6 +113,12 @@ model BracketMatch {
   winnerId    String?
   pointsA     Int      @default(0)
   pointsB     Int      @default(0)
+  set1A       Int      @default(0)
+  set1B       Int      @default(0)
+  set2A       Int      @default(0)
+  set2B       Int      @default(0)
+  set3A       Int      @default(0)
+  set3B       Int      @default(0)
   createdAt   DateTime @default(now())
   
   pairA       Pair?    @relation("BPairAMatches", fields: [pairAId], references: [id])

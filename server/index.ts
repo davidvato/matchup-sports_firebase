@@ -391,13 +391,24 @@ app.get('/api/brackets/:id', async (req, res) => {
 
 // Brackets: Update Match Result
 app.post('/api/bracket-matches/:id/result', async (req, res) => {
-  const { winnerId, pointsA, pointsB, nextMatchId, nextMatchPos } = req.body;
+  const { 
+    winnerId, pointsA, pointsB, nextMatchId, nextMatchPos,
+    set1A, set1B, set2A, set2B, set3A, set3B
+  } = req.body;
   // nextMatchPos: 'pairAId' or 'pairBId'
   try {
     await prisma.$transaction(async (tx) => {
       await tx.bracketMatch.update({
         where: { id: req.params.id },
-        data: { winnerId, pointsA, pointsB }
+        data: { 
+          winnerId, pointsA, pointsB,
+          set1A: set1A || 0,
+          set1B: set1B || 0,
+          set2A: set2A || 0,
+          set2B: set2B || 0,
+          set3A: set3A || 0,
+          set3B: set3B || 0
+        }
       });
 
       if (nextMatchId && winnerId) {
@@ -518,7 +529,10 @@ app.post('/api/brackets/:id/seed', async (req, res) => {
 
 // Matches: Update Result
 app.post('/api/matches/:id/result', async (req, res) => {
-  const { winnerId, pointsA, pointsB, pairAId, pairBId } = req.body;
+  const { 
+    winnerId, pointsA, pointsB, pairAId, pairBId,
+    set1A, set1B, set2A, set2B, set3A, set3B
+  } = req.body;
   const matchId = req.params.id;
 
   try {
@@ -526,7 +540,15 @@ app.post('/api/matches/:id/result', async (req, res) => {
       // 1. Update Match
       const match = await tx.match.update({
         where: { id: matchId },
-        data: { winnerId, pointsA, pointsB },
+        data: { 
+          winnerId, pointsA, pointsB,
+          set1A: set1A || 0,
+          set1B: set1B || 0,
+          set2A: set2A || 0,
+          set2B: set2B || 0,
+          set3A: set3A || 0,
+          set3B: set3B || 0
+        },
         include: { group: { include: { category: { include: { tournament: true } } } } }
       });
 
