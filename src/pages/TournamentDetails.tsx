@@ -39,6 +39,7 @@ interface Tournament {
   startDate: string;
   endDate: string;
   sport: string;
+  description?: string;
   categories: Category[];
 }
 
@@ -304,7 +305,12 @@ const TournamentDetails: React.FC = () => {
               <span className="badge" style={{ backgroundColor: 'rgba(0, 242, 254, 0.1)', color: 'var(--primary)', padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '1rem', display: 'inline-block' }}>
                 {tournament?.sport}
               </span>
-              <h1 className="gradient-text" style={{ fontSize: '4rem', margin: '0 0 1rem', lineHeight: 1 }}>{tournament?.name}</h1>
+              <h1 className="gradient-text" style={{ fontSize: '4rem', margin: '0 0 0.5rem', lineHeight: 1 }}>{tournament?.name}</h1>
+              {tournament?.description && (
+                <p style={{ fontSize: '1.2rem', opacity: 0.6, margin: '0 0 1.5rem', maxWidth: '800px', fontStyle: 'italic' }}>
+                   {tournament.description}
+                </p>
+              )}
               <div style={{ display: 'flex', gap: '2rem', opacity: 0.7 }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin size={18} /> {tournament?.location || 'Sin ubicación'}</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={18} /> {formatDate(tournament?.startDate!)} - {formatDate(tournament?.endDate!)}</span>

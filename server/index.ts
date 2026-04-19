@@ -46,7 +46,7 @@ app.get('/api/tournaments', async (req, res) => {
 // Tournaments: Create
 app.post('/api/tournaments', async (req, res) => {
   const { 
-    name, location, startDate, endDate, sport, creatorId, 
+    name, location, startDate, endDate, sport, description, creatorId, 
     categories 
   } = req.body;
   
@@ -62,6 +62,7 @@ app.post('/api/tournaments', async (req, res) => {
           startDate: startDate ? new Date(startDate) : null,
           endDate: endDate ? new Date(endDate) : null,
           sport,
+          description,
           creatorId: parseInt(creatorId)
         }
       });
@@ -551,6 +552,12 @@ app.post('/api/matches/:id/result', async (req, res) => {
 
             if (myPoints > opponentPoints) return total + 2;
             return total;
+          } else if (currentSport === 'racquetball') {
+            const isPairA = m.pairAId === pairId;
+            const myPoints = isPairA ? m.pointsA : m.pointsB;
+            const opponentPoints = isPairA ? m.pointsB : m.pointsA;
+            // Pts = PF - PC
+            return total + (myPoints - opponentPoints);
           } else {
             // Default: sum of points scored
             return total + (m.pairAId === pairId ? m.pointsA : m.pointsB);

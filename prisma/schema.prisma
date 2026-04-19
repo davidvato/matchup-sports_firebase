@@ -23,6 +23,7 @@ model Tournament {
   startDate   DateTime?
   endDate     DateTime?
   sport       String?
+  description String?
   createdAt   DateTime @default(now())
   creatorId   Int
   creator     User     @relation(fields: [creatorId], references: [id])

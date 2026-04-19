@@ -28,6 +28,8 @@ const TournamentCreation: React.FC = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [sport, setSport] = useState('Tenis');
+  const [description, setDescription] = useState('');
+  const [showRacquetModal, setShowRacquetModal] = useState(false);
 
   // Section 2: Categories
   const [categories, setCategories] = useState<CategoryConfig[]>([]);
@@ -84,6 +86,7 @@ const TournamentCreation: React.FC = () => {
           startDate,
           endDate,
           sport,
+          description,
           creatorId: user?.id,
           categories: categories.map(cat => ({
             ...cat,
@@ -157,7 +160,19 @@ const TournamentCreation: React.FC = () => {
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
                   <label style={{ display: 'block', marginBottom: '0.8rem', opacity: 0.7 }}>Deporte</label>
-                  <select className="input-field" value={sport} onChange={(e) => setSport(e.target.value)}>
+                  <select 
+                    className="input-field" 
+                    value={sport} 
+                    onChange={(e) => {
+                      const selectedSport = e.target.value;
+                      setSport(selectedSport);
+                      if (selectedSport === 'Racquetball') {
+                        setShowRacquetModal(true);
+                      } else {
+                        setDescription('');
+                      }
+                    }}
+                  >
                     <option>Basquetball</option>
                     <option>Front Tenis</option>
                     <option>Futbol</option>
@@ -169,6 +184,43 @@ const TournamentCreation: React.FC = () => {
                   </select>
                 </div>
               </div>
+              
+              {/* Racquetball Rules Modal */}
+              {showRacquetModal && (
+                <div style={{
+                  position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                  background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                }}>
+                  <div className="glass-card fadeIn" style={{ padding: '3rem', maxWidth: '600px', border: '1px solid var(--primary)' }}>
+                    <h3 style={{ marginTop: 0, marginBottom: '2rem', textAlign: 'center' }}>Selecciona el Tipo de Torneo de Racquetball</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      <button 
+                        className="btn-primary" 
+                        style={{ background: description === '2 de 3 sets a 15 puntos con cambios' ? 'var(--primary)' : 'rgba(255,255,255,0.05)', color: description === '2 de 3 sets a 15 puntos con cambios' ? '#000' : 'white' }}
+                        onClick={() => setDescription('2 de 3 sets a 15 puntos con cambios')}
+                      >
+                        2 de 3 sets a 15 puntos con cambios
+                      </button>
+                      <button 
+                        className="btn-primary" 
+                        style={{ background: description === '3 de 5 sets a 11 puntos, punto directo, con diferencia de dos puntos' ? 'var(--primary)' : 'rgba(255,255,255,0.05)', color: description === '3 de 5 sets a 11 puntos, punto directo, con diferencia de dos puntos' ? '#000' : 'white' }}
+                        onClick={() => setDescription('3 de 5 sets a 11 puntos, punto directo, con diferencia de dos puntos')}
+                      >
+                        3 de 5 sets a 11 puntos, punto directo, con diferencia de dos puntos
+                      </button>
+                    </div>
+                    <button 
+                      className="btn-primary" 
+                      disabled={!description}
+                      onClick={() => setShowRacquetModal(false)}
+                      style={{ width: '100%', marginTop: '3rem', background: 'var(--primary)', color: '#000' }}
+                    >
+                      Confirmar Selección
+                    </button>
+                  </div>
+                </div>
+              )}
               <button className="btn-primary" onClick={nextStep} disabled={!name} style={{ width: '100%', marginTop: '3rem', padding: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                 Continuar a Categorías <ArrowRight size={20} />
               </button>

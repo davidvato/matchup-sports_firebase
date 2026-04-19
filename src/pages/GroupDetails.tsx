@@ -24,6 +24,24 @@ interface FootballStats {
   pts: number;
 }
 
+interface BasketballStats {
+  pj: number;
+  g: number;
+  p: number;
+  pf: number;
+  pc: number;
+  pts: number;
+}
+
+interface RacquetballStats {
+  pj: number;
+  g: number;
+  p: number;
+  pf: number;
+  pc: number;
+  pts: number;
+}
+
 interface Match {
   id: string;
   pairA: Pair;
@@ -187,6 +205,16 @@ const GroupDetails: React.FC = () => {
   };
 
   const handleUpdateResult = async (matchId: string, pairAId: string, pairBId: string, pointsA: number, pointsB: number) => {
+    if ((isBasketball || isRacquetball) && pointsA === pointsB) {
+      setConfirmModal({
+        show: true,
+        title: 'Empate no permitido',
+        message: `En ${isBasketball ? 'básquetbol' : 'racquetball'} no puede haber empates. Por favor ingresa un ganador.`,
+        onConfirm: () => {}
+      });
+      return;
+    }
+
     const winnerId = pointsA > pointsB ? pairAId : (pointsB > pointsA ? pairBId : 'DRAW');
     try {
       const res = await fetch(`http://localhost:3001/api/matches/${matchId}/result`, {
@@ -219,6 +247,8 @@ const GroupDetails: React.FC = () => {
   if (loading) return <div style={{ color: 'white', textAlign: 'center', padding: '100px' }}>Cargando grupo...</div>;
 
   const isFootball = group?.category?.tournament?.sport?.toLowerCase() === 'futbol';
+  const isBasketball = group?.category?.tournament?.sport?.toLowerCase() === 'basquetball';
+  const isRacquetball = group?.category?.tournament?.sport?.toLowerCase() === 'racquetball';
 
   const getFootballStats = (pairId: string): FootballStats => {
     const stats = { pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, dg: 0, pts: 0 };
@@ -258,6 +288,65 @@ const GroupDetails: React.FC = () => {
     return stats;
   };
 
+  const getBasketballStats = (pairId: string): BasketballStats => {
+    const stats = { pj: 0, g: 0, p: 0, pf: 0, pc: 0, pts: 0 };
+    if (!group) return stats;
+
+    group.matches.forEach(m => {
+      if (!m.winnerId) return; // In basketball we don't handle 'DRAW' in groups
+      
+      const isPairA = m.pairA.id === pairId;
+      const isPairB = m.pairB.id === pairId;
+      if (!isPairA && !isPairB) return;
+
+      stats.pj++;
+      const selfPoints = isPairA ? m.pointsA : m.pointsB;
+      const oppPoints = isPairA ? m.pointsB : m.pointsA;
+
+      stats.pf += selfPoints;
+      stats.pc += oppPoints;
+
+      if (selfPoints > oppPoints) {
+        stats.g++;
+        stats.pts += 2;
+      } else {
+        stats.p++;
+        stats.pts += 0;
+      }
+    });
+
+    return stats;
+  };
+
+  const getRacquetballStats = (pairId: string): RacquetballStats => {
+    const stats = { pj: 0, g: 0, p: 0, pf: 0, pc: 0, pts: 0 };
+    if (!group) return stats;
+
+    group.matches.forEach(m => {
+      if (!m.winnerId) return;
+      
+      const isPairA = m.pairA.id === pairId;
+      const isPairB = m.pairB.id === pairId;
+      if (!isPairA && !isPairB) return;
+
+      stats.pj++;
+      const selfPoints = isPairA ? m.pointsA : m.pointsB;
+      const oppPoints = isPairA ? m.pointsB : m.pointsA;
+
+      stats.pf += selfPoints;
+      stats.pc += oppPoints;
+
+      if (selfPoints > oppPoints) {
+        stats.g++;
+      } else {
+        stats.p++;
+      }
+    });
+
+    stats.pts = stats.pf - stats.pc;
+    return stats;
+  };
+
   const standings = [...(group?.pairs || [])].sort((a, b) => {
     if (isFootball) {
       const statsA = getFootballStats(a.id);
@@ -266,6 +355,20 @@ const GroupDetails: React.FC = () => {
       if (statsB.pts !== statsA.pts) return statsB.pts - statsA.pts;
       if (statsB.dg !== statsA.dg) return statsB.dg - statsA.dg;
       return statsB.gf - statsA.gf;
+    }
+    if (isBasketball) {
+      const statsA = getBasketballStats(a.id);
+      const statsB = getBasketballStats(b.id);
+      
+      if (statsB.pts !== statsA.pts) return statsB.pts - statsA.pts;
+      return statsB.g - statsA.g;
+    }
+    if (isRacquetball) {
+      const statsA = getRacquetballStats(a.id);
+      const statsB = getRacquetballStats(b.id);
+      
+      if (statsB.pts !== statsA.pts) return statsB.pts - statsA.pts;
+      return statsB.g - statsA.g;
     }
     return b.totalScore - a.totalScore;
   });
@@ -406,7 +509,7 @@ const GroupDetails: React.FC = () => {
                             >
                               {isFinished && (
                                 <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                  {isDraw ? (
+                                  {isDraw && !isBasketball && !isRacquetball ? (
                                     <span style={{ color: '#ffcc00', fontWeight: 'bold', fontSize: '1.2rem' }}>E</span>
                                   ) : (
                                     <Trophy size={20} color={isWinner ? '#4ade80' : '#ff4b2b'} />
@@ -490,6 +593,22 @@ const GroupDetails: React.FC = () => {
                         <th style={{ padding: '10px 5px', textAlign: 'center' }}>DG</th>
                         <th style={{ padding: '10px 5px', textAlign: 'right' }}>Pts</th>
                       </>
+                    ) : isBasketball ? (
+                      <>
+                        <th style={{ padding: '10px 5px', textAlign: 'center' }}>PJ</th>
+                        <th style={{ padding: '10px 5px', textAlign: 'center' }}>PG</th>
+                        <th style={{ padding: '10px 5px', textAlign: 'center' }}>PP</th>
+                        <th style={{ padding: '10px 5px', textAlign: 'right' }}>Pts</th>
+                      </>
+                    ) : isRacquetball ? (
+                      <>
+                        <th style={{ padding: '10px 5px', textAlign: 'center' }}>PJ</th>
+                        <th style={{ padding: '10px 5px', textAlign: 'center' }}>PG</th>
+                        <th style={{ padding: '10px 5px', textAlign: 'center' }}>PP</th>
+                        <th style={{ padding: '10px 5px', textAlign: 'center' }}>PF</th>
+                        <th style={{ padding: '10px 5px', textAlign: 'center' }}>PC</th>
+                        <th style={{ padding: '10px 5px', textAlign: 'right' }}>Pts</th>
+                      </>
                     ) : (
                       <th style={{ padding: '10px 5px', textAlign: 'right' }}>Pts</th>
                     )}
@@ -497,21 +616,39 @@ const GroupDetails: React.FC = () => {
                 </thead>
                 <tbody>
                   {standings.map((pair, idx) => {
-                    const stats = isFootball ? getFootballStats(pair.id) : null;
+                    const statsF = isFootball ? getFootballStats(pair.id) : null;
+                    const statsB = isBasketball ? getBasketballStats(pair.id) : null;
+                    const statsR = isRacquetball ? getRacquetballStats(pair.id) : null;
                     return (
                       <tr key={pair.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: idx === 0 ? 'rgba(0, 242, 254, 0.05)' : 'transparent' }}>
                         <td style={{ padding: '12px 5px', opacity: 0.5, fontSize: '0.8rem' }}>{idx + 1}</td>
                         <td style={{ padding: '12px 5px', fontWeight: idx === 0 ? 'bold' : 'normal', fontSize: '0.8rem', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pair.name}</td>
-                        {isFootball && stats ? (
+                        {isFootball && statsF ? (
                           <>
-                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{stats.pj}</td>
-                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{stats.g}</td>
-                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{stats.e}</td>
-                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{stats.p}</td>
-                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{stats.gf}</td>
-                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{stats.gc}</td>
-                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{stats.dg}</td>
-                            <td style={{ padding: '12px 5px', textAlign: 'right', color: 'var(--primary)', fontWeight: 'bold' }}>{stats.pts}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{statsF.pj}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{statsF.g}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{statsF.e}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{statsF.p}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{statsF.gf}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{statsF.gc}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{statsF.dg}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'right', color: 'var(--primary)', fontWeight: 'bold' }}>{statsF.pts}</td>
+                          </>
+                        ) : isBasketball && statsB ? (
+                          <>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{statsB.pj}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{statsB.g}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{statsB.p}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'right', color: 'var(--primary)', fontWeight: 'bold' }}>{statsB.pts}</td>
+                          </>
+                        ) : isRacquetball && statsR ? (
+                          <>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{statsR.pj}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{statsR.g}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{statsR.p}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{statsR.pf}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'center', fontSize: '0.8rem' }}>{statsR.pc}</td>
+                            <td style={{ padding: '12px 5px', textAlign: 'right', color: 'var(--primary)', fontWeight: 'bold' }}>{statsR.pts}</td>
                           </>
                         ) : (
                           <td style={{ padding: '12px 5px', textAlign: 'right', color: 'var(--primary)', fontWeight: 'bold' }}>{pair.totalScore}</td>
