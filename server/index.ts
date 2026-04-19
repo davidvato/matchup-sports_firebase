@@ -393,7 +393,7 @@ app.get('/api/brackets/:id', async (req, res) => {
 app.post('/api/bracket-matches/:id/result', async (req, res) => {
   const { 
     winnerId, pointsA, pointsB, nextMatchId, nextMatchPos,
-    set1A, set1B, set2A, set2B, set3A, set3B
+    set1A, set1B, set2A, set2B, set3A, set3B, set4A, set4B, set5A, set5B
   } = req.body;
   // nextMatchPos: 'pairAId' or 'pairBId'
   try {
@@ -407,7 +407,11 @@ app.post('/api/bracket-matches/:id/result', async (req, res) => {
           set2A: set2A || 0,
           set2B: set2B || 0,
           set3A: set3A || 0,
-          set3B: set3B || 0
+          set3B: set3B || 0,
+          set4A: set4A || 0,
+          set4B: set4B || 0,
+          set5A: set5A || 0,
+          set5B: set5B || 0
         }
       });
 
@@ -531,7 +535,7 @@ app.post('/api/brackets/:id/seed', async (req, res) => {
 app.post('/api/matches/:id/result', async (req, res) => {
   const { 
     winnerId, pointsA, pointsB, pairAId, pairBId,
-    set1A, set1B, set2A, set2B, set3A, set3B
+    set1A, set1B, set2A, set2B, set3A, set3B, set4A, set4B, set5A, set5B
   } = req.body;
   const matchId = req.params.id;
 
@@ -547,7 +551,11 @@ app.post('/api/matches/:id/result', async (req, res) => {
           set2A: set2A || 0,
           set2B: set2B || 0,
           set3A: set3A || 0,
-          set3B: set3B || 0
+          set3B: set3B || 0,
+          set4A: set4A || 0,
+          set4B: set4B || 0,
+          set5A: set5A || 0,
+          set5B: set5B || 0
         },
         include: { group: { include: { category: { include: { tournament: true } } } } }
       });

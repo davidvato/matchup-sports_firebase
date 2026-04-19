@@ -55,6 +55,10 @@ interface Match {
   set2B: number;
   set3A: number;
   set3B: number;
+  set4A: number;
+  set4B: number;
+  set5A: number;
+  set5B: number;
 }
 
 interface Group {
@@ -104,7 +108,11 @@ const GroupDetails: React.FC = () => {
     set2Row: '0',
     set2Col: '0',
     set3Row: '0',
-    set3Col: '0'
+    set3Col: '0',
+    set4Row: '0',
+    set4Col: '0',
+    set5Row: '0',
+    set5Col: '0'
   });
   const [confirmModal, setConfirmModal] = useState<{
     show: boolean;
@@ -233,7 +241,9 @@ const GroupDetails: React.FC = () => {
     pointsA: number, pointsB: number,
     set1A?: number, set1B?: number,
     set2A?: number, set2B?: number,
-    set3A?: number, set3B?: number
+    set3A?: number, set3B?: number,
+    set4A?: number, set4B?: number,
+    set5A?: number, set5B?: number
   ) => {
     if ((isBasketball || isRacquetball) && pointsA === pointsB) {
       setConfirmModal({
@@ -252,7 +262,9 @@ const GroupDetails: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           winnerId, pointsA, pointsB, pairAId, pairBId,
-          set1A, set1B, set2A, set2B, set3A, set3B
+          set1A, set1B, set2A, set2B, 
+          set3A, set3B, set4A, set4B,
+          set5A, set5B
         })
       });
       if (res.ok) fetchGroup();
@@ -283,6 +295,7 @@ const GroupDetails: React.FC = () => {
   const isBasketball = group?.category?.tournament?.sport?.toLowerCase() === 'basquetball';
   const isRacquetball = group?.category?.tournament?.sport?.toLowerCase() === 'racquetball';
   const isRacquetball2Of3 = isRacquetball && group?.category?.tournament?.description === '2 de 3 sets a 15 puntos con cambios';
+  const isRacquetball3Of5 = isRacquetball && group?.category?.tournament?.description === '3 de 5 sets a 11 puntos, punto directo, con diferencia de dos puntos';
 
   const getFootballStats = (pairId: string): FootballStats => {
     const stats = { pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, dg: 0, pts: 0 };
@@ -518,7 +531,11 @@ const GroupDetails: React.FC = () => {
                                     set2Row: String(isRowPairA ? match.set2A : match.set2B),
                                     set2Col: String(isRowPairA ? match.set2B : match.set2A),
                                     set3Row: String(isRowPairA ? match.set3A : match.set3B),
-                                    set3Col: String(isRowPairA ? match.set3B : match.set3A)
+                                    set3Col: String(isRowPairA ? match.set3B : match.set3A),
+                                    set4Row: String(isRowPairA ? match.set4A : match.set4B),
+                                    set4Col: String(isRowPairA ? match.set4B : match.set4A),
+                                    set5Row: String(isRowPairA ? match.set5A : match.set5B),
+                                    set5Col: String(isRowPairA ? match.set5B : match.set5A)
                                   });
                                 }
                               }}
@@ -600,6 +617,11 @@ const GroupDetails: React.FC = () => {
                               {isRacquetball2Of3 && (
                                 <span style={{ fontSize: '0.7rem', opacity: 0.5, fontWeight: 'normal' }}>
                                   ({match.set1A}-{match.set1B}, {match.set2A}-{match.set2B}, {match.set3A}-{match.set3B})
+                                </span>
+                              )}
+                              {isRacquetball3Of5 && (
+                                <span style={{ fontSize: '0.7rem', opacity: 0.5, fontWeight: 'normal' }}>
+                                  ({match.set1A}-{match.set1B}, {match.set2A}-{match.set2B}, {match.set3A}-{match.set3B}, {match.set4A}-{match.set4B}, {match.set5A}-{match.set5B})
                                 </span>
                               )}
                             </div>
@@ -826,7 +848,7 @@ const GroupDetails: React.FC = () => {
           }}>
             <h2 style={{ marginBottom: '2rem', color: 'white' }}>Registrar Resultado</h2>
 
-            {!isRacquetball2Of3 ? (
+            {(!isRacquetball2Of3 && !isRacquetball3Of5) ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', marginBottom: '3rem' }}>
                 <div style={{ flex: 1, textAlign: 'right' }}>
                   <div style={{ fontSize: '1.2rem', marginBottom: '10px', fontWeight: 'bold' }}>{resultModal.rowPair?.name}</div>
@@ -851,7 +873,7 @@ const GroupDetails: React.FC = () => {
                   />
                 </div>
               </div>
-            ) : (
+            ) : isRacquetball2Of3 ? (
               <div style={{ marginBottom: '3rem' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1.5fr', gap: '1rem', alignItems: 'center', marginBottom: '1rem', opacity: 0.5, fontSize: '0.8rem' }}>
                   <div style={{ textAlign: 'right' }}>Jugador A</div>
@@ -884,7 +906,42 @@ const GroupDetails: React.FC = () => {
                   </div>
                 </div>
               </div>
-            )}
+            ) : isRacquetball3Of5 ? (
+              <div style={{ marginBottom: '3rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1.5fr', gap: '0.8rem', alignItems: 'center', marginBottom: '1rem', opacity: 0.5, fontSize: '0.8rem' }}>
+                  <div style={{ textAlign: 'right' }}>{resultModal.rowPair?.name}</div>
+                  <div style={{ textAlign: 'center' }}>Sets</div>
+                  <div style={{ textAlign: 'center' }}>Sets</div>
+                  <div style={{ textAlign: 'left' }}>{resultModal.colPair?.name}</div>
+                </div>
+
+                <SetRow label="Set 1" valA={resultModal.set1Row} valB={resultModal.set1Col} onChangeA={(v) => setResultModal({ ...resultModal, set1Row: v })} onChangeB={(v) => setResultModal({ ...resultModal, set1Col: v })} />
+                <SetRow label="Set 2" valA={resultModal.set2Row} valB={resultModal.set2Col} onChangeA={(v) => setResultModal({ ...resultModal, set2Row: v })} onChangeB={(v) => setResultModal({ ...resultModal, set2Col: v })} />
+                <SetRow label="Set 3" valA={resultModal.set3Row} valB={resultModal.set3Col} onChangeA={(v) => setResultModal({ ...resultModal, set3Row: v })} onChangeB={(v) => setResultModal({ ...resultModal, set3Col: v })} />
+                <SetRow label="Set 4" valA={resultModal.set4Row} valB={resultModal.set4Col} onChangeA={(v) => setResultModal({ ...resultModal, set4Row: v })} onChangeB={(v) => setResultModal({ ...resultModal, set4Col: v })} />
+                <SetRow label="Set 5" valA={resultModal.set5Row} valB={resultModal.set5Col} onChangeA={(v) => setResultModal({ ...resultModal, set5Row: v })} onChangeB={(v) => setResultModal({ ...resultModal, set5Col: v })} />
+
+                <div style={{
+                  marginTop: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.02)',
+                  borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  border: '1px solid rgba(255,255,255,0.05)'
+                }}>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontSize: '0.7rem', opacity: 0.5 }}>Total {resultModal.rowPair?.name}</div>
+                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary)' }}>
+                      {(parseInt(resultModal.set1Row) || 0) + (parseInt(resultModal.set2Row) || 0) + (parseInt(resultModal.set3Row) || 0) + (parseInt(resultModal.set4Row) || 0) + (parseInt(resultModal.set5Row) || 0)}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '1rem', opacity: 0.2 }}>Suma Puntos</div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.7rem', opacity: 0.5 }}>Total {resultModal.colPair?.name}</div>
+                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary)' }}>
+                      {(parseInt(resultModal.set1Col) || 0) + (parseInt(resultModal.set2Col) || 0) + (parseInt(resultModal.set3Col) || 0) + (parseInt(resultModal.set4Col) || 0) + (parseInt(resultModal.set5Col) || 0)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button
@@ -899,7 +956,7 @@ const GroupDetails: React.FC = () => {
                 onClick={async () => {
                   const isRowPairA = resultModal.match!.pairA.id === resultModal.rowPair!.id;
 
-                  let pA, pB, s1A, s1B, s2A, s2B, s3A, s3B;
+                  let pA, pB, s1A, s1B, s2A, s2B, s3A, s3B, s4A, s4B, s5A, s5B;
 
                   if (isRacquetball2Of3) {
                     s1A = isRowPairA ? parseInt(resultModal.set1Row) || 0 : parseInt(resultModal.set1Col) || 0;
@@ -960,6 +1017,103 @@ const GroupDetails: React.FC = () => {
 
                     pA = s1A + s2A + s3A;
                     pB = s1B + s2B + s3B;
+                  } else if (isRacquetball3Of5) {
+                    s1A = isRowPairA ? parseInt(resultModal.set1Row) || 0 : parseInt(resultModal.set1Col) || 0;
+                    s1B = isRowPairA ? parseInt(resultModal.set1Col) || 0 : parseInt(resultModal.set1Row) || 0;
+                    s2A = isRowPairA ? parseInt(resultModal.set2Row) || 0 : parseInt(resultModal.set2Col) || 0;
+                    s2B = isRowPairA ? parseInt(resultModal.set2Col) || 0 : parseInt(resultModal.set2Row) || 0;
+                    s3A = isRowPairA ? parseInt(resultModal.set3Row) || 0 : parseInt(resultModal.set3Col) || 0;
+                    s3B = isRowPairA ? parseInt(resultModal.set3Col) || 0 : parseInt(resultModal.set3Row) || 0;
+                    s4A = isRowPairA ? parseInt(resultModal.set4Row) || 0 : parseInt(resultModal.set4Col) || 0;
+                    s4B = isRowPairA ? parseInt(resultModal.set4Col) || 0 : parseInt(resultModal.set4Row) || 0;
+                    s5A = isRowPairA ? parseInt(resultModal.set5Row) || 0 : parseInt(resultModal.set5Col) || 0;
+                    s5B = isRowPairA ? parseInt(resultModal.set5Col) || 0 : parseInt(resultModal.set5Row) || 0;
+
+                    // Validación de empates y diferencia de 2 puntos en sets
+                    const sets = [
+                      { a: s1A, b: s1B, label: 'Set 1' },
+                      { a: s2A, b: s2B, label: 'Set 2' },
+                      { a: s3A, b: s3B, label: 'Set 3' },
+                      { a: s4A, b: s4B, label: 'Set 4' },
+                      { a: s5A, b: s5B, label: 'Set 5' }
+                    ];
+
+                    for (const set of sets) {
+                      if (set.a === 0 && set.b === 0) continue;
+                      
+                      if (set.a === set.b) {
+                        setConfirmModal({
+                          show: true,
+                          title: 'Empate no permitido',
+                          message: `No se permiten empates en los sets en Racquetball (${set.label}).`,
+                          onConfirm: () => { }
+                        });
+                        return;
+                      }
+
+                      const maxVal = Math.max(set.a, set.b);
+                      const minVal = Math.min(set.a, set.b);
+                      
+                      if (maxVal < 11) {
+                        setConfirmModal({
+                          show: true,
+                          title: `${set.label} incompleto`,
+                          message: `El ganador del set debe llegar al menos a 11 puntos.`,
+                          onConfirm: () => { }
+                        });
+                        return;
+                      }
+
+                      if (maxVal - minVal < 2) {
+                        setConfirmModal({
+                          show: true,
+                          title: `Diferencia de puntos insuficiente`,
+                          message: `El ganador del set (${set.label}) debe tener al menos 2 puntos de diferencia (ej: 11-9, 12-10).`,
+                          onConfirm: () => { }
+                        });
+                        return;
+                      }
+                    }
+
+                    // Lógica de Ganador por Sets (3 de 5)
+                    const setsA = sets.filter(s => s.a > s.b).length;
+                    const setsB = sets.filter(s => s.b > s.a).length;
+
+                    if (setsA < 3 && setsB < 3) {
+                      setConfirmModal({
+                        show: true,
+                        title: 'Jugador debe ganar 3 sets',
+                        message: 'Un jugador debe ganar al menos 3 sets para registrar el resultado final.',
+                        onConfirm: () => { }
+                      });
+                      return;
+                    }
+
+                    // Validación de sets extra (pueden ser 0-0 si ya se ganó)
+                    if (setsA === 3) {
+                      if ((s1A > s1B && s2A > s2B && s3A > s3B) && (s4A !== 0 || s4B !== 0 || s5A !== 0 || s5B !== 0)) {
+                         setConfirmModal({ show: true, title: 'Error en resultados', message: 'Como el Jugador A ganó 3-0, los sets 4 y 5 deben quedar 0-0.', onConfirm: () => {} });
+                         return;
+                      }
+                      const wonIn4 = setsA === 3 && setsB === 1;
+                      if (wonIn4 && (s5A !== 0 || s5B !== 0)) {
+                         setConfirmModal({ show: true, title: 'Error en resultados', message: 'Como el Jugador A ganó 3-1, el set 5 debe quedar 0-0.', onConfirm: () => {} });
+                         return;
+                      }
+                    } else if (setsB === 3) {
+                      if ((s1B > s1A && s2B > s2A && s3B > s3A) && (s4A !== 0 || s4B !== 0 || s5A !== 0 || s5B !== 0)) {
+                         setConfirmModal({ show: true, title: 'Error en resultados', message: 'Como el Jugador B ganó 3-0, los sets 4 y 5 deben quedar 0-0.', onConfirm: () => {} });
+                         return;
+                      }
+                      const wonIn4 = setsB === 3 && setsA === 1;
+                      if (wonIn4 && (s5A !== 0 || s5B !== 0)) {
+                         setConfirmModal({ show: true, title: 'Error en resultados', message: 'Como el Jugador B ganó 3-1, el set 5 debe quedar 0-0.', onConfirm: () => {} });
+                         return;
+                      }
+                    }
+
+                    pA = s1A + s2A + s3A + s4A + s5A;
+                    pB = s1B + s2B + s3B + s4B + s5B;
                   } else {
                     pA = isRowPairA ? parseInt(resultModal.scoreRow) : parseInt(resultModal.scoreCol);
                     pB = isRowPairA ? parseInt(resultModal.scoreCol) : parseInt(resultModal.scoreRow);
@@ -967,7 +1121,7 @@ const GroupDetails: React.FC = () => {
 
                   await handleUpdateResult(
                     resultModal.match!.id, resultModal.match!.pairA.id, resultModal.match!.pairB.id,
-                    pA, pB, s1A, s1B, s2A, s2B, s3A, s3B
+                    pA, pB, s1A, s1B, s2A, s2B, s3A, s3B, s4A, s4B, s5A, s5B
                   );
                   setResultModal({ ...resultModal, show: false });
                 }}
