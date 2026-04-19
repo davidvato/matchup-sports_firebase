@@ -61,7 +61,7 @@ interface Group {
   id: string;
   name: string;
   categoryId: string;
-  category: { 
+  category: {
     tournamentId: string;
     tournament: { sport: string; description: string };
   };
@@ -115,7 +115,7 @@ const GroupDetails: React.FC = () => {
     show: false,
     title: '',
     message: '',
-    onConfirm: () => {}
+    onConfirm: () => { }
   });
 
   useEffect(() => {
@@ -127,7 +127,7 @@ const GroupDetails: React.FC = () => {
       const res = await fetch(`http://localhost:3001/api/groups/${id}`);
       const data = await res.json();
       setGroup(data);
-      
+
       // Fetch category pairs to see who is available
       if (data.categoryId) {
         const catRes = await fetch(`http://localhost:3001/api/categories/${data.categoryId}`);
@@ -142,14 +142,20 @@ const GroupDetails: React.FC = () => {
     }
   };
 
-  const handleDeleteGroup = async () => {
-    if (!window.confirm('¿Estás seguro de eliminar este grupo?')) return;
-    try {
-      const res = await fetch(`http://localhost:3001/api/groups/${id}`, { method: 'DELETE' });
-      if (res.ok) navigate(`/tournament/${group?.category.tournamentId}`);
-    } catch (err) {
-      console.error(err);
-    }
+  const handleDeleteGroup = () => {
+    setConfirmModal({
+      show: true,
+      title: 'Eliminar Grupo',
+      message: '¿Estás seguro de eliminar este grupo? Esta acción borrará todos sus partidos asociados.',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`http://localhost:3001/api/groups/${id}`, { method: 'DELETE' });
+          if (res.ok) navigate(`/tournament/${group?.category.tournamentId}`);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    });
   };
 
   const handleBatchAdd = async () => {
@@ -172,7 +178,7 @@ const GroupDetails: React.FC = () => {
 
   const togglePairSelection = (pair: Pair) => {
     const isSelected = selectedPairs.includes(pair.id);
-    
+
     if (!isSelected) {
       // Check for existing assignments
       let warningMessage = '';
@@ -193,14 +199,14 @@ const GroupDetails: React.FC = () => {
           title: 'Jugador ya asignado',
           message: `${warningMessage}\n\n¿Deseas seleccionarlo de todas formas? Se moverá a este grupo al guardar.`,
           onConfirm: () => {
-             setSelectedPairs(prev => [...prev, pair.id]);
+            setSelectedPairs(prev => [...prev, pair.id]);
           }
         });
         return;
       }
     }
 
-    setSelectedPairs(prev => 
+    setSelectedPairs(prev =>
       prev.includes(pair.id) ? prev.filter(id => id !== pair.id) : [...prev, pair.id]
     );
   };
@@ -223,7 +229,7 @@ const GroupDetails: React.FC = () => {
   };
 
   const handleUpdateResult = async (
-    matchId: string, pairAId: string, pairBId: string, 
+    matchId: string, pairAId: string, pairBId: string,
     pointsA: number, pointsB: number,
     set1A?: number, set1B?: number,
     set2A?: number, set2B?: number,
@@ -234,7 +240,7 @@ const GroupDetails: React.FC = () => {
         show: true,
         title: 'Empate no permitido',
         message: `En ${isBasketball ? 'básquetbol' : 'racquetball'} no puede haber empates. Por favor ingresa un ganador.`,
-        onConfirm: () => {}
+        onConfirm: () => { }
       });
       return;
     }
@@ -244,7 +250,7 @@ const GroupDetails: React.FC = () => {
       const res = await fetch(`http://localhost:3001/api/matches/${matchId}/result`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           winnerId, pointsA, pointsB, pairAId, pairBId,
           set1A, set1B, set2A, set2B, set3A, set3B
         })
@@ -289,7 +295,7 @@ const GroupDetails: React.FC = () => {
       } else if (!m.winnerId) {
         return; // Other null winner cases are not played
       }
-      
+
       const isPairA = m.pairA.id === pairId;
       const isPairB = m.pairB.id === pairId;
       if (!isPairA && !isPairB) return;
@@ -322,7 +328,7 @@ const GroupDetails: React.FC = () => {
 
     group.matches.forEach(m => {
       if (!m.winnerId) return; // In basketball we don't handle 'DRAW' in groups
-      
+
       const isPairA = m.pairA.id === pairId;
       const isPairB = m.pairB.id === pairId;
       if (!isPairA && !isPairB) return;
@@ -352,7 +358,7 @@ const GroupDetails: React.FC = () => {
 
     group.matches.forEach(m => {
       if (!m.winnerId) return;
-      
+
       const isPairA = m.pairA.id === pairId;
       const isPairB = m.pairB.id === pairId;
       if (!isPairA && !isPairB) return;
@@ -379,7 +385,7 @@ const GroupDetails: React.FC = () => {
     if (isFootball) {
       const statsA = getFootballStats(a.id);
       const statsB = getFootballStats(b.id);
-      
+
       if (statsB.pts !== statsA.pts) return statsB.pts - statsA.pts;
       if (statsB.dg !== statsA.dg) return statsB.dg - statsA.dg;
       return statsB.gf - statsA.gf;
@@ -387,14 +393,14 @@ const GroupDetails: React.FC = () => {
     if (isBasketball) {
       const statsA = getBasketballStats(a.id);
       const statsB = getBasketballStats(b.id);
-      
+
       if (statsB.pts !== statsA.pts) return statsB.pts - statsA.pts;
       return statsB.g - statsA.g;
     }
     if (isRacquetball) {
       const statsA = getRacquetballStats(a.id);
       const statsB = getRacquetballStats(b.id);
-      
+
       if (statsB.pts !== statsA.pts) return statsB.pts - statsA.pts;
       return statsB.g - statsA.g;
     }
@@ -415,14 +421,14 @@ const GroupDetails: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
               <h1 className="gradient-text" style={{ fontSize: '3rem', margin: 0 }}>{group?.name}</h1>
               {isAdmin && (
-                <button 
+                <button
                   onClick={handleDeleteGroup}
-                  style={{ 
-                    background: 'rgba(255, 71, 87, 0.1)', 
-                    border: '1px solid rgba(255, 71, 87, 0.3)', 
-                    color: '#ff4757', 
-                    padding: '8px', 
-                    borderRadius: '8px', 
+                  style={{
+                    background: 'rgba(255, 71, 87, 0.1)',
+                    border: '1px solid rgba(255, 71, 87, 0.3)',
+                    color: '#ff4757',
+                    padding: '8px',
+                    borderRadius: '8px',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -453,7 +459,7 @@ const GroupDetails: React.FC = () => {
         </header>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '2.5rem' }}>
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             {/* Matches Section: Matrix View */}
             <section>
@@ -482,8 +488,8 @@ const GroupDetails: React.FC = () => {
                           if (rowPair.id === colPair.id) {
                             return <td key={colPair.id} style={{ border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.05)' }}></td>;
                           }
-                          
-                          const match = group.matches.find(m => 
+
+                          const match = group.matches.find(m =>
                             (m.pairA.id === rowPair.id && m.pairB.id === colPair.id) ||
                             (m.pairA.id === colPair.id && m.pairB.id === rowPair.id)
                           );
@@ -495,8 +501,8 @@ const GroupDetails: React.FC = () => {
                           const isFinished = !!match.winnerId;
 
                           return (
-                            <td 
-                              key={colPair.id} 
+                            <td
+                              key={colPair.id}
                               onClick={() => {
                                 if (isAdmin) {
                                   const isRowPairA = match.pairA.id === rowPair.id;
@@ -516,9 +522,9 @@ const GroupDetails: React.FC = () => {
                                   });
                                 }
                               }}
-                              style={{ 
-                                border: '1px solid rgba(255,255,255,0.05)', 
-                                textAlign: 'center', 
+                              style={{
+                                border: '1px solid rgba(255,255,255,0.05)',
+                                textAlign: 'center',
                                 padding: '10px',
                                 cursor: isAdmin ? 'pointer' : 'default',
                                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -568,7 +574,7 @@ const GroupDetails: React.FC = () => {
             {/* Matches List: Detailed View */}
             <section className="fadeIn">
               <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
-                <CheckCircle2 color="var(--primary)" /> Detalle de Resultados
+                <CheckCircle2 color="var(--primary)" /> Detalle de Partidos
               </h2>
               <div className="glass-card" style={{ padding: '1.5rem' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -722,14 +728,14 @@ const GroupDetails: React.FC = () => {
           <div className="glass-card fadeIn" style={{ padding: '3rem', maxWidth: '500px', width: '100%', backgroundColor: '#1a1d23' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
               <h2 style={{ margin: 0 }}>Asignar a {group?.name}</h2>
-              <button 
+              <button
                 onClick={() => setRegisterModal({ show: true, name: '' })}
-                className="btn-primary" 
-                style={{ 
-                  background: 'linear-gradient(90deg, #00f2fe 0%, #4facfe 100%)', 
-                  color: '#000', 
+                className="btn-primary"
+                style={{
+                  background: 'linear-gradient(90deg, #00f2fe 0%, #4facfe 100%)',
+                  color: '#000',
                   fontWeight: 'bold',
-                  fontSize: '0.8rem', 
+                  fontSize: '0.8rem',
                   padding: '0.6rem 1.2rem',
                   border: 'none',
                   boxShadow: '0 4px 15px rgba(0, 242, 254, 0.3)'
@@ -741,9 +747,9 @@ const GroupDetails: React.FC = () => {
             <p style={{ opacity: 0.6, marginBottom: '2rem' }}>Selecciona los jugadores de la categoría para unirlos a este grupo:</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '300px', overflowY: 'auto', paddingRight: '10px', marginBottom: '2rem' }}>
               {availablePairs.map(pair => {
-                const isAssigned = (pair.group && pair.groupId !== id) || 
-                                  (pair.bracketMatchesAsA?.length! > 0) || 
-                                  (pair.bracketMatchesAsB?.length! > 0);
+                const isAssigned = (pair.group && pair.groupId !== id) ||
+                  (pair.bracketMatchesAsA?.length! > 0) ||
+                  (pair.bracketMatchesAsB?.length! > 0);
                 let assignmentLabel = '';
                 if (pair.group && pair.groupId !== id) assignmentLabel = `(En ${pair.group.name})`;
                 else if (pair.bracketMatchesAsA?.[0]?.bracket?.name || pair.bracketMatchesAsB?.[0]?.bracket?.name) {
@@ -751,14 +757,14 @@ const GroupDetails: React.FC = () => {
                 }
 
                 return (
-                  <div 
-                    key={pair.id} 
-                    className="glass-card" 
+                  <div
+                    key={pair.id}
+                    className="glass-card"
                     onClick={() => togglePairSelection(pair)}
-                    style={{ 
-                      padding: '1rem', 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                    style={{
+                      padding: '1rem',
+                      display: 'flex',
+                      alignItems: 'center',
                       justifyContent: 'space-between',
                       background: selectedPairs.includes(pair.id) ? 'rgba(0, 242, 254, 0.1)' : 'rgba(255,255,255,0.02)',
                       border: selectedPairs.includes(pair.id) ? '1px solid var(--primary)' : '1px solid transparent',
@@ -768,10 +774,10 @@ const GroupDetails: React.FC = () => {
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={selectedPairs.includes(pair.id)}
-                        onChange={() => {}} // Controlled via onClick of parent
+                        onChange={() => { }} // Controlled via onClick of parent
                         style={{ cursor: 'pointer', width: '20px', height: '20px', accentColor: 'var(--primary)' }}
                       />
                       <span>{pair.name}</span>
@@ -787,15 +793,15 @@ const GroupDetails: React.FC = () => {
               )}
             </div>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
-                className="btn-primary" 
-                onClick={() => { setShowAddPlayer(false); setSelectedPairs([]); }} 
+              <button
+                className="btn-primary"
+                onClick={() => { setShowAddPlayer(false); setSelectedPairs([]); }}
                 style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
               >
                 Cancelar
               </button>
-              <button 
-                className="btn-primary" 
+              <button
+                className="btn-primary"
                 onClick={handleBatchAdd}
                 disabled={selectedPairs.length === 0}
                 style={{ flex: 1, opacity: selectedPairs.length === 0 ? 0.5 : 1 }}
@@ -814,18 +820,18 @@ const GroupDetails: React.FC = () => {
           backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center',
           justifyContent: 'center', zIndex: 4500, padding: '2rem', backdropFilter: 'blur(8px)'
         }}>
-          <div className="glass-card fadeIn" style={{ 
-            padding: '3rem', maxWidth: '500px', width: '100%', 
+          <div className="glass-card fadeIn" style={{
+            padding: '3rem', maxWidth: '500px', width: '100%',
             backgroundColor: '#1a1d23', textAlign: 'center'
           }}>
             <h2 style={{ marginBottom: '2rem', color: 'white' }}>Registrar Resultado</h2>
-            
+
             {!isRacquetball2Of3 ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', marginBottom: '3rem' }}>
                 <div style={{ flex: 1, textAlign: 'right' }}>
                   <div style={{ fontSize: '1.2rem', marginBottom: '10px', fontWeight: 'bold' }}>{resultModal.rowPair?.name}</div>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     className="input-field"
                     style={{ width: '80px', fontSize: '2rem', textAlign: 'center', padding: '0.5rem' }}
                     value={resultModal.scoreRow}
@@ -836,8 +842,8 @@ const GroupDetails: React.FC = () => {
                 <div style={{ fontSize: '2rem', opacity: 0.3 }}>-</div>
                 <div style={{ flex: 1, textAlign: 'left' }}>
                   <div style={{ fontSize: '1.2rem', marginBottom: '10px', fontWeight: 'bold' }}>{resultModal.colPair?.name}</div>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     className="input-field"
                     style={{ width: '80px', fontSize: '2rem', textAlign: 'center', padding: '0.5rem' }}
                     value={resultModal.scoreCol}
@@ -854,26 +860,26 @@ const GroupDetails: React.FC = () => {
                   <div style={{ textAlign: 'left' }}>Jugador B</div>
                 </div>
 
-                <SetRow label="Set 1" valA={resultModal.set1Row} valB={resultModal.set1Col} onChangeA={(v) => setResultModal({...resultModal, set1Row: v})} onChangeB={(v) => setResultModal({...resultModal, set1Col: v})} />
-                <SetRow label="Set 2" valA={resultModal.set2Row} valB={resultModal.set2Col} onChangeA={(v) => setResultModal({...resultModal, set2Row: v})} onChangeB={(v) => setResultModal({...resultModal, set2Col: v})} />
-                <SetRow label="Set 3" valA={resultModal.set3Row} valB={resultModal.set3Col} onChangeA={(v) => setResultModal({...resultModal, set3Row: v})} onChangeB={(v) => setResultModal({...resultModal, set3Col: v})} />
+                <SetRow label="Set 1" valA={resultModal.set1Row} valB={resultModal.set1Col} onChangeA={(v) => setResultModal({ ...resultModal, set1Row: v })} onChangeB={(v) => setResultModal({ ...resultModal, set1Col: v })} />
+                <SetRow label="Set 2" valA={resultModal.set2Row} valB={resultModal.set2Col} onChangeA={(v) => setResultModal({ ...resultModal, set2Row: v })} onChangeB={(v) => setResultModal({ ...resultModal, set2Col: v })} />
+                <SetRow label="Set 3" valA={resultModal.set3Row} valB={resultModal.set3Col} onChangeA={(v) => setResultModal({ ...resultModal, set3Row: v })} onChangeB={(v) => setResultModal({ ...resultModal, set3Col: v })} />
 
-                <div style={{ 
-                  marginTop: '2rem', padding: '1.5rem', background: 'rgba(255,255,255,0.02)', 
+                <div style={{
+                  marginTop: '2rem', padding: '1.5rem', background: 'rgba(255,255,255,0.02)',
                   borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   border: '1px solid rgba(255,255,255,0.05)'
                 }}>
                   <div style={{ textAlign: 'left' }}>
                     <div style={{ fontSize: '0.8rem', opacity: 0.5 }}>Total {resultModal.rowPair?.name}</div>
                     <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--primary)' }}>
-                      {(parseInt(resultModal.set1Row)||0) + (parseInt(resultModal.set2Row)||0) + (parseInt(resultModal.set3Row)||0)}
+                      {(parseInt(resultModal.set1Row) || 0) + (parseInt(resultModal.set2Row) || 0) + (parseInt(resultModal.set3Row) || 0)}
                     </div>
                   </div>
                   <div style={{ fontSize: '1.2rem', opacity: 0.2 }}>Suma PF-PC</div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '0.8rem', opacity: 0.5 }}>Total {resultModal.colPair?.name}</div>
                     <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--primary)' }}>
-                      {(parseInt(resultModal.set1Col)||0) + (parseInt(resultModal.set2Col)||0) + (parseInt(resultModal.set3Col)||0)}
+                      {(parseInt(resultModal.set1Col) || 0) + (parseInt(resultModal.set2Col) || 0) + (parseInt(resultModal.set3Col) || 0)}
                     </div>
                   </div>
                 </div>
@@ -881,27 +887,27 @@ const GroupDetails: React.FC = () => {
             )}
 
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
-                className="btn-primary" 
-                onClick={() => setResultModal({ ...resultModal, show: false })} 
+              <button
+                className="btn-primary"
+                onClick={() => setResultModal({ ...resultModal, show: false })}
                 style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
               >
                 Cancelar
               </button>
-              <button 
-                className="btn-primary" 
+              <button
+                className="btn-primary"
                 onClick={async () => {
                   const isRowPairA = resultModal.match!.pairA.id === resultModal.rowPair!.id;
-                  
+
                   let pA, pB, s1A, s1B, s2A, s2B, s3A, s3B;
 
                   if (isRacquetball2Of3) {
-                    s1A = isRowPairA ? parseInt(resultModal.set1Row)||0 : parseInt(resultModal.set1Col)||0;
-                    s1B = isRowPairA ? parseInt(resultModal.set1Col)||0 : parseInt(resultModal.set1Row)||0;
-                    s2A = isRowPairA ? parseInt(resultModal.set2Row)||0 : parseInt(resultModal.set2Col)||0;
-                    s2B = isRowPairA ? parseInt(resultModal.set2Col)||0 : parseInt(resultModal.set2Row)||0;
-                    s3A = isRowPairA ? parseInt(resultModal.set3Row)||0 : parseInt(resultModal.set3Col)||0;
-                    s3B = isRowPairA ? parseInt(resultModal.set3Col)||0 : parseInt(resultModal.set3Row)||0;
+                    s1A = isRowPairA ? parseInt(resultModal.set1Row) || 0 : parseInt(resultModal.set1Col) || 0;
+                    s1B = isRowPairA ? parseInt(resultModal.set1Col) || 0 : parseInt(resultModal.set1Row) || 0;
+                    s2A = isRowPairA ? parseInt(resultModal.set2Row) || 0 : parseInt(resultModal.set2Col) || 0;
+                    s2B = isRowPairA ? parseInt(resultModal.set2Col) || 0 : parseInt(resultModal.set2Row) || 0;
+                    s3A = isRowPairA ? parseInt(resultModal.set3Row) || 0 : parseInt(resultModal.set3Col) || 0;
+                    s3B = isRowPairA ? parseInt(resultModal.set3Col) || 0 : parseInt(resultModal.set3Row) || 0;
 
                     // Validación de empates en sets
                     if ((s1A === s1B && s1A + s1B > 0) || (s2A === s2B && s2A + s2B > 0) || (s3A === s3B && s3A + s3B > 0)) {
@@ -909,7 +915,7 @@ const GroupDetails: React.FC = () => {
                         show: true,
                         title: 'Empate no permitido en sets',
                         message: 'No se permiten empates en los sets individuales en Racquetball.',
-                        onConfirm: () => {}
+                        onConfirm: () => { }
                       });
                       return;
                     }
@@ -923,7 +929,7 @@ const GroupDetails: React.FC = () => {
                         show: true,
                         title: 'Jugador debe ganar 2 sets',
                         message: 'Un jugador debe ganar al menos 2 sets para registrar el resultado.',
-                        onConfirm: () => {}
+                        onConfirm: () => { }
                       });
                       return;
                     }
@@ -935,11 +941,11 @@ const GroupDetails: React.FC = () => {
                         show: true,
                         title: 'Error en 3er Set',
                         message: 'Si un jugador ganó los primeros 2 sets, el 3er set debe quedar 0-0.',
-                        onConfirm: () => {}
+                        onConfirm: () => { }
                       });
                       return;
                     }
-                    
+
                     // Si van 1-1, el 3er set es obligatorio
                     const tieBreakerNeeded = (s1A > s1B && s2B > s2A) || (s1B > s1A && s2A > s2B);
                     if (tieBreakerNeeded && s3A === 0 && s3B === 0) {
@@ -947,7 +953,7 @@ const GroupDetails: React.FC = () => {
                         show: true,
                         title: '3er Set Obligatorio',
                         message: 'El tercer set es obligatorio ya que los jugadores están empatados 1-1 en sets.',
-                        onConfirm: () => {}
+                        onConfirm: () => { }
                       });
                       return;
                     }
@@ -960,7 +966,7 @@ const GroupDetails: React.FC = () => {
                   }
 
                   await handleUpdateResult(
-                    resultModal.match!.id, resultModal.match!.pairA.id, resultModal.match!.pairB.id, 
+                    resultModal.match!.id, resultModal.match!.pairA.id, resultModal.match!.pairB.id,
                     pA, pB, s1A, s1B, s2A, s2B, s3A, s3B
                   );
                   setResultModal({ ...resultModal, show: false });
@@ -981,16 +987,16 @@ const GroupDetails: React.FC = () => {
           backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center',
           justifyContent: 'center', zIndex: 4000, padding: '2rem', backdropFilter: 'blur(8px)'
         }}>
-          <div className="glass-card fadeIn" style={{ 
-            padding: '3rem', maxWidth: '450px', width: '100%', 
+          <div className="glass-card fadeIn" style={{
+            padding: '3rem', maxWidth: '450px', width: '100%',
             backgroundColor: '#1a1d23', textAlign: 'center'
           }}>
             <h2 style={{ marginBottom: '1rem', color: 'white' }}>Registrar Nuevo Jugador</h2>
             <p style={{ opacity: 0.7, marginBottom: '2.5rem' }}>Ingresa el nombre de la pareja o jugador individual</p>
             <div style={{ marginBottom: '2.5rem' }}>
-              <input 
-                type="text" 
-                className="input-field" 
+              <input
+                type="text"
+                className="input-field"
                 autoFocus
                 placeholder="Nombre del jugador..."
                 value={registerModal.name}
@@ -1001,15 +1007,15 @@ const GroupDetails: React.FC = () => {
               />
             </div>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
-                className="btn-primary" 
-                onClick={() => setRegisterModal({ ...registerModal, show: false })} 
+              <button
+                className="btn-primary"
+                onClick={() => setRegisterModal({ ...registerModal, show: false })}
                 style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
               >
                 Cancelar
               </button>
-              <button 
-                className="btn-primary" 
+              <button
+                className="btn-primary"
                 onClick={handleRegisterPair}
                 style={{ flex: 1, background: 'linear-gradient(90deg, #00f2fe 0%, #4facfe 100%)', color: '#000', border: 'none' }}
               >
@@ -1027,14 +1033,14 @@ const GroupDetails: React.FC = () => {
           backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center',
           justifyContent: 'center', zIndex: 5000, padding: '2rem', backdropFilter: 'blur(8px)'
         }}>
-          <div className="glass-card fadeIn" style={{ 
-            padding: '3rem', maxWidth: '450px', width: '100%', 
+          <div className="glass-card fadeIn" style={{
+            padding: '3rem', maxWidth: '450px', width: '100%',
             backgroundColor: '#1a1d23', textAlign: 'center',
             border: '1px solid rgba(255,75,43,0.3)'
           }}>
-            <div style={{ 
-              width: '64px', height: '64px', borderRadius: '50%', 
-              backgroundColor: 'rgba(255,75,43,0.1)', display: 'flex', 
+            <div style={{
+              width: '64px', height: '64px', borderRadius: '50%',
+              backgroundColor: 'rgba(255,75,43,0.1)', display: 'flex',
               alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem',
               color: '#ff4b2b'
             }}>
@@ -1043,19 +1049,19 @@ const GroupDetails: React.FC = () => {
             <h2 style={{ marginBottom: '1rem', color: 'white' }}>{confirmModal.title}</h2>
             <p style={{ opacity: 0.7, marginBottom: '2.5rem', lineHeight: '1.6' }}>{confirmModal.message}</p>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
-                className="btn-primary" 
-                onClick={() => setConfirmModal({ ...confirmModal, show: false })} 
+              <button
+                className="btn-primary"
+                onClick={() => setConfirmModal({ ...confirmModal, show: false })}
                 style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
               >
                 Cancelar
               </button>
-              <button 
-                className="btn-primary" 
+              <button
+                className="btn-primary"
                 onClick={() => {
                   confirmModal.onConfirm();
                   setConfirmModal({ ...confirmModal, show: false });
-                }} 
+                }}
                 style={{ flex: 1, background: '#ff4b2b', border: 'none' }}
               >
                 Confirmar
@@ -1071,13 +1077,13 @@ const GroupDetails: React.FC = () => {
 const SetRow: React.FC<{ label: string; valA: string; valB: string; onChangeA: (v: string) => void; onChangeB: (v: string) => void }> = ({ label, valA, valB, onChangeA, onChangeB }) => (
   <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1.5fr', gap: '1rem', alignItems: 'center', marginBottom: '0.8rem' }}>
     <div style={{ textAlign: 'right', fontSize: '0.9rem', opacity: 0.7 }}>{label}</div>
-    <input 
-      type="number" className="input-field" style={{ textAlign: 'center', padding: '0.5rem' }} 
-      value={valA} onChange={(e) => onChangeA(e.target.value)} 
+    <input
+      type="number" className="input-field" style={{ textAlign: 'center', padding: '0.5rem' }}
+      value={valA} onChange={(e) => onChangeA(e.target.value)}
     />
-    <input 
-      type="number" className="input-field" style={{ textAlign: 'center', padding: '0.5rem' }} 
-      value={valB} onChange={(e) => onChangeB(e.target.value)} 
+    <input
+      type="number" className="input-field" style={{ textAlign: 'center', padding: '0.5rem' }}
+      value={valB} onChange={(e) => onChangeB(e.target.value)}
     />
     <div />
   </div>

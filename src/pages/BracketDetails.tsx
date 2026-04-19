@@ -33,7 +33,7 @@ interface Bracket {
   id: string;
   name: string;
   categoryId: string;
-  category: { 
+  category: {
     tournamentId: string;
     tournament: { sport: string; description: string };
   };
@@ -89,7 +89,7 @@ const BracketDetails: React.FC = () => {
     show: false,
     title: '',
     message: '',
-    onConfirm: () => {}
+    onConfirm: () => { }
   });
 
   useEffect(() => {
@@ -131,24 +131,24 @@ const BracketDetails: React.FC = () => {
     }
   };
 
-  const isRacquetball2Of3 = bracket?.category?.tournament?.sport?.toLowerCase() === 'racquetball' && 
-                            bracket?.category?.tournament?.description === '2 de 3 sets a 15 puntos con cambios';
+  const isRacquetball2Of3 = bracket?.category?.tournament?.sport?.toLowerCase() === 'racquetball' &&
+    bracket?.category?.tournament?.description === '2 de 3 sets a 15 puntos con cambios';
 
   const handleUpdateResult = async (
-    match: BracketMatch, 
+    match: BracketMatch,
     pA: number, pB: number,
     s1A?: number, s1B?: number,
     s2A?: number, s2B?: number,
     s3A?: number, s3B?: number
   ) => {
     const winnerId = pA > pB ? match.pairA?.id : (pB > pA ? match.pairB?.id : null);
-    
+
     if (pA === pB) {
       setConfirmModal({
         show: true,
         title: 'Empate no permitido',
         message: 'En Brackets debe haber un ganador para avanzar a la siguiente ronda. Por favor ingresa un marcador diferente.',
-        onConfirm: () => {}
+        onConfirm: () => { }
       });
       return;
     }
@@ -161,10 +161,10 @@ const BracketDetails: React.FC = () => {
       const res = await fetch(`http://localhost:3001/api/bracket-matches/${match.id}/result`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          winnerId, 
-          pointsA: pA, 
-          pointsB: pB, 
+        body: JSON.stringify({
+          winnerId,
+          pointsA: pA,
+          pointsB: pB,
           nextMatchId: match.nextMatchId,
           nextMatchPos,
           set1A: s1A, set1B: s1B,
@@ -212,7 +212,7 @@ const BracketDetails: React.FC = () => {
             title: 'Jugador ya asignado',
             message: `${warningMessage}\n\n¿Deseas asignarlo de todas formas?`,
             onConfirm: async () => {
-               await executeAssign(pairId);
+              await executeAssign(pairId);
             }
           });
           return;
@@ -303,14 +303,14 @@ const BracketDetails: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
               <h1 className="gradient-text" style={{ fontSize: '3.5rem', margin: 0 }}>{bracket?.name}</h1>
               {isAdmin && (
-                <button 
+                <button
                   onClick={handleDeleteBracket}
-                  style={{ 
-                    background: 'rgba(255, 71, 87, 0.1)', 
-                    border: '1px solid rgba(255, 71, 87, 0.3)', 
-                    color: '#ff4757', 
-                    padding: '8px', 
-                    borderRadius: '8px', 
+                  style={{
+                    background: 'rgba(255, 71, 87, 0.1)',
+                    border: '1px solid rgba(255, 71, 87, 0.3)',
+                    color: '#ff4757',
+                    padding: '8px',
+                    borderRadius: '8px',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -328,13 +328,13 @@ const BracketDetails: React.FC = () => {
           </div>
           {isAdmin && (
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
+              <button
                 onClick={handleResetBracket}
-                className="btn-primary" 
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '8px', 
+                className="btn-primary"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
                   padding: '0.8rem 1.8rem',
                   background: 'rgba(255,75,43,0.1)',
                   color: '#ff4b2b',
@@ -342,27 +342,27 @@ const BracketDetails: React.FC = () => {
               >
                 <RotateCcw size={18} /> Reiniciar Bracket
               </button>
-              <button 
+              <button
                 onClick={handleSeedBracket}
-                className="btn-primary" 
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '8px', 
+                className="btn-primary"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
                   padding: '0.8rem 1.8rem',
                   background: 'rgba(255,255,255,0.05)',
                   color: 'white',
                 }}
               >
-                <Trophy size={18} /> Sembrar Aleatoriamente
+                <Trophy size={18} /> Asignar Aleatoriamente
               </button>
-              <button 
+              <button
                 onClick={() => setRegisterModal({ show: true, name: '' })}
-                className="btn-primary" 
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '8px', 
+                className="btn-primary"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
                   padding: '0.8rem 1.8rem',
                   background: 'linear-gradient(90deg, #00f2fe 0%, #4facfe 100%)',
                   color: '#000',
@@ -384,15 +384,15 @@ const BracketDetails: React.FC = () => {
                 {rNum === maxRound ? 'Final' : (rNum === maxRound - 1 ? 'Semifinales' : `Ronda ${rNum}`)}
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', height: '500px' }}>
-                {rounds[rNum].sort((a,b) => a.matchIndex - b.matchIndex).map(match => (
-                  <div key={match.id} className="glass-card fadeIn" style={{ 
+                {rounds[rNum].sort((a, b) => a.matchIndex - b.matchIndex).map(match => (
+                  <div key={match.id} className="glass-card fadeIn" style={{
                     padding: '1rem', width: '220px', position: 'relative',
                     border: match.winnerId ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)'
                   }}>
-                    <div 
+                    <div
                       onClick={() => isAdmin && setSelectModal({ show: true, matchId: match.id, pos: 'pairA', currentPairId: match.pairA?.id || null })}
-                      style={{ 
-                        display: 'flex', justifyContent: 'space-between', marginBottom: '8px', 
+                      style={{
+                        display: 'flex', justifyContent: 'space-between', marginBottom: '8px',
                         opacity: match.winnerId && match.winnerId !== match.pairA?.id ? 0.3 : 1,
                         cursor: isAdmin ? 'pointer' : 'default',
                         padding: '4px', borderRadius: '4px',
@@ -402,10 +402,10 @@ const BracketDetails: React.FC = () => {
                       <span style={{ fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>
                         {match.pairA?.name || '---'}
                       </span>
-                      <input 
+                      <input
                         key={`${match.id}-a-${match.pointsA}`}
-                        type="number" 
-                        className="input-field" 
+                        type="number"
+                        className="input-field"
                         style={{ width: '45px', padding: '2px 5px', textAlign: 'center', background: 'rgba(255,255,255,0.05)' }}
                         value={match.pointsA}
                         onFocus={() => {
@@ -422,7 +422,7 @@ const BracketDetails: React.FC = () => {
                             });
                           }
                         }}
-                        onChange={() => {}} // Controlled by onFocus/Modal for 3 sets
+                        onChange={() => { }} // Controlled by onFocus/Modal for 3 sets
                         onBlur={(e) => !isRacquetball2Of3 && handleUpdateResult(match, parseInt(e.target.value), match.pointsB)}
                         onClick={(e) => e.stopPropagation()}
                         disabled={!isAdmin || !match.pairA || !match.pairB}
@@ -433,10 +433,10 @@ const BracketDetails: React.FC = () => {
                         ({match.set1A}-{match.set1B}, {match.set2A}-{match.set2B}, {match.set3A}-{match.set3B})
                       </div>
                     )}
-                    <div 
+                    <div
                       onClick={() => isAdmin && setSelectModal({ show: true, matchId: match.id, pos: 'pairB', currentPairId: match.pairB?.id || null })}
-                      style={{ 
-                        display: 'flex', justifyContent: 'space-between', 
+                      style={{
+                        display: 'flex', justifyContent: 'space-between',
                         opacity: match.winnerId && match.winnerId !== match.pairB?.id ? 0.3 : 1,
                         cursor: isAdmin ? 'pointer' : 'default',
                         padding: '4px', borderRadius: '4px',
@@ -446,10 +446,10 @@ const BracketDetails: React.FC = () => {
                       <span style={{ fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>
                         {match.pairB?.name || '---'}
                       </span>
-                      <input 
+                      <input
                         key={`${match.id}-b-${match.pointsB}`}
-                        type="number" 
-                        className="input-field" 
+                        type="number"
+                        className="input-field"
                         style={{ width: '45px', padding: '2px 5px', textAlign: 'center', background: 'rgba(255,255,255,0.05)' }}
                         value={match.pointsB}
                         onFocus={() => {
@@ -466,7 +466,7 @@ const BracketDetails: React.FC = () => {
                             });
                           }
                         }}
-                        onChange={() => {}} 
+                        onChange={() => { }}
                         onBlur={(e) => !isRacquetball2Of3 && handleUpdateResult(match, match.pointsA, parseInt(e.target.value))}
                         onClick={(e) => e.stopPropagation()}
                         disabled={!isAdmin || !match.pairA || !match.pairB}
@@ -482,14 +482,14 @@ const BracketDetails: React.FC = () => {
               </div>
             </div>
           ))}
-          
+
           <div style={{ flex: 0.5, textAlign: 'center' }}>
             <div style={{ display: 'inline-block', padding: '2rem', background: 'rgba(0, 242, 254, 0.1)', borderRadius: '20px', border: '2px solid var(--primary)' }}>
-               <Trophy size={48} color="var(--primary)" style={{ marginBottom: '1rem' }} />
-               <h4 style={{ margin: 0, opacity: 0.5 }}>Ganador</h4>
-                <h2 style={{ margin: '0.5rem 0 0', color: 'var(--primary)' }}>
-                  {rounds[maxRound]?.[0]?.winnerId ? (rounds[maxRound][0].winnerId === rounds[maxRound][0].pairA?.id ? rounds[maxRound][0].pairA.name : rounds[maxRound][0].pairB?.name) : '---'}
-                </h2>
+              <Trophy size={48} color="var(--primary)" style={{ marginBottom: '1rem' }} />
+              <h4 style={{ margin: 0, opacity: 0.5 }}>Ganador</h4>
+              <h2 style={{ margin: '0.5rem 0 0', color: 'var(--primary)' }}>
+                {rounds[maxRound]?.[0]?.winnerId ? (rounds[maxRound][0].winnerId === rounds[maxRound][0].pairA?.id ? rounds[maxRound][0].pairA.name : rounds[maxRound][0].pairB?.name) : '---'}
+              </h2>
             </div>
           </div>
         </div>
@@ -501,16 +501,16 @@ const BracketDetails: React.FC = () => {
           backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center',
           justifyContent: 'center', zIndex: 4000, padding: '2rem', backdropFilter: 'blur(8px)'
         }}>
-          <div className="glass-card fadeIn" style={{ 
-            padding: '3rem', maxWidth: '450px', width: '100%', 
+          <div className="glass-card fadeIn" style={{
+            padding: '3rem', maxWidth: '450px', width: '100%',
             backgroundColor: '#1a1d23', textAlign: 'center'
           }}>
             <h2 style={{ marginBottom: '1rem', color: 'white' }}>Registrar Nuevo Jugador</h2>
             <p style={{ opacity: 0.7, marginBottom: '2.5rem' }}>Ingresa el nombre de la pareja o jugador individual</p>
             <div style={{ marginBottom: '2.5rem' }}>
-              <input 
-                type="text" 
-                className="input-field" 
+              <input
+                type="text"
+                className="input-field"
                 autoFocus
                 placeholder="Nombre del jugador..."
                 value={registerModal.name}
@@ -521,15 +521,15 @@ const BracketDetails: React.FC = () => {
               />
             </div>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
-                className="btn-primary" 
-                onClick={() => setRegisterModal({ ...registerModal, show: false })} 
+              <button
+                className="btn-primary"
+                onClick={() => setRegisterModal({ ...registerModal, show: false })}
                 style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
               >
                 Cancelar
               </button>
-              <button 
-                className="btn-primary" 
+              <button
+                className="btn-primary"
                 onClick={handleRegisterPair}
                 style={{ flex: 1, background: 'linear-gradient(90deg, #00f2fe 0%, #4facfe 100%)', color: '#000', border: 'none' }}
               >
@@ -549,9 +549,9 @@ const BracketDetails: React.FC = () => {
           <div className="glass-card fadeIn" style={{ padding: '3rem', maxWidth: '500px', width: '100%', backgroundColor: '#1a1d23' }}>
             <h2 style={{ marginBottom: '1.5rem' }}>Seleccionar Jugador</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '400px', overflowY: 'auto', marginBottom: '2rem' }}>
-              <div 
+              <div
                 onClick={() => handleAssignPair(null)}
-                style={{ 
+                style={{
                   padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', cursor: 'pointer',
                   border: selectModal.currentPairId === null ? '1px solid var(--primary)' : '1px solid transparent'
                 }}
@@ -567,10 +567,10 @@ const BracketDetails: React.FC = () => {
                 }
 
                 return (
-                  <div 
+                  <div
                     key={pair.id}
                     onClick={() => handleAssignPair(pair.id)}
-                    style={{ 
+                    style={{
                       padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', cursor: 'pointer',
                       border: selectModal.currentPairId === pair.id ? '1px solid var(--primary)' : '1px solid transparent',
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center'
@@ -584,8 +584,8 @@ const BracketDetails: React.FC = () => {
                 );
               })}
             </div>
-            <button 
-              className="btn-primary" 
+            <button
+              className="btn-primary"
               style={{ width: '100%', background: 'rgba(255,255,255,0.05)' }}
               onClick={() => setSelectModal({ ...selectModal, show: false })}
             >
@@ -601,12 +601,12 @@ const BracketDetails: React.FC = () => {
           backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center',
           justifyContent: 'center', zIndex: 4500, padding: '2rem', backdropFilter: 'blur(8px)'
         }}>
-          <div className="glass-card fadeIn" style={{ 
-            padding: '3rem', maxWidth: '500px', width: '100%', 
+          <div className="glass-card fadeIn" style={{
+            padding: '3rem', maxWidth: '500px', width: '100%',
             backgroundColor: '#1a1d23', textAlign: 'center'
           }}>
             <h2 style={{ marginBottom: '2rem', color: 'white' }}>Registrar Resultado (Sets)</h2>
-            
+
             <div style={{ marginBottom: '3rem' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1.5fr', gap: '1rem', alignItems: 'center', marginBottom: '1rem', opacity: 0.5, fontSize: '0.8rem' }}>
                 <div style={{ textAlign: 'right' }}>{resultModal.match.pairA?.name || 'A'}</div>
@@ -615,53 +615,53 @@ const BracketDetails: React.FC = () => {
                 <div style={{ textAlign: 'left' }}>{resultModal.match.pairB?.name || 'B'}</div>
               </div>
 
-              <SetRow label="Set 1" valA={resultModal.set1A} valB={resultModal.set1B} onChangeA={(v) => setResultModal({...resultModal, set1A: v})} onChangeB={(v) => setResultModal({...resultModal, set1B: v})} />
-              <SetRow label="Set 2" valA={resultModal.set2A} valB={resultModal.set2B} onChangeA={(v) => setResultModal({...resultModal, set2A: v})} onChangeB={(v) => setResultModal({...resultModal, set2B: v})} />
-              <SetRow label="Set 3" valA={resultModal.set3A} valB={resultModal.set3B} onChangeA={(v) => setResultModal({...resultModal, set3A: v})} onChangeB={(v) => setResultModal({...resultModal, set3B: v})} />
+              <SetRow label="Set 1" valA={resultModal.set1A} valB={resultModal.set1B} onChangeA={(v) => setResultModal({ ...resultModal, set1A: v })} onChangeB={(v) => setResultModal({ ...resultModal, set1B: v })} />
+              <SetRow label="Set 2" valA={resultModal.set2A} valB={resultModal.set2B} onChangeA={(v) => setResultModal({ ...resultModal, set2A: v })} onChangeB={(v) => setResultModal({ ...resultModal, set2B: v })} />
+              <SetRow label="Set 3" valA={resultModal.set3A} valB={resultModal.set3B} onChangeA={(v) => setResultModal({ ...resultModal, set3A: v })} onChangeB={(v) => setResultModal({ ...resultModal, set3B: v })} />
 
-              <div style={{ 
-                marginTop: '1.5rem', padding: '1.2rem', background: 'rgba(255,255,255,0.02)', 
+              <div style={{
+                marginTop: '1.5rem', padding: '1.2rem', background: 'rgba(255,255,255,0.02)',
                 borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 border: '1px solid rgba(255,255,255,0.05)'
               }}>
                 <div style={{ textAlign: 'left' }}>
                   <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
-                    {(parseInt(resultModal.set1A)||0) + (parseInt(resultModal.set2A)||0) + (parseInt(resultModal.set3A)||0)}
+                    {(parseInt(resultModal.set1A) || 0) + (parseInt(resultModal.set2A) || 0) + (parseInt(resultModal.set3A) || 0)}
                   </div>
                 </div>
                 <div style={{ fontSize: '0.8rem', opacity: 0.3 }}>TOTAL PUNTOS</div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
-                    {(parseInt(resultModal.set1B)||0) + (parseInt(resultModal.set2B)||0) + (parseInt(resultModal.set3B)||0)}
+                    {(parseInt(resultModal.set1B) || 0) + (parseInt(resultModal.set2B) || 0) + (parseInt(resultModal.set3B) || 0)}
                   </div>
                 </div>
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
-                className="btn-primary" 
-                onClick={() => setResultModal({ ...resultModal, show: false })} 
+              <button
+                className="btn-primary"
+                onClick={() => setResultModal({ ...resultModal, show: false })}
                 style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
               >
                 Cancelar
               </button>
-              <button 
-                className="btn-primary" 
+              <button
+                className="btn-primary"
                 onClick={async () => {
-                  const s1A = parseInt(resultModal.set1A)||0;
-                  const s1B = parseInt(resultModal.set1B)||0;
-                  const s2A = parseInt(resultModal.set2A)||0;
-                  const s2B = parseInt(resultModal.set2B)||0;
-                  const s3A = parseInt(resultModal.set3A)||0;
-                  const s3B = parseInt(resultModal.set3B)||0;
+                  const s1A = parseInt(resultModal.set1A) || 0;
+                  const s1B = parseInt(resultModal.set1B) || 0;
+                  const s2A = parseInt(resultModal.set2A) || 0;
+                  const s2B = parseInt(resultModal.set2B) || 0;
+                  const s3A = parseInt(resultModal.set3A) || 0;
+                  const s3B = parseInt(resultModal.set3B) || 0;
 
-                  if ((s1A === s1B && s1A+s1B>0) || (s2A === s2B && s2A+s2B>0) || (s3A === s3B && s3A+s3B>0)) {
+                  if ((s1A === s1B && s1A + s1B > 0) || (s2A === s2B && s2A + s2B > 0) || (s3A === s3B && s3A + s3B > 0)) {
                     setConfirmModal({
                       show: true,
                       title: 'Empate no permitido en sets',
                       message: 'No se permiten empates en los sets individuales en Racquetball.',
-                      onConfirm: () => {}
+                      onConfirm: () => { }
                     });
                     return;
                   }
@@ -674,7 +674,7 @@ const BracketDetails: React.FC = () => {
                       show: true,
                       title: 'Jugador debe ganar 2 sets',
                       message: 'Un jugador debe ganar al menos 2 sets para registrar el resultado.',
-                      onConfirm: () => {}
+                      onConfirm: () => { }
                     });
                     return;
                   }
@@ -685,18 +685,18 @@ const BracketDetails: React.FC = () => {
                       show: true,
                       title: 'Error en 3er Set',
                       message: 'Si un jugador ganó los primeros 2 sets, el 3er set debe quedar 0-0.',
-                      onConfirm: () => {}
+                      onConfirm: () => { }
                     });
                     return;
                   }
-                  
+
                   const tieBreakerNeeded = (s1A > s1B && s2B > s2A) || (s1B > s1A && s2A > s2B);
                   if (tieBreakerNeeded && s3A === 0 && s3B === 0) {
                     setConfirmModal({
                       show: true,
                       title: '3er Set Obligatorio',
                       message: 'El tercer set es obligatorio ya que los jugadores están empatados 1-1 en sets.',
-                      onConfirm: () => {}
+                      onConfirm: () => { }
                     });
                     return;
                   }
@@ -722,14 +722,14 @@ const BracketDetails: React.FC = () => {
           backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center',
           justifyContent: 'center', zIndex: 9999, padding: '2rem', backdropFilter: 'blur(8px)'
         }}>
-          <div className="glass-card fadeIn" style={{ 
-            padding: '3rem', maxWidth: '450px', width: '100%', 
+          <div className="glass-card fadeIn" style={{
+            padding: '3rem', maxWidth: '450px', width: '100%',
             backgroundColor: '#1a1d23', textAlign: 'center',
             border: '1px solid rgba(255,75,43,0.3)'
           }}>
-            <div style={{ 
-              width: '64px', height: '64px', borderRadius: '50%', 
-              backgroundColor: 'rgba(255,75,43,0.1)', display: 'flex', 
+            <div style={{
+              width: '64px', height: '64px', borderRadius: '50%',
+              backgroundColor: 'rgba(255,75,43,0.1)', display: 'flex',
               alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem',
               color: '#ff4b2b'
             }}>
@@ -738,19 +738,19 @@ const BracketDetails: React.FC = () => {
             <h2 style={{ marginBottom: '1rem', color: 'white' }}>{confirmModal.title}</h2>
             <p style={{ opacity: 0.7, marginBottom: '2.5rem', lineHeight: '1.6' }}>{confirmModal.message}</p>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
-                className="btn-primary" 
-                onClick={() => setConfirmModal({ ...confirmModal, show: false })} 
+              <button
+                className="btn-primary"
+                onClick={() => setConfirmModal({ ...confirmModal, show: false })}
                 style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
               >
                 Cancelar
               </button>
-              <button 
-                className="btn-primary" 
+              <button
+                className="btn-primary"
                 onClick={() => {
                   confirmModal.onConfirm();
                   setConfirmModal({ ...confirmModal, show: false });
-                }} 
+                }}
                 style={{ flex: 1, background: '#ff4b2b', border: 'none' }}
               >
                 Confirmar
@@ -766,13 +766,13 @@ const BracketDetails: React.FC = () => {
 const SetRow: React.FC<{ label: string; valA: string; valB: string; onChangeA: (v: string) => void; onChangeB: (v: string) => void }> = ({ label, valA, valB, onChangeA, onChangeB }) => (
   <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1.5fr', gap: '1rem', alignItems: 'center', marginBottom: '0.8rem' }}>
     <div style={{ textAlign: 'right', fontSize: '0.9rem', opacity: 0.7 }}>{label}</div>
-    <input 
-      type="number" className="input-field" style={{ textAlign: 'center', padding: '0.5rem' }} 
-      value={valA} onChange={(e) => onChangeA(e.target.value)} 
+    <input
+      type="number" className="input-field" style={{ textAlign: 'center', padding: '0.5rem' }}
+      value={valA} onChange={(e) => onChangeA(e.target.value)}
     />
-    <input 
-      type="number" className="input-field" style={{ textAlign: 'center', padding: '0.5rem' }} 
-      value={valB} onChange={(e) => onChangeB(e.target.value)} 
+    <input
+      type="number" className="input-field" style={{ textAlign: 'center', padding: '0.5rem' }}
+      value={valB} onChange={(e) => onChangeB(e.target.value)}
     />
     <div />
   </div>
