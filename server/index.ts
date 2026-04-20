@@ -679,66 +679,70 @@ app.post('/api/groups/:id/pairs/batch', async (req, res) => {
         const N = allPairs.length;
         if (N < 2) return { success: true };
 
-        // Circle Method for Round-Robin Partitions
-        const numPlayers = N % 2 === 0 ? N : N + 1;
-        const players = Array.from({ length: numPlayers }, (_, i) => i);
-        const rounds = numPlayers - 1;
+        const allPairings: [number, number][] = [];
+        for (let i = 0; i < N; i++) {
+          for (let j = i + 1; j < N; j++) {
+            allPairings.push([i, j]);
+          }
+        }
 
-        for (let r = 0; r < rounds; r++) {
-          const roundPairings = [];
-          for (let i = 0; i < numPlayers / 2; i++) {
-            const p1 = players[i];
-            const p2 = players[numPlayers - 1 - i];
-            
-            // Check if any of them is the dummy player (for odd N)
-            if (p1 < N && p2 < N) {
-              roundPairings.push([p1, p2]);
-            } else {
-              // One player sits out (partnered with dummy)
-              const realPlayer = p1 < N ? p1 : p2;
-              await tx.match.create({
-                data: {
-                  groupId,
-                  pairAId: allPairs[realPlayer].id,
-                  pairBId: null,
-                  winnerId: 'SITOUT'
-                }
-              });
+        const playerMatchCount = new Array(N).fill(0);
+        let availablePairings = [...allPairings];
+
+        while (availablePairings.length > 0) {
+          // Sort available pairings to prioritize players with fewer matches
+          availablePairings.sort((a, b) => {
+            const scoreA = playerMatchCount[a[0]] + playerMatchCount[a[1]];
+            const scoreB = playerMatchCount[b[0]] + playerMatchCount[b[1]];
+            return scoreA - scoreB;
+          });
+
+          const p1 = availablePairings.shift()!;
+          
+          // Find the best disjoint p2
+          let p2Idx = -1;
+          let bestP2Score = Infinity;
+
+          for (let i = 0; i < availablePairings.length; i++) {
+            const candidate = availablePairings[i];
+            // Check if disjoint
+            if (p1[0] !== candidate[0] && p1[0] !== candidate[1] && p1[1] !== candidate[0] && p1[1] !== candidate[1]) {
+              const score = playerMatchCount[candidate[0]] + playerMatchCount[candidate[1]];
+              if (score < bestP2Score) {
+                bestP2Score = score;
+                p2Idx = i;
+              }
             }
           }
 
-          // Partition roundPairings into matches of 2 pairs each
-          for (let i = 0; i < roundPairings.length; i += 2) {
-            if (i + 1 < roundPairings.length) {
-              // A/A2 vs B/B2
-              await tx.match.create({
-                data: {
-                  groupId,
-                  pairAId: allPairs[roundPairings[i][0]].id,
-                  pairA2Id: allPairs[roundPairings[i][1]].id,
-                  pairBId: allPairs[roundPairings[i+1][0]].id,
-                  pairB2Id: allPairs[roundPairings[i+1][1]].id
-                }
-              });
-            } else {
-              // Leftover pair in this round sits out (as a pair)
-              // We'll record this as a SITOUT match too
-              await tx.match.create({
-                data: {
-                  groupId,
-                  pairAId: allPairs[roundPairings[i][0]].id,
-                  pairA2Id: allPairs[roundPairings[i][1]].id,
-                  pairBId: null,
-                  winnerId: 'SITOUT'
-                }
-              });
-            }
-          }
-
-          // Rotate players (fixing the first one)
-          const last = players.pop();
-          if (last !== undefined) {
-            players.splice(1, 0, last);
+          if (p2Idx !== -1) {
+            const p2 = availablePairings.splice(p2Idx, 1)[0];
+            await tx.match.create({
+              data: {
+                groupId,
+                pairAId: allPairs[p1[0]].id,
+                pairA2Id: allPairs[p1[1]].id,
+                pairBId: allPairs[p2[0]].id,
+                pairB2Id: allPairs[p2[1]].id
+              }
+            });
+            playerMatchCount[p1[0]]++; playerMatchCount[p1[1]]++;
+            playerMatchCount[p2[0]]++; playerMatchCount[p2[1]]++;
+          } else {
+            // p1 sits as a pair
+            await tx.match.create({
+              data: {
+                groupId,
+                pairAId: allPairs[p1[0]].id,
+                pairA2Id: allPairs[p1[1]].id,
+                pairBId: null,
+                winnerId: 'SITOUT'
+              }
+            });
+            // We don't increment match count for sit-outs to prioritize them in real matches later?
+            // Actually, incrementing makes them "less prioritized" for next matches, 
+            // which is good so others get a chance to partner.
+            playerMatchCount[p1[0]]++; playerMatchCount[p1[1]]++;
           }
         }
       } else {
