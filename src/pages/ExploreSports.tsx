@@ -60,11 +60,16 @@ const ExploreSports: React.FC = () => {
             const card = (
               <div 
                 className={`glass-card ${!isDisabled ? 'fadeIn' : ''}`} 
-                style={cardStyle}
+                style={{
+                  ...cardStyle,
+                  backgroundImage: `linear-gradient(to top, rgba(12, 14, 20, 0.95) 20%, rgba(12, 14, 20, 0.4) 100%), url(${sport.image})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
                 onMouseEnter={(e) => {
                   if (isDisabled) return;
                   e.currentTarget.style.transform = 'translateY(-10px)';
-                  e.currentTarget.style.boxShadow = `0 15px 30px ${sport.color}22`;
+                  e.currentTarget.style.boxShadow = `0 15px 30px ${sport.color}44`;
                   e.currentTarget.style.borderColor = sport.color;
                 }}
                 onMouseLeave={(e) => {
@@ -74,28 +79,30 @@ const ExploreSports: React.FC = () => {
                   e.currentTarget.style.borderColor = `${sport.color}33`;
                 }}
               >
-                {/* Visual background effect for card */}
+                {/* Icon background decor */}
                 <div style={{
-                  position: 'absolute', top: '-10%', right: '-10%',
-                  opacity: 0.15, transform: 'rotate(-15deg)',
-                  color: isDisabled ? '#666' : sport.color
+                  position: 'absolute', top: '10%', right: '-10%',
+                  opacity: 0.1, transform: 'rotate(-15deg) scale(2)',
+                  color: sport.color, zIndex: 0
                 }}>
                   {sport.icon}
                 </div>
 
-                <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ position: 'relative', zIndex: 2 }}>
                   <div style={{ 
                     color: isDisabled ? '#666' : sport.color, marginBottom: '1rem', 
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    width: '60px', height: '60px', backgroundColor: 'rgba(255,255,255,0.05)',
-                    borderRadius: '12px'
+                    width: '60px', height: '60px', backgroundColor: 'rgba(12, 14, 20, 0.6)',
+                    backdropFilter: 'blur(4px)',
+                    borderRadius: '12px',
+                    border: `1px solid ${isDisabled ? 'rgba(255,255,255,0.1)' : (sport.color + '33')}`
                   }}>
                     {sport.icon}
                   </div>
-                  <h2 style={{ color: 'white', margin: '0 0 0.5rem', fontSize: '1.8rem' }}>
-                    {sport.name} {isDisabled && <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>(Próximamente)</span>}
+                  <h2 style={{ color: 'white', margin: '0 0 0.5rem', fontSize: '1.8rem', fontWeight: 800, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+                    {sport.name} {isDisabled && <span style={{ fontSize: '0.8rem', opacity: 0.5, fontWeight: 400 }}>(Próximamente)</span>}
                   </h2>
-                  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', marginBottom: '1.5rem', lineClamp: 2, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                  <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.95rem', marginBottom: '1.5rem', lineClamp: 2, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                     {isDisabled ? 'Esta disciplina aún no está configurada para torneos. Vuelve pronto para ver las actualizaciones.' : sport.description}
                   </p>
                   {!isDisabled && (

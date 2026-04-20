@@ -3,6 +3,15 @@ import {
   Maximize, Layers, Repeat, Target 
 } from 'lucide-react';
 
+import racquetballImg from '../assets/sports/racquetball.png';
+import basquetballImg from '../assets/sports/basquetball.png';
+import futbolImg from '../assets/sports/futbol.png';
+import pickleballImg from '../assets/sports/pickleball.png';
+import tenisImg from '../assets/sports/tenis.png';
+import padelImg from '../assets/sports/padel.png';
+import squashImg from '../assets/sports/squash.png';
+import frontTenisImg from '../assets/sports/front-tenis.png';
+
 export interface SportInfo {
   id: string;
   name: string;
@@ -10,6 +19,7 @@ export interface SportInfo {
   description: string;
   rules: string[];
   color: string;
+  image: string;
   disabled?: boolean;
 }
 
@@ -25,7 +35,8 @@ export const sportsData: Record<string, SportInfo> = {
       'El punto se gana si el rival no devuelve la bola antes del segundo bote.',
       'Solo el jugador que saca puede anotar puntos.'
     ],
-    color: '#00f2fe'
+    color: '#00f2fe',
+    image: racquetballImg
   },
   tenis: {
     id: 'tenis',
@@ -39,6 +50,7 @@ export const sportsData: Record<string, SportInfo> = {
       'Puntuación clásica: 15, 30, 40 y Juego.'
     ],
     color: '#4facfe',
+    image: tenisImg,
     disabled: true
   },
   squash: {
@@ -53,6 +65,7 @@ export const sportsData: Record<string, SportInfo> = {
       'La pelota no puede botar más de una vez en el suelo.'
     ],
     color: '#ff007c',
+    image: squashImg,
     disabled: true
   },
   padel: {
@@ -67,6 +80,7 @@ export const sportsData: Record<string, SportInfo> = {
       'La pelota debe tocar el suelo antes de impactar en las paredes.'
     ],
     color: '#00d2ff',
+    image: padelImg,
     disabled: true
   },
   pickleball: {
@@ -80,7 +94,8 @@ export const sportsData: Record<string, SportInfo> = {
       'Solo el equipo que saca suma puntos.',
       'Se juega generalmente a 11 puntos.'
     ],
-    color: '#a8ff78'
+    color: '#a8ff78',
+    image: pickleballImg
   },
   futbol: {
     id: 'futbol',
@@ -93,7 +108,8 @@ export const sportsData: Record<string, SportInfo> = {
       'El fuera de juego regula la posición de los atacantes.',
       'Gana quien anote más goles.'
     ],
-    color: '#11ffbd'
+    color: '#11ffbd',
+    image: futbolImg
   },
   basquetball: {
     id: 'basquetball',
@@ -106,7 +122,8 @@ export const sportsData: Record<string, SportInfo> = {
       'Se divide en cuatro periodos de 10 o 12 minutos.',
       'Existe un límite de faltas personales por jugador.'
     ],
-    color: '#ff9a9e'
+    color: '#ff9a9e',
+    image: basquetballImg
   },
   'front tenis': {
     id: 'front tenis',
@@ -120,6 +137,7 @@ export const sportsData: Record<string, SportInfo> = {
       'Se compite a un número determinado de tantos o tiempo.'
     ],
     color: '#f6d365',
+    image: frontTenisImg,
     disabled: true
   }
 };
