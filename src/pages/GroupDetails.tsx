@@ -607,7 +607,7 @@ const GroupDetails: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {group?.matches.map(match => (
+                    {[...(group?.matches || [])].sort((a, b) => a.pairA.name.localeCompare(b.pairA.name)).map(match => (
                       <tr key={match.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         <td style={{ padding: '15px 12px', background: match.winnerId === 'SITOUT' ? 'rgba(255, 75, 43, 0.1)' : 'transparent' }}>
                           {match.winnerId === 'SITOUT' ? (
