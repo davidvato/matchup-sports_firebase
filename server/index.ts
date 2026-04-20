@@ -31,11 +31,14 @@ app.post('/api/login', async (req, res) => {
 });
 // Tournaments: Get all
 app.get('/api/tournaments', async (req, res) => {
+  const { sport } = req.query;
   try {
     const tournaments = await prisma.tournament.findMany({
+      where: sport ? { sport: sport as string } : {},
       include: { 
         _count: { select: { categories: true } } 
-      }
+      },
+      orderBy: { createdAt: 'desc' }
     });
     res.json(tournaments);
   } catch (error) {

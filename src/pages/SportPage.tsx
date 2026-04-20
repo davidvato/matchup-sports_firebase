@@ -1,12 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, Info, Gavel } from 'lucide-react';
+import { ChevronLeft, Info, Gavel, Trophy, MapPin, Calendar } from 'lucide-react';
 import { sportsData } from '../data/sports';
 import bgImage from '../assets/login-bg.png';
+
+interface Tournament {
+  id: string;
+  name: string;
+  location: string;
+  startDate: string;
+  sport: string;
+}
 
 const SportPage: React.FC = () => {
   const { sportId } = useParams<{ sportId: string }>();
   const sport = sportId ? sportsData[sportId] : null;
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+
+  useEffect(() => {
+    if (sport) {
+      fetch(`http://localhost:3001/api/tournaments?sport=${sport.name}`)
+        .then(res => res.json())
+        .then(data => setTournaments(data))
+        .catch(err => console.error(err));
+    }
+  }, [sport]);
 
   if (!sport) {
     return (
@@ -25,11 +43,11 @@ const SportPage: React.FC = () => {
       padding: '120px 2rem 50px'
     }}>
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <Link to="/" style={{ 
+        <Link to="/explore" style={{ 
           color: 'rgba(255,255,255,0.6)', textDecoration: 'none', 
           display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '2rem' 
         }}>
-          <ChevronLeft size={20} /> Volver a Inicio
+          <ChevronLeft size={20} /> Volver a Explorar
         </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '3rem' }}>
@@ -76,6 +94,41 @@ const SportPage: React.FC = () => {
                 </div>
               ))}
             </div>
+          </section>
+
+          {/* Section 3: Related Tournaments */}
+          <section style={{ marginTop: '2rem' }}>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'white', marginBottom: '1.5rem' }}>
+              <Trophy size={24} color="var(--primary)" /> Torneos Disponibles
+            </h2>
+            {tournaments.length > 0 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+                {tournaments.map(t => (
+                  <Link key={t.id} to={`/tournament/${t.id}`} style={{ textDecoration: 'none' }}>
+                    <div className="glass-card fadeIn" style={{ 
+                      padding: '2rem', textAlign: 'left', 
+                      border: '1px solid rgba(255,255,255,0.05)', 
+                      transition: 'transform 0.3s',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    >
+                      <span style={{ fontSize: '0.8rem', color: sport.color, fontWeight: 'bold', textTransform: 'uppercase' }}>{t.sport}</span>
+                      <h3 style={{ margin: '0.5rem 0 1rem', color: 'white' }}>{t.name}</h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', opacity: 0.6, fontSize: '0.9rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin size={14} /> {t.location}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={14} /> {t.startDate ? new Date(t.startDate).toLocaleDateString() : 'Por definir'}</div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="glass-card" style={{ padding: '3rem', textAlign: 'center', opacity: 0.6 }}>
+                <p style={{ margin: 0 }}>No hay torneos activos para este deporte en este momento.</p>
+              </div>
+            )}
           </section>
         </div>
       </div>
