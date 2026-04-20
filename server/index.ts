@@ -658,7 +658,12 @@ app.post('/api/groups/:id/pairs/batch', async (req, res) => {
         data: { groupId }
       });
 
-      // 2. Get all pairs now in the group to generate round-robin matches
+      // 2. Clear existing matches for this group to start fresh
+      await tx.match.deleteMany({
+        where: { groupId }
+      });
+
+      // 3. Get all pairs now in the group
       const allPairs = await tx.pair.findMany({
         where: { groupId }
       });
