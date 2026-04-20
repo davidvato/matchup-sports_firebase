@@ -38,15 +38,25 @@ const TournamentCreation: React.FC = () => {
 
   const addCategory = () => {
     if (!newCatName.trim()) return;
+    
+    // For Racquetball, we deactivate automatic creation of groups/brackets as requested.
+    const isRacquet = sport === 'Racquetball';
+    
     setCategories([...categories, {
       name: newCatName,
-      hasGroups: true,
+      hasGroups: !isRacquet, // Disabled for Racquetball
       groupCount: 1,
-      hasBrackets: true,
+      hasBrackets: !isRacquet, // Disabled for Racquetball
       bracketSize: 4,
       participants: []
     }]);
     setNewCatName('');
+  };
+
+  const toggleCategoryFlag = (idx: number, flag: 'hasGroups' | 'hasBrackets') => {
+    const newCats = [...categories];
+    newCats[idx][flag] = !newCats[idx][flag];
+    setCategories(newCats);
   };
 
   const removeCategory = (index: number) => {
