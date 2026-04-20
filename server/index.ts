@@ -59,31 +59,40 @@ app.post('/api/tournaments', async (req, res) => {
   today.setHours(0, 0, 0, 0);
 
   if (startDate) {
-    const start = new Date(startDate);
+    const [sy, sm, sd] = startDate.split('-').map(Number);
+    const start = new Date(sy, sm - 1, sd);
     if (start < today) {
       return res.status(400).json({ success: false, message: 'La fecha de inicio no puede ser anterior a la fecha actual.' });
     }
   }
 
   if (endDate) {
-    const end = new Date(endDate);
+    const [ey, em, ed] = endDate.split('-').map(Number);
+    const end = new Date(ey, em - 1, ed);
     if (end < today) {
       return res.status(400).json({ success: false, message: 'La fecha de fin no puede ser anterior a la fecha actual.' });
     }
-    if (startDate && end < new Date(startDate)) {
-      return res.status(400).json({ success: false, message: 'La fecha de fin no puede ser anterior a la fecha de inicio.' });
+    if (startDate) {
+      const [sy, sm, sd] = startDate.split('-').map(Number);
+      const start = new Date(sy, sm - 1, sd);
+      if (end < start) {
+        return res.status(400).json({ success: false, message: 'La fecha de fin no puede ser anterior a la fecha de inicio.' });
+      }
     }
   }
 
   try {
     const result = await prisma.$transaction(async (tx) => {
       // 1. Create Tournament
+      const [sy, sm, sd] = startDate.split('-').map(Number);
+      const [ey, em, ed] = endDate.split('-').map(Number);
+      
       const tournament = await tx.tournament.create({
         data: {
           name,
           location,
-          startDate: startDate ? new Date(startDate) : null,
-          endDate: endDate ? new Date(endDate) : null,
+          startDate: startDate ? new Date(sy, sm - 1, sd) : null,
+          endDate: endDate ? new Date(ey, em - 1, ed) : null,
           sport,
           description,
           creatorId: parseInt(creatorId)

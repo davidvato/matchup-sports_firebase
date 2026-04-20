@@ -113,8 +113,12 @@ const TournamentCreation: React.FC = () => {
       }
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const start = new Date(startDate);
-      const end = new Date(endDate);
+      
+      const [sy, sm, sd] = startDate.split('-').map(Number);
+      const start = new Date(sy, sm - 1, sd);
+      
+      const [ey, em, ed] = endDate.split('-').map(Number);
+      const end = new Date(ey, em - 1, ed);
 
       if (start < today) {
         setError('La fecha de inicio no puede ser anterior a la fecha actual.');
