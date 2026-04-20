@@ -413,7 +413,14 @@ const GroupDetails: React.FC = () => {
       if (statsB.pts !== statsA.pts) return statsB.pts - statsA.pts;
       return statsB.g - statsA.g;
     }
-    if (isRacquetball || isPickleball) {
+    if (isPickleball) {
+      const statsA = getRacquetballStats(a.id);
+      const statsB = getRacquetballStats(b.id);
+      
+      if (statsB.g !== statsA.g) return statsB.g - statsA.g;
+      return statsB.pts - statsA.pts;
+    }
+    if (isRacquetball) {
       const statsA = getRacquetballStats(a.id);
       const statsB = getRacquetballStats(b.id);
       

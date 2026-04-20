@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  Trophy, Menu, User, LogOut, 
-  Circle, Zap, Activity, 
-  Maximize, Layers, Repeat, Target 
+import {
+  Trophy, Menu, User, LogOut,
+  Circle, Zap, Activity,
+  Maximize, Layers, Repeat, Target
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -37,14 +37,14 @@ const Navbar: React.FC = () => {
       </div>
       <div className="nav-links" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
         <Link to="/" style={{ color: 'white', textDecoration: 'none', fontWeight: 600 }}>
-           Inicio
+          Inicio
         </Link>
         {isAdmin && (
           <Link to="/create" style={{ color: 'white', textDecoration: 'none', fontWeight: 600 }}>
-             Panel Admin
+            Crear Torneo
           </Link>
         )}
-        
+
         <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setIsMenuOpen(!isMenuOpen)}>
           <span style={{ color: 'white', display: 'flex', alignItems: 'center', gap: '5px' }}>
             Deportes <Menu size={20} />
@@ -56,10 +56,10 @@ const Navbar: React.FC = () => {
               backgroundColor: '#1a1d23', opacity: 1, border: '1px solid var(--glass-border)'
             }}>
               {sports.map(sport => (
-                <Link 
-                  key={sport.name} 
-                  to={`/sport/${sport.name.toLowerCase()}`} 
-                  style={{ 
+                <Link
+                  key={sport.name}
+                  to={`/sport/${sport.name.toLowerCase()}`}
+                  style={{
                     color: 'white', textDecoration: 'none', padding: '8px 10px',
                     display: 'flex', alignItems: 'center', gap: '10px',
                     borderRadius: '6px', transition: 'background 0.2s'

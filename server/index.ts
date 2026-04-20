@@ -600,10 +600,13 @@ app.post('/api/matches/:id/result', async (req, res) => {
             const opponentPoints = isSideA ? m.pointsB : m.pointsA;
             if (myPoints > opponentPoints) return total + 2;
             return total;
-          } else if (currentSport === 'racquetball' || currentSport === 'pickleball') {
+          } else if (currentSport === 'racquetball') {
             const myPoints = isSideA ? m.pointsA : m.pointsB;
             const opponentPoints = isSideA ? m.pointsB : m.pointsA;
             return total + (myPoints - opponentPoints);
+          } else if (currentSport === 'pickleball') {
+            const myPoints = isSideA ? m.pointsA : m.pointsB;
+            return total + myPoints;
           } else {
             return total + (isSideA ? m.pointsA : m.pointsB);
           }
