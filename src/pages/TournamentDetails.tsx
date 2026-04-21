@@ -430,6 +430,9 @@ const TournamentDetails: React.FC = () => {
               </div>
             </header>
 
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.9 }}>
+              <Layers size={24} color="#00f2fe" /> Categorías del Torneo
+            </h2>
             <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1px', marginBottom: '3rem' }}>
               {tournament?.categories.map((cat, idx) => (
                 <button 
@@ -550,6 +553,9 @@ const TournamentDetails: React.FC = () => {
               )}
             </div>
 
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.8 }}>
+              <Layers size={24} color="var(--primary)" /> Categorías del Torneo
+            </h2>
             <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1px' }}>
               {tournament?.categories.map((cat, idx) => (
                 <button 
