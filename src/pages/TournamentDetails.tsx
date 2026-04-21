@@ -11,6 +11,7 @@ import { sportsData } from '../data/sports';
 interface Group {
   id: string;
   name: string;
+  pairs?: Pair[];
   _count: { pairs: number, matches: number };
 }
 
@@ -23,6 +24,7 @@ interface Bracket {
 interface Pair {
   id: string;
   name: string;
+  groupId?: string | null;
 }
 
 interface Category {
@@ -824,87 +826,149 @@ const TournamentDetails: React.FC = () => {
               </div>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-                {tournament?.categories.map(cat => (
-                  <div key={cat.id}>
-                    <div style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center', 
-                      marginBottom: '1rem',
-                      paddingBottom: '0.5rem',
-                      borderBottom: '1px solid rgba(255,255,255,0.05)'
-                    }}>
-                      <span style={{ fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--primary)', opacity: 0.9 }}>
-                        {cat.name} ({cat.pairs.length})
-                      </span>
-                      {isAdmin && (
-                        <button 
-                          onClick={() => handleAddPair(cat.id)}
-                          style={{ 
-                            background: 'rgba(0, 242, 254, 0.1)', 
-                            border: '1px solid rgba(0, 242, 254, 0.2)', 
-                            color: 'var(--primary)', 
-                            padding: '4px', 
-                            borderRadius: '6px', 
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'all 0.3s'
-                          }}
-                          title="Agregar jugador a esta categoría"
-                        >
-                          <Plus size={14} />
-                        </button>
-                      )}
+                {tournament?.categories.map(cat => {
+                  const unassignedPairs = cat.pairs.filter(p => !p.groupId);
+                  
+                  return (
+                    <div key={cat.id}>
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        marginBottom: '1.2rem',
+                        paddingBottom: '0.6rem',
+                        borderBottom: '2px solid rgba(0, 242, 254, 0.2)'
+                      }}>
+                        <span style={{ fontWeight: 'bold', fontSize: '1rem', color: 'var(--primary)' }}>
+                          {cat.name}
+                        </span>
+                        {isAdmin && (
+                          <button 
+                            onClick={() => handleAddPair(cat.id)}
+                            style={{ 
+                              background: 'rgba(0, 242, 254, 0.1)', 
+                              border: '1px solid rgba(0, 242, 254, 0.2)', 
+                              color: 'var(--primary)', 
+                              padding: '4px 8px', 
+                              borderRadius: '6px', 
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '5px',
+                              fontSize: '0.75rem',
+                              transition: 'all 0.3s'
+                            }}
+                          >
+                            <Plus size={14} /> Jugador
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        {/* Groups in this category */}
+                        {cat.groups.map(group => (
+                          <div key={group.id} style={{ paddingLeft: '0.5rem', borderLeft: '2px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ fontSize: '0.8rem', opacity: 0.5, marginBottom: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                              {group.name}
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                              {group.pairs?.map(pair => (
+                                <div 
+                                  key={pair.id} 
+                                  style={{ 
+                                    padding: '0.7rem 1rem', 
+                                    background: 'rgba(255,255,255,0.03)', 
+                                    borderRadius: '8px', 
+                                    fontSize: '0.85rem', 
+                                    border: '1px solid rgba(255,255,255,0.02)',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                  }}
+                                >
+                                  <span>{pair.name}</span>
+                                  {isAdmin && (
+                                    <button 
+                                      onClick={() => handleDeletePair(pair.id, pair.name)}
+                                      style={{ 
+                                        background: 'none', 
+                                        border: 'none', 
+                                        color: 'rgba(255,75,43,0.3)', 
+                                        cursor: 'pointer',
+                                        padding: '2px',
+                                        transition: 'color 0.3s'
+                                      }}
+                                      onMouseEnter={(e) => e.currentTarget.style.color = '#ff4b2b'}
+                                      onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,75,43,0.3)'}
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                              {(!group.pairs || group.pairs.length === 0) && (
+                                <p style={{ fontSize: '0.75rem', opacity: 0.3, margin: '0.2rem 0', fontStyle: 'italic' }}>
+                                  Sin jugadores asignados
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+
+                        {/* Unassigned players in this category */}
+                        {unassignedPairs.length > 0 && (
+                          <div style={{ paddingLeft: '0.5rem', borderLeft: '2px solid rgba(255,165,0,0.1)' }}>
+                            <div style={{ fontSize: '0.8rem', color: '#ffa500', opacity: 0.6, marginBottom: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                              Sin Grupo
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                              {unassignedPairs.map(pair => (
+                                <div 
+                                  key={pair.id} 
+                                  style={{ 
+                                    padding: '0.7rem 1rem', 
+                                    background: 'rgba(255,165,0,0.02)', 
+                                    borderRadius: '8px', 
+                                    fontSize: '0.85rem', 
+                                    border: '1px solid rgba(255,165,0,0.05)',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                  }}
+                                >
+                                  <span>{pair.name}</span>
+                                  {isAdmin && (
+                                    <button 
+                                      onClick={() => handleDeletePair(pair.id, pair.name)}
+                                      style={{ 
+                                        background: 'none', 
+                                        border: 'none', 
+                                        color: 'rgba(255,75,43,0.3)', 
+                                        cursor: 'pointer',
+                                        padding: '2px',
+                                        transition: 'color 0.3s'
+                                      }}
+                                      onMouseEnter={(e) => e.currentTarget.style.color = '#ff4b2b'}
+                                      onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,75,43,0.3)'}
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {cat.groups.length === 0 && unassignedPairs.length === 0 && (
+                          <p style={{ fontSize: '0.8rem', opacity: 0.3, textAlign: 'center', fontStyle: 'italic' }}>
+                            Sin datos en esta categoría
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                      {cat.pairs.map(pair => (
-                        <div 
-                          key={pair.id} 
-                          style={{ 
-                            padding: '0.8rem 1rem', 
-                            background: 'rgba(255,255,255,0.02)', 
-                            borderRadius: '8px', 
-                            fontSize: '0.85rem', 
-                            border: '1px solid rgba(255,255,255,0.03)',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                          }}
-                        >
-                          <span>{pair.name}</span>
-                          {isAdmin && (
-                            <button 
-                              onClick={() => handleDeletePair(pair.id, pair.name)}
-                              style={{ 
-                                background: 'none', 
-                                border: 'none', 
-                                color: 'rgba(255,75,43,0.3)', 
-                                cursor: 'pointer',
-                                padding: '2px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                transition: 'color 0.3s'
-                              }}
-                              onMouseEnter={(e) => e.currentTarget.style.color = '#ff4b2b'}
-                              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,75,43,0.3)'}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                      {cat.pairs.length === 0 && (
-                        <p style={{ fontSize: '0.8rem', opacity: 0.4, margin: '0.5rem 0', textAlign: 'center', fontStyle: 'italic' }}>
-                          Sin jugadores registrados
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </aside>

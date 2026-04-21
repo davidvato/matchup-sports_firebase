@@ -202,6 +202,7 @@ app.get('/api/tournaments/:id', async (req, res) => {
           include: {
             groups: {
               include: {
+                pairs: true,
                 _count: { select: { pairs: true, matches: true } }
               }
             },
