@@ -612,7 +612,21 @@ const GroupDetails: React.FC = () => {
                         <td style={{ padding: '15px 12px', textAlign: 'center', fontWeight: 'bold' }}>
                           {match.winnerId ? (
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                              <span>{match.pointsA} - {match.pointsB}</span>
+                              <span>
+                                {(isRacquetball2Of3 || isRacquetball3Of5) ? (
+                                  (() => {
+                                    if (isRacquetball3Of5) {
+                                      if (match.set5A > 0 || match.set5B > 0) return `${match.set5A} - ${match.set5B}`;
+                                      if (match.set4A > 0 || match.set4B > 0) return `${match.set4A} - ${match.set4B}`;
+                                    }
+                                    if (match.set3A > 0 || match.set3B > 0) return `${match.set3A} - ${match.set3B}`;
+                                    if (match.set2A > 0 || match.set2B > 0) return `${match.set2A} - ${match.set2B}`;
+                                    return `${match.set1A} - ${match.set1B}`;
+                                  })()
+                                ) : (
+                                  `${match.pointsA} - ${match.pointsB}`
+                                )}
+                              </span>
                               {isRacquetball2Of3 && (
                                 <span style={{ fontSize: '0.7rem', opacity: 0.5, fontWeight: 'normal' }}>
                                   ({match.set1A}-{match.set1B}, {match.set2A}-{match.set2B}, {match.set3A}-{match.set3B})

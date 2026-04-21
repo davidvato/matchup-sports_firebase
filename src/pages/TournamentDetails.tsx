@@ -379,9 +379,14 @@ const TournamentDetails: React.FC = () => {
                   <h1 className="gradient-text" style={{ fontSize: '4.5rem', margin: '0 0 0.5rem', lineHeight: 1, textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
                     {tournament?.name}
                   </h1>
-                  <div style={{ display: 'flex', gap: '2rem', opacity: 0.9, fontSize: '1.1rem' }}>
+                  <div style={{ display: 'flex', gap: '2rem', opacity: 0.9, fontSize: '1.1rem', flexWrap: 'wrap' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin size={18} /> {tournament?.location || 'Sin ubicación'}</span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={18} /> {formatDate(tournament?.startDate!)} - {formatDate(tournament?.endDate!)}</span>
+                    {tournament?.description && (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)' }}>
+                        <Trophy size={18} /> {tournament.description}
+                      </span>
+                    )}
                   </div>
                 </div>
                 {isAdmin && (

@@ -423,7 +423,17 @@ const BracketDetails: React.FC = () => {
                         type="number"
                         className="input-field"
                         style={{ width: '45px', padding: '2px 5px', textAlign: 'center', background: 'rgba(255,255,255,0.05)' }}
-                        value={match.pointsA}
+                        value={(isRacquetball2Of3 || isRacquetball3Of5) ? (
+                          (() => {
+                            if (isRacquetball3Of5) {
+                              if (match.set5A > 0 || match.set5B > 0) return match.set5A;
+                              if (match.set4A > 0 || match.set4B > 0) return match.set4A;
+                            }
+                            if (match.set3A > 0 || match.set3B > 0) return match.set3A;
+                            if (match.set2A > 0 || match.set2B > 0) return match.set2A;
+                            return match.set1A;
+                          })()
+                        ) : match.pointsA}
                         onFocus={() => {
                           if (isAdmin && (isRacquetball2Of3 || isRacquetball3Of5 || isPickleballLogic)) {
                             setResultModal({
@@ -477,7 +487,17 @@ const BracketDetails: React.FC = () => {
                         type="number"
                         className="input-field"
                         style={{ width: '45px', padding: '2px 5px', textAlign: 'center', background: 'rgba(255,255,255,0.05)' }}
-                        value={match.pointsB}
+                        value={(isRacquetball2Of3 || isRacquetball3Of5) ? (
+                          (() => {
+                            if (isRacquetball3Of5) {
+                              if (match.set5A > 0 || match.set5B > 0) return match.set5B;
+                              if (match.set4A > 0 || match.set4B > 0) return match.set4B;
+                            }
+                            if (match.set3A > 0 || match.set3B > 0) return match.set3B;
+                            if (match.set2A > 0 || match.set2B > 0) return match.set2B;
+                            return match.set1B;
+                          })()
+                        ) : match.pointsB}
                         onFocus={() => {
                           if (isAdmin && (isRacquetball2Of3 || isRacquetball3Of5 || isPickleballLogic)) {
                             setResultModal({
