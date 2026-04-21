@@ -6,6 +6,7 @@ import {
   Layers, Trash2, AlertTriangle, Plus, RotateCcw
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { sportsData } from '../data/sports';
 
 interface Group {
   id: string;
@@ -326,6 +327,8 @@ const TournamentDetails: React.FC = () => {
   if (loading) return <div style={{ color: 'white', textAlign: 'center', padding: '100px' }}>Cargando torneo...</div>;
 
   const currentCategory = tournament?.categories?.[activeTab];
+  const sportKey = tournament?.sport?.toLowerCase().replace(' ', '-');
+  const sportInfo = sportKey ? sportsData[sportKey] : null;
 
   return (
     <div style={{
@@ -337,163 +340,273 @@ const TournamentDetails: React.FC = () => {
           <ChevronLeft size={20} /> Volver a Inicio
         </Link>
 
-        <header style={{ marginBottom: '4rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-            <div>
-              <span className="badge" style={{ backgroundColor: 'rgba(0, 242, 254, 0.1)', color: 'var(--primary)', padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '1rem', display: 'inline-block' }}>
-                {tournament?.sport}
-              </span>
-              <h1 className="gradient-text" style={{ fontSize: '4rem', margin: '0 0 0.5rem', lineHeight: 1 }}>{tournament?.name}</h1>
-              {tournament?.description && (
-                <p style={{ fontSize: '1.2rem', opacity: 0.6, margin: '0 0 1.5rem', maxWidth: '800px', fontStyle: 'italic' }}>
-                   {tournament.description}
-                </p>
-              )}
-              <div style={{ display: 'flex', gap: '2rem', opacity: 0.7 }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin size={18} /> {tournament?.location || 'Sin ubicación'}</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={18} /> {formatDate(tournament?.startDate!)} - {formatDate(tournament?.endDate!)}</span>
-              </div>
-            </div>
-            {isAdmin && (
-              <div style={{ position: 'relative' }}>
-                <button 
-                  className="btn-primary" 
-                  onClick={() => setShowSettings(!showSettings)}
-                  style={{ background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                >
-                  <Settings size={18} /> Configurar
-                </button>
-                {showSettings && (
-                  <div className="glass-card fadeIn" style={{
-                    position: 'absolute', top: '100%', right: 0, marginTop: '10px',
-                    width: '200px', padding: '10px', zIndex: 10, backgroundColor: '#1a1d23',
-                    border: '1px solid rgba(255,255,255,0.1)'
-                  }}>
-                    <button 
-                      onClick={() => { setIsEditing(true); setShowSettings(false); }}
-                      style={{
-                        width: '100%', padding: '10px', background: 'none', border: 'none',
-                        color: 'white', cursor: 'pointer', textAlign: 'left', borderRadius: '8px',
-                        display: 'flex', alignItems: 'center', gap: '10px'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    >
-                      Editar Información
-                    </button>
-                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '5px 0' }} />
-                    <button 
-                      onClick={handleDeleteTournament}
-                      style={{
-                        width: '100%', padding: '10px', background: 'none', border: 'none',
-                        color: '#ff4b2b', cursor: 'pointer', textAlign: 'left', borderRadius: '8px',
-                        display: 'flex', alignItems: 'center', gap: '10px'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,75,43,0.1)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    >
-                      Eliminar Torneo
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Edit Form Overlay */}
-          {isEditing && (
-            <div style={{
-              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', zIndex: 2000, padding: '2rem'
+        {sportInfo ? (
+          <>
+            <header style={{ 
+              position: 'relative', 
+              marginBottom: '3rem', 
+              borderRadius: '24px', 
+              overflow: 'hidden',
+              minHeight: '350px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-end',
+              padding: '3rem',
+              backgroundImage: `linear-gradient(to top, rgba(12, 14, 20, 1) 0%, rgba(12, 14, 20, 0.4) 100%), url(${sportInfo.image})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              border: '1px solid rgba(255,255,255,0.1)',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
             }}>
-              <div className="glass-card fadeIn" style={{ padding: '3rem', maxWidth: '600px', width: '100%', backgroundColor: '#1a1d23' }}>
-                <h2 style={{ marginBottom: '2rem' }}>Editar Torneo</h2>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                  <div>
-                    <label style={{ opacity: 0.6, fontSize: '0.9rem' }}>Nombre</label>
-                    <input type="text" className="input-field" value={editForm.name} onChange={(e) => setEditForm({...editForm, name: e.target.value})} />
-                  </div>
-                  <div>
-                    <label style={{ opacity: 0.6, fontSize: '0.9rem' }}>Ubicación</label>
-                    <input type="text" className="input-field" value={editForm.location} onChange={(e) => setEditForm({...editForm, location: e.target.value})} />
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div>
-                      <label style={{ opacity: 0.6, fontSize: '0.9rem' }}>Inicio</label>
-                      <input type="date" className="input-field" value={editForm.startDate} onChange={(e) => setEditForm({...editForm, startDate: e.target.value})} />
-                    </div>
-                    <div>
-                      <label style={{ opacity: 0.6, fontSize: '0.9rem' }}>Fin</label>
-                      <input type="date" className="input-field" value={editForm.endDate} onChange={(e) => setEditForm({...editForm, endDate: e.target.value})} />
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                    <button className="btn-primary" onClick={() => setIsEditing(false)} style={{ flex: 1, background: 'rgba(255,255,255,0.05)' }}>Cancelar</button>
-                    <button className="btn-primary" onClick={handleUpdateTournament} style={{ flex: 1 }}>Guardar Cambios</button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%' }}>
+                <div>
+                  <span style={{ 
+                    backgroundColor: 'rgba(0, 242, 254, 0.2)', 
+                    color: '#00f2fe', 
+                    padding: '6px 16px', 
+                    borderRadius: '20px', 
+                    fontSize: '0.85rem', 
+                    fontWeight: 'bold', 
+                    marginBottom: '1rem', 
+                    display: 'inline-block',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(0, 242, 254, 0.3)'
+                  }}>
+                    {tournament?.sport}
+                  </span>
+                  <h1 className="gradient-text" style={{ fontSize: '4.5rem', margin: '0 0 0.5rem', lineHeight: 1, textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+                    {tournament?.name}
+                  </h1>
+                  <div style={{ display: 'flex', gap: '2rem', opacity: 0.9, fontSize: '1.1rem' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin size={18} /> {tournament?.location || 'Sin ubicación'}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={18} /> {formatDate(tournament?.startDate!)} - {formatDate(tournament?.endDate!)}</span>
                   </div>
                 </div>
+                {isAdmin && (
+                  <div style={{ position: 'relative' }}>
+                    <button 
+                      className="btn-primary" 
+                      onClick={() => setShowSettings(!showSettings)}
+                      style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid rgba(255,255,255,0.2)' }}
+                    >
+                      <Settings size={18} /> Configurar
+                    </button>
+                    {showSettings && (
+                      <div className="glass-card fadeIn" style={{
+                        position: 'absolute', bottom: '100%', right: 0, marginBottom: '10px',
+                        width: '200px', padding: '10px', zIndex: 10, backgroundColor: 'rgba(26, 29, 35, 0.95)',
+                        backdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255,255,255,0.1)'
+                      }}>
+                        <button 
+                          onClick={() => { setIsEditing(true); setShowSettings(false); }}
+                          style={{
+                            width: '100%', padding: '10px', background: 'none', border: 'none',
+                            color: 'white', cursor: 'pointer', textAlign: 'left', borderRadius: '8px',
+                            display: 'flex', alignItems: 'center', gap: '10px'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          Editar Información
+                        </button>
+                        <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '5px 0' }} />
+                        <button 
+                          onClick={handleDeleteTournament}
+                          style={{
+                            width: '100%', padding: '10px', background: 'none', border: 'none',
+                            color: '#ff4b2b', cursor: 'pointer', textAlign: 'left', borderRadius: '8px',
+                            display: 'flex', alignItems: 'center', gap: '10px'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,75,43,0.1)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          Eliminar Torneo
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            </header>
 
-          {/* Category Tabs */}
-          <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1px' }}>
-            {tournament?.categories.map((cat, idx) => (
-              <button 
-                key={cat.id} 
-                onClick={() => setActiveTab(idx)}
-                style={{
-                  padding: '1rem 2rem', background: 'none', border: 'none', color: activeTab === idx ? 'var(--primary)' : 'rgba(255,255,255,0.5)',
-                  cursor: 'pointer', borderBottom: activeTab === idx ? '3px solid var(--primary)' : '3px solid transparent',
-                  fontWeight: activeTab === idx ? 'bold' : 'normal', transition: 'all 0.3s',
-                  display: 'flex', alignItems: 'center', gap: '10px'
-                }}
-              >
-                {cat.name}
-                {isAdmin && activeTab === idx && (
-                  <span 
-                    onClick={(e) => { e.stopPropagation(); handleDeleteCategory(cat.id); }}
-                    style={{ 
-                      padding: '4px', borderRadius: '4px', 
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: 'rgba(255,75,43,0.1)', color: '#ff4b2b',
-                      cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,75,43,0.2)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,75,43,0.1)'}
-                    title="Eliminar categoría"
-                  >
-                    <Trash2 size={12} />
-                  </span>
+            <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1px', marginBottom: '3rem' }}>
+              {tournament?.categories.map((cat, idx) => (
+                <button 
+                  key={cat.id} 
+                  onClick={() => setActiveTab(idx)}
+                  style={{
+                    padding: '1rem 2rem', background: 'none', border: 'none', color: activeTab === idx ? 'var(--primary)' : 'rgba(255,255,255,0.5)',
+                    cursor: 'pointer', borderBottom: activeTab === idx ? '3px solid var(--primary)' : '3px solid transparent',
+                    fontWeight: activeTab === idx ? 'bold' : 'normal', transition: 'all 0.3s',
+                    display: 'flex', alignItems: 'center', gap: '10px'
+                  }}
+                >
+                  {cat.name}
+                  {isAdmin && activeTab === idx && (
+                    <span 
+                      onClick={(e) => { e.stopPropagation(); handleDeleteCategory(cat.id); }}
+                      style={{ 
+                        padding: '4px', borderRadius: '4px', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: 'rgba(255,75,43,0.1)', color: '#ff4b2b',
+                        cursor: 'pointer'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,75,43,0.2)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,75,43,0.1)'}
+                      title="Eliminar categoría"
+                    >
+                      <Trash2 size={12} />
+                    </span>
+                  )}
+                </button>
+              ))}
+              {isAdmin && (
+                <button
+                  onClick={() => setNewCategoryModal({ show: true, name: '' })}
+                  className="glass-card"
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'white',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    height: '42px',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                >
+                  <Plus size={18} /> Nueva Categoría
+                </button>
+              )}
+            </div>
+          </>
+        ) : (
+          <header style={{ marginBottom: '4rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+              <div>
+                <span className="badge" style={{ backgroundColor: 'rgba(0, 242, 254, 0.1)', color: 'var(--primary)', padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '1rem', display: 'inline-block' }}>
+                  {tournament?.sport}
+                </span>
+                <h1 className="gradient-text" style={{ fontSize: '4rem', margin: '0 0 0.5rem', lineHeight: 1 }}>{tournament?.name}</h1>
+                {tournament?.description && (
+                  <p style={{ fontSize: '1.2rem', opacity: 0.6, margin: '0 0 1.5rem', maxWidth: '800px', fontStyle: 'italic' }}>
+                    {tournament.description}
+                  </p>
                 )}
-              </button>
-            ))}
-            {isAdmin && (
-                  <button
-                    onClick={() => setNewCategoryModal({ show: true, name: '' })}
-                    className="glass-card"
-                    style={{
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      color: 'white',
-                      padding: '0.5rem 1rem',
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      height: '42px',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                <div style={{ display: 'flex', gap: '2rem', opacity: 0.7 }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin size={18} /> {tournament?.location || 'Sin ubicación'}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={18} /> {formatDate(tournament?.startDate!)} - {formatDate(tournament?.endDate!)}</span>
+                </div>
+              </div>
+              {isAdmin && (
+                <div style={{ position: 'relative' }}>
+                  <button 
+                    className="btn-primary" 
+                    onClick={() => setShowSettings(!showSettings)}
+                    style={{ background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '8px' }}
                   >
-                    <Plus size={18} /> Nueva Categoría
+                    <Settings size={18} /> Configurar
                   </button>
-                )}
-          </div>
-        </header>
+                  {showSettings && (
+                    <div className="glass-card fadeIn" style={{
+                      position: 'absolute', top: '100%', right: 0, marginTop: '10px',
+                      width: '200px', padding: '10px', zIndex: 10, backgroundColor: '#1a1d23',
+                      border: '1px solid rgba(255,255,255,0.1)'
+                    }}>
+                      <button 
+                        onClick={() => { setIsEditing(true); setShowSettings(false); }}
+                        style={{
+                          width: '100%', padding: '10px', background: 'none', border: 'none',
+                          color: 'white', cursor: 'pointer', textAlign: 'left', borderRadius: '8px',
+                          display: 'flex', alignItems: 'center', gap: '10px'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        Editar Información
+                      </button>
+                      <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '5px 0' }} />
+                      <button 
+                        onClick={handleDeleteTournament}
+                        style={{
+                          width: '100%', padding: '10px', background: 'none', border: 'none',
+                          color: '#ff4b2b', cursor: 'pointer', textAlign: 'left', borderRadius: '8px',
+                          display: 'flex', alignItems: 'center', gap: '10px'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,75,43,0.1)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        Eliminar Torneo
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1px' }}>
+              {tournament?.categories.map((cat, idx) => (
+                <button 
+                  key={cat.id} 
+                  onClick={() => setActiveTab(idx)}
+                  style={{
+                    padding: '1rem 2rem', background: 'none', border: 'none', color: activeTab === idx ? 'var(--primary)' : 'rgba(255,255,255,0.5)',
+                    cursor: 'pointer', borderBottom: activeTab === idx ? '3px solid var(--primary)' : '3px solid transparent',
+                    fontWeight: activeTab === idx ? 'bold' : 'normal', transition: 'all 0.3s',
+                    display: 'flex', alignItems: 'center', gap: '10px'
+                  }}
+                >
+                  {cat.name}
+                  {isAdmin && activeTab === idx && (
+                    <span 
+                      onClick={(e) => { e.stopPropagation(); handleDeleteCategory(cat.id); }}
+                      style={{ 
+                        padding: '4px', borderRadius: '4px', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: 'rgba(255,75,43,0.1)', color: '#ff4b2b',
+                        cursor: 'pointer'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,75,43,0.2)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,75,43,0.1)'}
+                      title="Eliminar categoría"
+                    >
+                      <Trash2 size={12} />
+                    </span>
+                  )}
+                </button>
+              ))}
+              {isAdmin && (
+                    <button
+                      onClick={() => setNewCategoryModal({ show: true, name: '' })}
+                      className="glass-card"
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        color: 'white',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        height: '42px',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                    >
+                      <Plus size={18} /> Nueva Categoría
+                    </button>
+                  )}
+            </div>
+          </header>
+        )}
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '3rem' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
