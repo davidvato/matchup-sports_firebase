@@ -673,7 +673,36 @@ const GroupDetails: React.FC = () => {
                           {match.winnerId === 'SITOUT' ? (
                             <span style={{ fontSize: '0.75rem', background: 'rgba(255, 75, 43, 0.2)', color: '#ff4b2b', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold' }}>Descanso</span>
                           ) : match.winnerId ? (
-                            <span style={{ fontSize: '0.75rem', background: 'rgba(74, 222, 128, 0.1)', color: '#4ade80', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold' }}>Finalizado</span>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', alignItems: 'center' }}>
+                              {isAdmin && (
+                                <button
+                                  onClick={() => {
+                                    setResultModal({
+                                      show: true,
+                                      match,
+                                      rowPair: match.pairA,
+                                      colPair: match.pairB,
+                                      scoreRow: String(match.pointsA),
+                                      scoreCol: String(match.pointsB),
+                                      set1Row: String(match.set1A),
+                                      set1Col: String(match.set1B),
+                                      set2Row: String(match.set2A),
+                                      set2Col: String(match.set2B),
+                                      set3Row: String(match.set3A),
+                                      set3Col: String(match.set3B),
+                                      set4Row: String(match.set4A),
+                                      set4Col: String(match.set4B),
+                                      set5Row: String(match.set5A),
+                                      set5Col: String(match.set5B)
+                                    });
+                                  }}
+                                  style={{ padding: '4px 8px', fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', color: 'white', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer' }}
+                                >
+                                  Editar
+                                </button>
+                              )}
+                              <span style={{ fontSize: '0.75rem', background: 'rgba(74, 222, 128, 0.1)', color: '#4ade80', padding: '4px 10px', borderRadius: '12px', fontWeight: 'bold' }}>Finalizado</span>
+                            </div>
                           ) : (
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                               {isAdmin && (
@@ -684,10 +713,18 @@ const GroupDetails: React.FC = () => {
                                       match,
                                       rowPair: match.pairA,
                                       colPair: match.pairB,
-                                      scoreRow: '0',
-                                      scoreCol: '0',
-                                      set1Row: '0',
-                                      set1Col: '0'
+                                      scoreRow: String(match.pointsA),
+                                      scoreCol: String(match.pointsB),
+                                      set1Row: String(match.set1A),
+                                      set1Col: String(match.set1B),
+                                      set2Row: String(match.set2A),
+                                      set2Col: String(match.set2B),
+                                      set3Row: String(match.set3A),
+                                      set3Col: String(match.set3B),
+                                      set4Row: String(match.set4A),
+                                      set4Col: String(match.set4B),
+                                      set5Row: String(match.set5A),
+                                      set5Col: String(match.set5B)
                                     });
                                   }}
                                   style={{ padding: '4px 8px', fontSize: '0.7rem', background: 'var(--primary)', color: 'black', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
