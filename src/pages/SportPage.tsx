@@ -38,7 +38,7 @@ const SportPage: React.FC = () => {
   return (
     <div style={{
       minHeight: '100vh', width: '100%',
-      backgroundImage: `linear-gradient(rgba(12, 14, 20, 0.8), rgba(12, 14, 20, 0.95)), url(${bgImage})`,
+      backgroundImage: `linear-gradient(rgba(12, 14, 20, 0.8), rgba(12, 14, 20, 0.95)), url(${sport.image})`,
       backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed',
       padding: '120px 2rem 50px'
     }}>
