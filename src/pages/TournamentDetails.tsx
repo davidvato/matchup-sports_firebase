@@ -814,78 +814,97 @@ const TournamentDetails: React.FC = () => {
             )}
           </div>
 
-          {/* Sidebar: Participants */}
+          {/* Sidebar: Players grouped by Category */}
           <aside className="fadeIn">
             <div className="glass-card" style={{ padding: '2rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h3 style={{ marginTop: 0, marginBottom: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Layers size={20} color="var(--primary)" /> Participantes ({currentCategory?.pairs.length})
+                  <Users size={20} color="var(--primary)" /> Jugadores del Torneo
                 </h3>
-                {isAdmin && currentCategory && (
-                  <button 
-                    onClick={() => handleAddPair(currentCategory.id)}
-                    style={{ 
-                      background: 'rgba(0, 242, 254, 0.1)', 
-                      border: '1px solid rgba(0, 242, 254, 0.2)', 
-                      color: 'var(--primary)', 
-                      padding: '6px', 
-                      borderRadius: '8px', 
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.3s'
-                    }}
-                    title="Agregar jugador"
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0, 242, 254, 0.2)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0, 242, 254, 0.1)'}
-                  >
-                    <Plus size={18} />
-                  </button>
-                )}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                {currentCategory?.pairs.map(pair => (
-                  <div 
-                    key={pair.id} 
-                    style={{ 
-                      padding: '1rem', 
-                      background: 'rgba(255,255,255,0.03)', 
-                      borderRadius: '10px', 
-                      fontSize: '0.9rem', 
-                      border: '1px solid rgba(255,255,255,0.05)',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center'
-                    }}
-                  >
-                    <span>{pair.name}</span>
-                    {isAdmin && (
-                      <button 
-                        onClick={() => handleDeletePair(pair.id, pair.name)}
-                        style={{ 
-                          background: 'none', 
-                          border: 'none', 
-                          color: 'rgba(255,75,43,0.5)', 
-                          cursor: 'pointer',
-                          padding: '4px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'color 0.3s'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = '#ff4b2b'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,75,43,0.5)'}
-                        title="Eliminar jugador"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+                {tournament?.categories.map(cat => (
+                  <div key={cat.id}>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      marginBottom: '1rem',
+                      paddingBottom: '0.5rem',
+                      borderBottom: '1px solid rgba(255,255,255,0.05)'
+                    }}>
+                      <span style={{ fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--primary)', opacity: 0.9 }}>
+                        {cat.name} ({cat.pairs.length})
+                      </span>
+                      {isAdmin && (
+                        <button 
+                          onClick={() => handleAddPair(cat.id)}
+                          style={{ 
+                            background: 'rgba(0, 242, 254, 0.1)', 
+                            border: '1px solid rgba(0, 242, 254, 0.2)', 
+                            color: 'var(--primary)', 
+                            padding: '4px', 
+                            borderRadius: '6px', 
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.3s'
+                          }}
+                          title="Agregar jugador a esta categoría"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      {cat.pairs.map(pair => (
+                        <div 
+                          key={pair.id} 
+                          style={{ 
+                            padding: '0.8rem 1rem', 
+                            background: 'rgba(255,255,255,0.02)', 
+                            borderRadius: '8px', 
+                            fontSize: '0.85rem', 
+                            border: '1px solid rgba(255,255,255,0.03)',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}
+                        >
+                          <span>{pair.name}</span>
+                          {isAdmin && (
+                            <button 
+                              onClick={() => handleDeletePair(pair.id, pair.name)}
+                              style={{ 
+                                background: 'none', 
+                                border: 'none', 
+                                color: 'rgba(255,75,43,0.3)', 
+                                cursor: 'pointer',
+                                padding: '2px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'color 0.3s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.color = '#ff4b2b'}
+                              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,75,43,0.3)'}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      {cat.pairs.length === 0 && (
+                        <p style={{ fontSize: '0.8rem', opacity: 0.4, margin: '0.5rem 0', textAlign: 'center', fontStyle: 'italic' }}>
+                          Sin jugadores registrados
+                        </p>
+                      )}
+                    </div>
                   </div>
                 ))}
-                {currentCategory?.pairs.length === 0 && (
-                  <p style={{ opacity: 0.4, fontSize: '0.9rem', textAlign: 'center', padding: '1rem' }}>Sin participantes registrados</p>
-                )}
               </div>
             </div>
           </aside>
