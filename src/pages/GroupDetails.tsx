@@ -947,12 +947,26 @@ const GroupDetails: React.FC = () => {
                     s3A = isRowPairA ? parseInt(resultModal.set3Row) || 0 : parseInt(resultModal.set3Col) || 0;
                     s3B = isRowPairA ? parseInt(resultModal.set3Col) || 0 : parseInt(resultModal.set3Row) || 0;
 
-                    // Validación de empates en sets
-                    if ((s1A === s1B && s1A + s1B > 0) || (s2A === s2B && s2A + s2B > 0) || (s3A === s3B && s3A + s3B > 0)) {
+                    // Validación de puntajes mínimos según reglas de Racquetball
+                    const s1Max = Math.max(s1A, s1B);
+                    const s2Max = Math.max(s2A, s2B);
+                    const s3Max = Math.max(s3A, s3B);
+
+                    if (s1Max < 15) {
                       setConfirmModal({
                         show: true,
-                        title: 'Empate no permitido en sets',
-                        message: 'No se permiten empates en los sets individuales en Racquetball.',
+                        title: 'Set 1 incompleto',
+                        message: 'El ganador del primer set debe llegar al menos a 15 puntos.',
+                        onConfirm: () => { }
+                      });
+                      return;
+                    }
+
+                    if (s2Max < 15) {
+                      setConfirmModal({
+                        show: true,
+                        title: 'Set 2 incompleto',
+                        message: 'El ganador del segundo set debe llegar al menos a 15 puntos.',
                         onConfirm: () => { }
                       });
                       return;
@@ -986,14 +1000,25 @@ const GroupDetails: React.FC = () => {
 
                     // Si van 1-1, el 3er set es obligatorio
                     const tieBreakerNeeded = (s1A > s1B && s2B > s2A) || (s1B > s1A && s2A > s2B);
-                    if (tieBreakerNeeded && s3A === 0 && s3B === 0) {
-                      setConfirmModal({
-                        show: true,
-                        title: '3er Set Obligatorio',
-                        message: 'El tercer set es obligatorio ya que los jugadores están empatados 1-1 en sets.',
-                        onConfirm: () => { }
-                      });
-                      return;
+                    if (tieBreakerNeeded) {
+                      if (s3A === 0 && s3B === 0) {
+                        setConfirmModal({
+                          show: true,
+                          title: '3er Set Obligatorio',
+                          message: 'El tercer set es obligatorio ya que los jugadores están empatados 1-1 en sets.',
+                          onConfirm: () => { }
+                        });
+                        return;
+                      }
+                      if (s3Max < 11) {
+                        setConfirmModal({
+                          show: true,
+                          title: '3er Set incompleto',
+                          message: 'El ganador del tercer set debe llegar al menos a 11 puntos.',
+                          onConfirm: () => { }
+                        });
+                        return;
+                      }
                     }
 
                     pA = s1A + s2A + s3A;

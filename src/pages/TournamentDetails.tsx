@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { 
-  ChevronLeft, Users, Trophy, Activity, 
-  ArrowRight, Settings, MapPin, Calendar, 
+import {
+  ChevronLeft, Users, Trophy, Activity,
+  ArrowRight, Settings, MapPin, Calendar,
   Layers, Trash2, AlertTriangle, Plus, RotateCcw
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -67,7 +67,7 @@ const TournamentDetails: React.FC = () => {
     show: false,
     title: '',
     message: '',
-    onConfirm: () => {}
+    onConfirm: () => { }
   });
 
   // Custom Prompt Modal State
@@ -82,7 +82,7 @@ const TournamentDetails: React.FC = () => {
     title: '',
     value: '',
     placeholder: '',
-    onConfirm: () => {}
+    onConfirm: () => { }
   });
 
   // Custom Bracket Modal State
@@ -243,8 +243,8 @@ const TournamentDetails: React.FC = () => {
       message: '¿Estás seguro de reiniciar todos los resultados y borrar los brackets de esta categoría? Esta acción no se puede deshacer.',
       onConfirm: async () => {
         try {
-          const res = await fetch(`http://localhost:3001/api/categories/${currentCategory.id}/reset`, { 
-            method: 'POST' 
+          const res = await fetch(`http://localhost:3001/api/categories/${currentCategory.id}/reset`, {
+            method: 'POST'
           });
           if (res.ok) fetchTournament();
         } catch (err) {
@@ -321,8 +321,8 @@ const TournamentDetails: React.FC = () => {
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
-    return new Date(dateStr).toLocaleDateString('es-ES', { 
-      day: 'numeric', month: 'long', year: 'numeric' 
+    return new Date(dateStr).toLocaleDateString('es-ES', {
+      day: 'numeric', month: 'long', year: 'numeric'
     });
   };
 
@@ -344,10 +344,10 @@ const TournamentDetails: React.FC = () => {
 
         {sportInfo ? (
           <>
-            <header style={{ 
-              position: 'relative', 
-              marginBottom: '3rem', 
-              borderRadius: '24px', 
+            <header style={{
+              position: 'relative',
+              marginBottom: '3rem',
+              borderRadius: '24px',
               overflow: 'hidden',
               minHeight: '350px',
               display: 'flex',
@@ -362,14 +362,14 @@ const TournamentDetails: React.FC = () => {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%' }}>
                 <div>
-                  <span style={{ 
-                    backgroundColor: 'rgba(0, 242, 254, 0.2)', 
-                    color: '#00f2fe', 
-                    padding: '6px 16px', 
-                    borderRadius: '20px', 
-                    fontSize: '0.85rem', 
-                    fontWeight: 'bold', 
-                    marginBottom: '1rem', 
+                  <span style={{
+                    backgroundColor: 'rgba(0, 242, 254, 0.2)',
+                    color: '#00f2fe',
+                    padding: '6px 16px',
+                    borderRadius: '20px',
+                    fontSize: '0.85rem',
+                    fontWeight: 'bold',
+                    marginBottom: '1rem',
                     display: 'inline-block',
                     backdropFilter: 'blur(10px)',
                     border: '1px solid rgba(0, 242, 254, 0.3)'
@@ -386,8 +386,8 @@ const TournamentDetails: React.FC = () => {
                 </div>
                 {isAdmin && (
                   <div style={{ position: 'relative' }}>
-                    <button 
-                      className="btn-primary" 
+                    <button
+                      className="btn-primary"
                       onClick={() => setShowSettings(!showSettings)}
                       style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid rgba(255,255,255,0.2)' }}
                     >
@@ -400,7 +400,7 @@ const TournamentDetails: React.FC = () => {
                         backdropFilter: 'blur(20px)',
                         border: '1px solid rgba(255,255,255,0.1)'
                       }}>
-                        <button 
+                        <button
                           onClick={() => { setIsEditing(true); setShowSettings(false); }}
                           style={{
                             width: '100%', padding: '10px', background: 'none', border: 'none',
@@ -413,7 +413,7 @@ const TournamentDetails: React.FC = () => {
                           Editar Información
                         </button>
                         <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '5px 0' }} />
-                        <button 
+                        <button
                           onClick={handleDeleteTournament}
                           style={{
                             width: '100%', padding: '10px', background: 'none', border: 'none',
@@ -437,8 +437,8 @@ const TournamentDetails: React.FC = () => {
             </h2>
             <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1px', marginBottom: '3rem' }}>
               {tournament?.categories.map((cat, idx) => (
-                <button 
-                  key={cat.id} 
+                <button
+                  key={cat.id}
                   onClick={() => setActiveTab(idx)}
                   style={{
                     padding: '1rem 2rem', background: 'none', border: 'none', color: activeTab === idx ? 'var(--primary)' : 'rgba(255,255,255,0.5)',
@@ -449,10 +449,10 @@ const TournamentDetails: React.FC = () => {
                 >
                   {cat.name}
                   {isAdmin && activeTab === idx && (
-                    <span 
+                    <span
                       onClick={(e) => { e.stopPropagation(); handleDeleteCategory(cat.id); }}
-                      style={{ 
-                        padding: '4px', borderRadius: '4px', 
+                      style={{
+                        padding: '4px', borderRadius: '4px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         background: 'rgba(255,75,43,0.1)', color: '#ff4b2b',
                         cursor: 'pointer'
@@ -511,8 +511,8 @@ const TournamentDetails: React.FC = () => {
               </div>
               {isAdmin && (
                 <div style={{ position: 'relative' }}>
-                  <button 
-                    className="btn-primary" 
+                  <button
+                    className="btn-primary"
                     onClick={() => setShowSettings(!showSettings)}
                     style={{ background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '8px' }}
                   >
@@ -524,7 +524,7 @@ const TournamentDetails: React.FC = () => {
                       width: '200px', padding: '10px', zIndex: 10, backgroundColor: '#1a1d23',
                       border: '1px solid rgba(255,255,255,0.1)'
                     }}>
-                      <button 
+                      <button
                         onClick={() => { setIsEditing(true); setShowSettings(false); }}
                         style={{
                           width: '100%', padding: '10px', background: 'none', border: 'none',
@@ -537,7 +537,7 @@ const TournamentDetails: React.FC = () => {
                         Editar Información
                       </button>
                       <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '5px 0' }} />
-                      <button 
+                      <button
                         onClick={handleDeleteTournament}
                         style={{
                           width: '100%', padding: '10px', background: 'none', border: 'none',
@@ -560,8 +560,8 @@ const TournamentDetails: React.FC = () => {
             </h2>
             <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1px' }}>
               {tournament?.categories.map((cat, idx) => (
-                <button 
-                  key={cat.id} 
+                <button
+                  key={cat.id}
                   onClick={() => setActiveTab(idx)}
                   style={{
                     padding: '1rem 2rem', background: 'none', border: 'none', color: activeTab === idx ? 'var(--primary)' : 'rgba(255,255,255,0.5)',
@@ -572,10 +572,10 @@ const TournamentDetails: React.FC = () => {
                 >
                   {cat.name}
                   {isAdmin && activeTab === idx && (
-                    <span 
+                    <span
                       onClick={(e) => { e.stopPropagation(); handleDeleteCategory(cat.id); }}
-                      style={{ 
-                        padding: '4px', borderRadius: '4px', 
+                      style={{
+                        padding: '4px', borderRadius: '4px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         background: 'rgba(255,75,43,0.1)', color: '#ff4b2b',
                         cursor: 'pointer'
@@ -590,35 +590,35 @@ const TournamentDetails: React.FC = () => {
                 </button>
               ))}
               {isAdmin && (
-                    <button
-                      onClick={() => setNewCategoryModal({ show: true, name: '' })}
-                      className="glass-card"
-                      style={{
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        color: 'white',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '12px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        height: '42px',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                    >
-                      <Plus size={18} /> Nueva Categoría
-                    </button>
-                  )}
+                <button
+                  onClick={() => setNewCategoryModal({ show: true, name: '' })}
+                  className="glass-card"
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'white',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    height: '42px',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                >
+                  <Plus size={18} /> Nueva Categoría
+                </button>
+              )}
             </div>
           </header>
         )}
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '3rem' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-            
+
             {/* Groups Section */}
             {currentCategory?.groups && currentCategory.groups.length > 0 && (
               <section className="fadeIn">
@@ -627,14 +627,14 @@ const TournamentDetails: React.FC = () => {
                     <Users color="var(--primary)" /> Fase de Grupos
                   </h2>
                   {isAdmin && (
-                    <button 
+                    <button
                       onClick={handleResetGroups}
                       className="glass-card"
-                      style={{ 
-                        background: 'rgba(255,75,43,0.1)', 
-                        border: '1px solid rgba(255,75,43,0.2)', 
-                        color: '#ff4b2b', 
-                        cursor: 'pointer', 
+                      style={{
+                        background: 'rgba(255,75,43,0.1)',
+                        border: '1px solid rgba(255,75,43,0.2)',
+                        color: '#ff4b2b',
+                        cursor: 'pointer',
                         fontSize: '0.8rem',
                         padding: '6px 12px',
                         borderRadius: '8px',
@@ -656,13 +656,13 @@ const TournamentDetails: React.FC = () => {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                         <h3 style={{ margin: 0 }}>{group.name}</h3>
                         {isAdmin && (
-                          <button 
+                          <button
                             onClick={(e) => { e.preventDefault(); handleDeleteGroup(group.id); }}
-                            style={{ 
-                              background: '#ff4b2b', 
-                              border: 'none', 
-                              color: 'white', 
-                              cursor: 'pointer', 
+                            style={{
+                              background: '#ff4b2b',
+                              border: 'none',
+                              color: 'white',
+                              cursor: 'pointer',
                               padding: '8px',
                               borderRadius: '8px',
                               display: 'flex',
@@ -678,7 +678,7 @@ const TournamentDetails: React.FC = () => {
                         )}
                       </div>
                       <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.8rem', opacity: 0.6, marginBottom: '1.5rem' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Users size={14} /> {group._count.pairs} Parejas</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Users size={14} /> {group._count.pairs} Jugadores</span>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Activity size={14} /> {group._count.matches} Partidos</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -700,14 +700,14 @@ const TournamentDetails: React.FC = () => {
                     <Trophy color="var(--primary)" /> Fase de Brackets
                   </h2>
                   {isAdmin && (
-                    <button 
+                    <button
                       onClick={handleResetGroups}
                       className="glass-card"
-                      style={{ 
-                        background: 'rgba(255,75,43,0.1)', 
-                        border: '1px solid rgba(255,75,43,0.2)', 
-                        color: '#ff4b2b', 
-                        cursor: 'pointer', 
+                      style={{
+                        background: 'rgba(255,75,43,0.1)',
+                        border: '1px solid rgba(255,75,43,0.2)',
+                        color: '#ff4b2b',
+                        cursor: 'pointer',
                         fontSize: '0.8rem',
                         padding: '6px 12px',
                         borderRadius: '8px',
@@ -730,13 +730,13 @@ const TournamentDetails: React.FC = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '0.5rem' }}>
                           <h3 style={{ margin: 0 }}>{bracket.name}</h3>
                           {isAdmin && (
-                            <button 
+                            <button
                               onClick={(e) => { e.preventDefault(); handleDeleteBracket(bracket.id); }}
-                            style={{ 
-                                background: '#ff4b2b', 
-                                border: 'none', 
-                                color: 'white', 
-                                cursor: 'pointer', 
+                              style={{
+                                background: '#ff4b2b',
+                                border: 'none',
+                                color: 'white',
+                                cursor: 'pointer',
                                 padding: '10px',
                                 borderRadius: '10px',
                                 display: 'flex',
@@ -754,7 +754,7 @@ const TournamentDetails: React.FC = () => {
                         <span style={{ fontSize: '0.9rem', opacity: 0.6 }}>{bracket._count.matches} Partidos programados</span>
                       </div>
                       <Link to={`/bracket/${bracket.id}`} className="btn-primary" style={{ textDecoration: 'none', padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                         Ver Bracket <ArrowRight size={18} />
+                        Ver Bracket <ArrowRight size={18} />
                       </Link>
                     </div>
                   ))}
@@ -763,54 +763,54 @@ const TournamentDetails: React.FC = () => {
             )}
 
             {(!currentCategory?.groups?.length && !currentCategory?.brackets?.length) ? (
-                <div className="glass-card fadeIn" style={{ padding: '5rem 4rem', textAlign: 'center', border: '2px dashed rgba(255,255,255,0.05)' }}>
-                    <h3 style={{ opacity: 0.5, marginBottom: '2rem' }}>No hay estructura definida para esta categoría</h3>
-                    {isAdmin && currentCategory && (
-                      <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center' }}>
-                        <button 
-                          onClick={() => handleAddGroup(currentCategory.id)} 
-                          className="btn-primary" 
-                          style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
-                        >
-                          <Users size={18} /> Crear Fase de Grupos
-                        </button>
-                        <button 
-                          onClick={() => handleAddBracket(currentCategory.id)} 
-                          className="btn-primary" 
-                          disabled={tournament?.sport === 'Pickleball'}
-                          style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '10px',
-                            opacity: tournament?.sport === 'Pickleball' ? 0.4 : 1,
-                            cursor: tournament?.sport === 'Pickleball' ? 'not-allowed' : 'pointer'
-                          }}
-                        >
-                          <Trophy size={18} /> Crear Brackets {tournament?.sport === 'Pickleball' && '(No disponible)'}
-                        </button>
-                      </div>
-                    )}
-                </div>
+              <div className="glass-card fadeIn" style={{ padding: '5rem 4rem', textAlign: 'center', border: '2px dashed rgba(255,255,255,0.05)' }}>
+                <h3 style={{ opacity: 0.5, marginBottom: '2rem' }}>No hay estructura definida para esta categoría</h3>
+                {isAdmin && currentCategory && (
+                  <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center' }}>
+                    <button
+                      onClick={() => handleAddGroup(currentCategory.id)}
+                      className="btn-primary"
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+                    >
+                      <Users size={18} /> Crear Fase de Grupos
+                    </button>
+                    <button
+                      onClick={() => handleAddBracket(currentCategory.id)}
+                      className="btn-primary"
+                      disabled={tournament?.sport === 'Pickleball'}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        opacity: tournament?.sport === 'Pickleball' ? 0.4 : 1,
+                        cursor: tournament?.sport === 'Pickleball' ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      <Trophy size={18} /> Crear Brackets {tournament?.sport === 'Pickleball' && '(No disponible)'}
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               isAdmin && currentCategory && (
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                    <button onClick={() => handleAddGroup(currentCategory.id)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>+ Añadir Grupo</button>
-                    <button 
-                      onClick={() => handleAddBracket(currentCategory.id)} 
-                      disabled={tournament?.sport === 'Pickleball'}
-                      style={{ 
-                        background: 'none', 
-                        border: '1px solid rgba(255,255,255,0.1)', 
-                        color: 'white', 
-                        padding: '0.5rem 1rem', 
-                        borderRadius: '8px', 
-                        cursor: tournament?.sport === 'Pickleball' ? 'not-allowed' : 'pointer', 
-                        fontSize: '0.8rem',
-                        opacity: tournament?.sport === 'Pickleball' ? 0.3 : 1
-                      }}
-                    >
-                      + Añadir Bracket {tournament?.sport === 'Pickleball' && '(No disponible)'}
-                    </button>
+                  <button onClick={() => handleAddGroup(currentCategory.id)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>+ Añadir Grupo</button>
+                  <button
+                    onClick={() => handleAddBracket(currentCategory.id)}
+                    disabled={tournament?.sport === 'Pickleball'}
+                    style={{
+                      background: 'none',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: 'white',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '8px',
+                      cursor: tournament?.sport === 'Pickleball' ? 'not-allowed' : 'pointer',
+                      fontSize: '0.8rem',
+                      opacity: tournament?.sport === 'Pickleball' ? 0.3 : 1
+                    }}
+                  >
+                    + Añadir Bracket {tournament?.sport === 'Pickleball' && '(No disponible)'}
+                  </button>
                 </div>
               )
             )}
@@ -821,20 +821,20 @@ const TournamentDetails: React.FC = () => {
             <div className="glass-card" style={{ padding: '2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h3 style={{ marginTop: 0, marginBottom: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Users size={20} color="var(--primary)" /> Jugadores del Torneo
+                  <Users size={20} color="var(--primary)" /> Jugadores
                 </h3>
               </div>
-              
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
                 {tournament?.categories.map(cat => {
                   const unassignedPairs = cat.pairs.filter(p => !p.groupId);
-                  
+
                   return (
                     <div key={cat.id}>
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center', 
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                         marginBottom: '1.2rem',
                         paddingBottom: '0.6rem',
                         borderBottom: '2px solid rgba(0, 242, 254, 0.2)'
@@ -843,14 +843,14 @@ const TournamentDetails: React.FC = () => {
                           {cat.name}
                         </span>
                         {isAdmin && (
-                          <button 
+                          <button
                             onClick={() => handleAddPair(cat.id)}
-                            style={{ 
-                              background: 'rgba(0, 242, 254, 0.1)', 
-                              border: '1px solid rgba(0, 242, 254, 0.2)', 
-                              color: 'var(--primary)', 
-                              padding: '4px 8px', 
-                              borderRadius: '6px', 
+                            style={{
+                              background: 'rgba(0, 242, 254, 0.1)',
+                              border: '1px solid rgba(0, 242, 254, 0.2)',
+                              color: 'var(--primary)',
+                              padding: '4px 8px',
+                              borderRadius: '6px',
                               cursor: 'pointer',
                               display: 'flex',
                               alignItems: 'center',
@@ -863,7 +863,7 @@ const TournamentDetails: React.FC = () => {
                           </button>
                         )}
                       </div>
-                      
+
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         {/* Groups in this category */}
                         {cat.groups.map(group => (
@@ -873,13 +873,13 @@ const TournamentDetails: React.FC = () => {
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                               {group.pairs?.map(pair => (
-                                <div 
-                                  key={pair.id} 
-                                  style={{ 
-                                    padding: '0.7rem 1rem', 
-                                    background: 'rgba(255,255,255,0.03)', 
-                                    borderRadius: '8px', 
-                                    fontSize: '0.85rem', 
+                                <div
+                                  key={pair.id}
+                                  style={{
+                                    padding: '0.7rem 1rem',
+                                    background: 'rgba(255,255,255,0.03)',
+                                    borderRadius: '8px',
+                                    fontSize: '0.85rem',
                                     border: '1px solid rgba(255,255,255,0.02)',
                                     display: 'flex',
                                     justifyContent: 'space-between',
@@ -888,12 +888,12 @@ const TournamentDetails: React.FC = () => {
                                 >
                                   <span>{pair.name}</span>
                                   {isAdmin && (
-                                    <button 
+                                    <button
                                       onClick={() => handleDeletePair(pair.id, pair.name)}
-                                      style={{ 
-                                        background: 'none', 
-                                        border: 'none', 
-                                        color: 'rgba(255,75,43,0.3)', 
+                                      style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'rgba(255,75,43,0.3)',
                                         cursor: 'pointer',
                                         padding: '2px',
                                         transition: 'color 0.3s'
@@ -923,13 +923,13 @@ const TournamentDetails: React.FC = () => {
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                               {unassignedPairs.map(pair => (
-                                <div 
-                                  key={pair.id} 
-                                  style={{ 
-                                    padding: '0.7rem 1rem', 
-                                    background: 'rgba(255,165,0,0.02)', 
-                                    borderRadius: '8px', 
-                                    fontSize: '0.85rem', 
+                                <div
+                                  key={pair.id}
+                                  style={{
+                                    padding: '0.7rem 1rem',
+                                    background: 'rgba(255,165,0,0.02)',
+                                    borderRadius: '8px',
+                                    fontSize: '0.85rem',
                                     border: '1px solid rgba(255,165,0,0.05)',
                                     display: 'flex',
                                     justifyContent: 'space-between',
@@ -938,12 +938,12 @@ const TournamentDetails: React.FC = () => {
                                 >
                                   <span>{pair.name}</span>
                                   {isAdmin && (
-                                    <button 
+                                    <button
                                       onClick={() => handleDeletePair(pair.id, pair.name)}
-                                      style={{ 
-                                        background: 'none', 
-                                        border: 'none', 
-                                        color: 'rgba(255,75,43,0.3)', 
+                                      style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'rgba(255,75,43,0.3)',
                                         cursor: 'pointer',
                                         padding: '2px',
                                         transition: 'color 0.3s'
@@ -982,14 +982,14 @@ const TournamentDetails: React.FC = () => {
           backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center',
           justifyContent: 'center', zIndex: 3000, padding: '2rem', backdropFilter: 'blur(8px)'
         }}>
-          <div className="glass-card fadeIn" style={{ 
-            padding: '3rem', maxWidth: '450px', width: '100%', 
+          <div className="glass-card fadeIn" style={{
+            padding: '3rem', maxWidth: '450px', width: '100%',
             backgroundColor: '#1a1d23', textAlign: 'center',
             border: '1px solid rgba(255,75,43,0.3)'
           }}>
-            <div style={{ 
-              width: '64px', height: '64px', borderRadius: '50%', 
-              backgroundColor: 'rgba(255,75,43,0.1)', display: 'flex', 
+            <div style={{
+              width: '64px', height: '64px', borderRadius: '50%',
+              backgroundColor: 'rgba(255,75,43,0.1)', display: 'flex',
               alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem',
               color: '#ff4b2b'
             }}>
@@ -998,19 +998,19 @@ const TournamentDetails: React.FC = () => {
             <h2 style={{ marginBottom: '1rem', color: 'white' }}>{confirmModal.title}</h2>
             <p style={{ opacity: 0.7, marginBottom: '2.5rem', lineHeight: '1.6' }}>{confirmModal.message}</p>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
-                className="btn-primary" 
-                onClick={() => setConfirmModal({ ...confirmModal, show: false })} 
+              <button
+                className="btn-primary"
+                onClick={() => setConfirmModal({ ...confirmModal, show: false })}
                 style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
               >
                 Cancelar
               </button>
-              <button 
-                className="btn-primary" 
+              <button
+                className="btn-primary"
                 onClick={() => {
                   confirmModal.onConfirm();
                   setConfirmModal({ ...confirmModal, show: false });
-                }} 
+                }}
                 style={{ flex: 1, background: '#ff4b2b', border: 'none' }}
               >
                 Confirmar
@@ -1027,15 +1027,15 @@ const TournamentDetails: React.FC = () => {
           backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center',
           justifyContent: 'center', zIndex: 3100, padding: '2rem', backdropFilter: 'blur(8px)'
         }}>
-          <div className="glass-card fadeIn" style={{ 
-            padding: '3rem', maxWidth: '450px', width: '100%', 
+          <div className="glass-card fadeIn" style={{
+            padding: '3rem', maxWidth: '450px', width: '100%',
             backgroundColor: '#1a1d23', textAlign: 'center'
           }}>
             <h2 style={{ marginBottom: '1.5rem', color: 'white' }}>{promptModal.title}</h2>
             <div style={{ marginBottom: '2.5rem' }}>
-              <input 
-                type="text" 
-                className="input-field" 
+              <input
+                type="text"
+                className="input-field"
                 autoFocus
                 placeholder={promptModal.placeholder}
                 value={promptModal.value}
@@ -1049,19 +1049,19 @@ const TournamentDetails: React.FC = () => {
               />
             </div>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
-                className="btn-primary" 
-                onClick={() => setPromptModal({ ...promptModal, show: false })} 
+              <button
+                className="btn-primary"
+                onClick={() => setPromptModal({ ...promptModal, show: false })}
                 style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
               >
                 Cancelar
               </button>
-              <button 
-                className="btn-primary" 
+              <button
+                className="btn-primary"
                 onClick={() => {
                   promptModal.onConfirm(promptModal.value);
                   setPromptModal({ ...promptModal, show: false });
-                }} 
+                }}
                 style={{ flex: 1 }}
               >
                 {promptModal.title === 'Agregar Jugador' ? 'Guardar' : 'Crear Grupo'}
@@ -1078,16 +1078,16 @@ const TournamentDetails: React.FC = () => {
           backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center',
           justifyContent: 'center', zIndex: 3200, padding: '2rem', backdropFilter: 'blur(8px)'
         }}>
-          <div className="glass-card fadeIn" style={{ 
-            padding: '3rem', maxWidth: '450px', width: '100%', 
+          <div className="glass-card fadeIn" style={{
+            padding: '3rem', maxWidth: '450px', width: '100%',
             backgroundColor: '#1a1d23', textAlign: 'center'
           }}>
             <h2 style={{ marginBottom: '1rem', color: 'white' }}>Crear Brackets</h2>
             <p style={{ opacity: 0.7, marginBottom: '2rem' }}>Selecciona el tamaño de la fase de eliminación</p>
-            
+
             <div style={{ marginBottom: '2.5rem' }}>
-              <select 
-                className="input-field" 
+              <select
+                className="input-field"
                 value={bracketModal.size}
                 onChange={(e) => setBracketModal({ ...bracketModal, size: parseInt(e.target.value) })}
               >
@@ -1099,15 +1099,15 @@ const TournamentDetails: React.FC = () => {
             </div>
 
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
-                className="btn-primary" 
-                onClick={() => setBracketModal({ ...bracketModal, show: false })} 
+              <button
+                className="btn-primary"
+                onClick={() => setBracketModal({ ...bracketModal, show: false })}
                 style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
               >
                 Cancelar
               </button>
-              <button 
-                className="btn-primary" 
+              <button
+                className="btn-primary"
                 onClick={handleConfirmBracket}
                 style={{ flex: 1 }}
               >
@@ -1130,8 +1130,8 @@ const TournamentDetails: React.FC = () => {
             <h2 style={{ marginTop: 0, color: 'white', marginBottom: '1.5rem' }}>Nueva Categoría</h2>
             <div style={{ marginBottom: '2rem' }}>
               <label style={{ display: 'block', marginBottom: '0.8rem', opacity: 0.7, fontSize: '0.9rem' }}>Nombre de la categoría</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={newCategoryModal.name}
                 onChange={(e) => setNewCategoryModal({ ...newCategoryModal, name: e.target.value })}
                 placeholder="Ej: Categoría A, Open, etc."
@@ -1148,15 +1148,15 @@ const TournamentDetails: React.FC = () => {
               />
             </div>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
-                className="btn-primary" 
-                onClick={() => setNewCategoryModal({ show: false, name: '' })} 
+              <button
+                className="btn-primary"
+                onClick={() => setNewCategoryModal({ show: false, name: '' })}
                 style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
               >
                 Cancelar
               </button>
-              <button 
-                className="btn-primary" 
+              <button
+                className="btn-primary"
                 onClick={handleCreateCategory}
                 style={{ flex: 1 }}
                 disabled={!newCategoryModal.name.trim()}

@@ -749,17 +749,36 @@ const BracketDetails: React.FC = () => {
                     return;
                   }
 
-                  // Validación de secuencia de sets
+                  // Validación de secuencia de sets y puntajes mínimos
                   if (isRacquetball2Of3) {
+                    const s1Max = Math.max(s1A, s1B);
+                    const s2Max = Math.max(s2A, s2B);
+                    const s3Max = Math.max(s3A, s3B);
+
+                    if (s1Max < 15) {
+                      setConfirmModal({ show: true, title: 'Set 1 incompleto', message: 'El ganador del primer set debe llegar al menos a 15 puntos.', onConfirm: () => { } });
+                      return;
+                    }
+                    if (s2Max < 15) {
+                      setConfirmModal({ show: true, title: 'Set 2 incompleto', message: 'El ganador del segundo set debe llegar al menos a 15 puntos.', onConfirm: () => { } });
+                      return;
+                    }
+
                     const winner20 = (s1A > s1B && s2A > s2B) || (s1B > s1A && s2B > s2A);
                     if (winner20 && (s3A !== 0 || s3B !== 0)) {
                       setConfirmModal({ show: true, title: 'Error en 3er Set', message: 'Si un jugador ganó 2-0, el 3er set debe ser 0-0.', onConfirm: () => { } });
                       return;
                     }
                     const tieBreakerNeeded = (s1A > s1B && s2B > s2A) || (s1B > s1A && s2A > s2B);
-                    if (tieBreakerNeeded && s3A === 0 && s3B === 0) {
-                      setConfirmModal({ show: true, title: '3er Set Obligatorio', message: 'El 3er set es obligatorio en empate 1-1.', onConfirm: () => { } });
-                      return;
+                    if (tieBreakerNeeded) {
+                      if (s3A === 0 && s3B === 0) {
+                        setConfirmModal({ show: true, title: '3er Set Obligatorio', message: 'El 3er set es obligatorio en empate 1-1.', onConfirm: () => { } });
+                        return;
+                      }
+                      if (s3Max < 11) {
+                        setConfirmModal({ show: true, title: '3er Set incompleto', message: 'El ganador del tercer set debe llegar al menos a 11 puntos.', onConfirm: () => { } });
+                        return;
+                      }
                     }
                   } else if (isRacquetball3Of5) {
                     if (setsWinA === 3) {
