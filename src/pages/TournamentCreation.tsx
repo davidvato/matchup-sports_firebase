@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import useIsMobile from '../hooks/useIsMobile';
 
 import { sanitizeText, LIMITS } from '../utils/validation';
+import { API_URL } from '../config';
 interface CategoryConfig {
   name: string;
   hasGroups: boolean;
@@ -70,7 +71,7 @@ const TournamentCreation: React.FC = () => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/tournaments', {
+      const response = await fetch(`${API_URL}/tournaments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -4,6 +4,7 @@ import { ChevronLeft, Info, Gavel, Trophy, MapPin, Calendar } from 'lucide-react
 import { sportsData } from '../data/sports';
 import bgImage from '../assets/login-bg.png';
 import useIsMobile from '../hooks/useIsMobile';
+import { API_URL } from '../config';
 
 interface Tournament {
   id: string;
@@ -21,7 +22,7 @@ const SportPage: React.FC = () => {
 
   useEffect(() => {
     if (sport) {
-      fetch(`http://localhost:3001/api/tournaments?sport=${sport.name}`)
+      fetch(`${API_URL}/tournaments?sport=${sport.name}`)
         .then(res => res.json())
         .then(data => setTournaments(data))
         .catch(err => console.error(err));

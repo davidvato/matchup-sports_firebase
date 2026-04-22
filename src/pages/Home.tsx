@@ -3,6 +3,7 @@ import { Trophy, ShieldCheck, Zap, ArrowRight, Calendar, MapPin } from 'lucide-r
 import { useNavigate, Link } from 'react-router-dom';
 import bgImage from '../assets/login-bg.png';
 import useIsMobile from '../hooks/useIsMobile';
+import { API_URL } from '../config';
 
 interface Tournament {
   id: string;
@@ -18,7 +19,7 @@ const Home: React.FC = () => {
   const isMobile = useIsMobile(768);
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/tournaments')
+    fetch(`${API_URL}/tournaments`)
       .then(res => res.json())
       .then(data => setTournaments(data.slice(0, 3))) // Show only last 3
       .catch(err => console.error(err));

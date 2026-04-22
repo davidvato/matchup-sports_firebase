@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
@@ -99,7 +100,7 @@ const TournamentDetails: React.FC = () => {
       message: '¿Estás seguro de eliminar permanentemente este torneo? Esta acción no se puede deshacer.',
       onConfirm: async () => {
         try {
-          const res = await fetch(`http://localhost:3001/api/tournaments/${id}`, { method: 'DELETE' });
+          const res = await fetch(`${API_URL}/tournaments/${id}`, { method: 'DELETE' });
           if (res.ok) navigate('/create');
         } catch (err) {
           console.error(err);
@@ -110,7 +111,7 @@ const TournamentDetails: React.FC = () => {
 
   const handleUpdateTournament = async () => {
     try {
-      const res = await fetch(`http://localhost:3001/api/tournaments/${id}`, {
+      const res = await fetch(`${API_URL}/tournaments/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editForm)
@@ -134,7 +135,7 @@ const TournamentDetails: React.FC = () => {
       onConfirm: async (name) => {
         if (!name.trim()) return;
         try {
-          const res = await fetch(`http://localhost:3001/api/categories/${categoryId}/groups`, {
+          const res = await fetch(`${API_URL}/categories/${categoryId}/groups`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name })
@@ -153,7 +154,7 @@ const TournamentDetails: React.FC = () => {
 
   const handleConfirmBracket = async () => {
     try {
-      const res = await fetch(`http://localhost:3001/api/categories/${bracketModal.categoryId}/brackets`, {
+      const res = await fetch(`${API_URL}/categories/${bracketModal.categoryId}/brackets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: 'Bracket Principal', size: bracketModal.size })
@@ -174,7 +175,7 @@ const TournamentDetails: React.FC = () => {
       message: '¿Estás seguro de eliminar este grupo y todos sus partidos asociados?',
       onConfirm: async () => {
         try {
-          const res = await fetch(`http://localhost:3001/api/groups/${groupId}`, { method: 'DELETE' });
+          const res = await fetch(`${API_URL}/groups/${groupId}`, { method: 'DELETE' });
           if (res.ok) fetchTournament();
         } catch (err) {
           console.error(err);
@@ -190,7 +191,7 @@ const TournamentDetails: React.FC = () => {
       message: '¿Estás seguro de eliminar este bracket? Esta acción borrará todo el progreso de la fase de eliminación.',
       onConfirm: async () => {
         try {
-          const res = await fetch(`http://localhost:3001/api/brackets/${bracketId}`, { method: 'DELETE' });
+          const res = await fetch(`${API_URL}/brackets/${bracketId}`, { method: 'DELETE' });
           if (res.ok) fetchTournament();
         } catch (err) {
           console.error(err);
@@ -206,7 +207,7 @@ const TournamentDetails: React.FC = () => {
       message: '¿Estás seguro de eliminar esta CATEGORÍA? Se perderán TODOS los grupos, brackets y participantes asociados de forma permanente.',
       onConfirm: async () => {
         try {
-          const res = await fetch(`http://localhost:3001/api/categories/${categoryId}`, { method: 'DELETE' });
+          const res = await fetch(`${API_URL}/categories/${categoryId}`, { method: 'DELETE' });
           if (res.ok) {
             // Adjust active tab if needed
             if (activeTab > 0 && activeTab === (tournament?.categories.length || 0) - 1) {
@@ -224,7 +225,7 @@ const TournamentDetails: React.FC = () => {
   const handleCreateCategory = async () => {
     if (!newCategoryModal.name.trim()) return;
     try {
-      const res = await fetch(`http://localhost:3001/api/tournaments/${id}/categories`, {
+      const res = await fetch(`${API_URL}/tournaments/${id}/categories`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newCategoryModal.name })
@@ -246,7 +247,7 @@ const TournamentDetails: React.FC = () => {
       message: '¿Estás seguro de reiniciar todos los resultados y borrar los brackets de esta categoría? Esta acción no se puede deshacer.',
       onConfirm: async () => {
         try {
-          const res = await fetch(`http://localhost:3001/api/categories/${currentCategory.id}/reset`, {
+          const res = await fetch(`${API_URL}/categories/${currentCategory.id}/reset`, {
             method: 'POST'
           });
           if (res.ok) fetchTournament();
@@ -266,7 +267,7 @@ const TournamentDetails: React.FC = () => {
       onConfirm: async (name) => {
         if (!name.trim()) return;
         try {
-          const res = await fetch(`http://localhost:3001/api/categories/${categoryId}/pairs`, {
+          const res = await fetch(`${API_URL}/categories/${categoryId}/pairs`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name })
@@ -286,7 +287,7 @@ const TournamentDetails: React.FC = () => {
       message: `¿Estás seguro de eliminar a "${pairName}"? Se borrará de todos los grupos y brackets donde esté asignado.`,
       onConfirm: async () => {
         try {
-          const res = await fetch(`http://localhost:3001/api/pairs/${pairId}`, { method: 'DELETE' });
+          const res = await fetch(`${API_URL}/pairs/${pairId}`, { method: 'DELETE' });
           if (res.ok) fetchTournament();
         } catch (err) {
           console.error(err);
@@ -312,7 +313,7 @@ const TournamentDetails: React.FC = () => {
 
   const fetchTournament = async () => {
     try {
-      const res = await fetch(`http://localhost:3001/api/tournaments/${id}`);
+      const res = await fetch(`${API_URL}/tournaments/${id}`);
       const data = await res.json();
       setTournament(data);
     } catch (err) {
