@@ -9,6 +9,18 @@ const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
 
+// Seed admin user on startup
+prisma.user.upsert({
+  where: { username: 'admin' },
+  update: { password: 'admin123' },
+  create: {
+    username: 'admin',
+    password: 'admin123',
+    role: 'ADMIN'
+  }
+}).then(() => console.log('Admin user seeded'))
+  .catch(console.error);
+
 app.use(cors());
 app.use(express.json());
 
