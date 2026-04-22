@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Trophy, ShieldCheck, Zap, ArrowRight, Calendar, MapPin } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import bgImage from '../assets/login-bg.png';
+import useIsMobile from '../hooks/useIsMobile';
 
 interface Tournament {
   id: string;
@@ -14,6 +15,7 @@ interface Tournament {
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const isMobile = useIsMobile(768);
 
   useEffect(() => {
     fetch('http://localhost:3001/api/tournaments')
@@ -32,23 +34,43 @@ const Home: React.FC = () => {
       backgroundImage: `linear-gradient(rgba(12, 14, 20, 0.7), rgba(12, 14, 20, 0.9)), url(${bgImage})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
-      backgroundAttachment: 'fixed',
+      backgroundAttachment: isMobile ? 'scroll' : 'fixed',
       color: 'white',
-      padding: '120px 2.5rem 50px',
+      padding: isMobile ? '90px 1rem 30px' : '120px 2.5rem 50px',
       textAlign: 'center'
     }}>
-      <div className="glass-card fadeIn" style={{ padding: '4rem', maxWidth: '900px', marginBottom: '4rem' }}>
-        <Trophy size={80} color="#00f2fe" style={{ marginBottom: '2rem' }} />
-        <h1 className="gradient-text" style={{ fontSize: '5rem', marginBottom: '1rem', lineHeight: 1 }}>MatchUp</h1>
-        <p style={{ fontSize: '1.5rem', opacity: 0.8, maxWidth: '600px', margin: '0 auto' }}>
+      <div className="glass-card fadeIn" style={{
+        padding: isMobile ? '2rem 1.5rem' : '4rem',
+        maxWidth: '900px',
+        width: '100%',
+        marginBottom: isMobile ? '2rem' : '4rem'
+      }}>
+        <Trophy size={isMobile ? 50 : 80} color="#00f2fe" style={{ marginBottom: isMobile ? '1rem' : '2rem' }} />
+        <h1 className="gradient-text" style={{
+          fontSize: 'clamp(2.5rem, 10vw, 5rem)',
+          marginBottom: '1rem',
+          lineHeight: 1
+        }}>MatchUp</h1>
+        <p style={{
+          fontSize: 'clamp(1rem, 3vw, 1.5rem)',
+          opacity: 0.8,
+          maxWidth: '600px',
+          margin: '0 auto'
+        }}>
           La plataforma definitiva para la gestión y organización de torneos deportivos de alto nivel.
         </p>
         
-        <div style={{ marginTop: '3rem', display: 'flex', gap: '1.5rem', justifyContent: 'center' }}>
+        <div style={{ marginTop: isMobile ? '2rem' : '3rem', display: 'flex', gap: '1.5rem', justifyContent: 'center' }}>
           <button 
             className="btn-primary" 
             onClick={() => navigate('/explore')}
-            style={{ padding: '1.2rem 3rem', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '10px' }}
+            style={{
+              padding: isMobile ? '1rem 2rem' : '1.2rem 3rem',
+              fontSize: isMobile ? '1rem' : '1.2rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px'
+            }}
           >
             Explorar Deportes <ArrowRight size={20} />
           </button>
@@ -57,14 +79,30 @@ const Home: React.FC = () => {
 
       {/* Recent Tournaments Section */}
       {tournaments.length > 0 && (
-        <div style={{ width: '100%', maxWidth: '1200px', marginBottom: '5rem' }}>
-          <h2 style={{ marginBottom: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
+        <div style={{ width: '100%', maxWidth: '1200px', marginBottom: isMobile ? '2rem' : '5rem' }}>
+          <h2 style={{
+            marginBottom: isMobile ? '1.5rem' : '2.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '15px',
+            fontSize: isMobile ? '1.3rem' : undefined
+          }}>
             <Trophy color="var(--primary)" /> Torneos Recientes
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: isMobile ? '1rem' : '2rem'
+          }}>
             {tournaments.map(t => (
               <Link key={t.id} to={`/tournament/${t.id}`} style={{ textDecoration: 'none' }}>
-                <div className="glass-card fadeIn" style={{ padding: '2rem', textAlign: 'left', border: '1px solid rgba(255,255,255,0.05)', height: '100%' }}>
+                <div className="glass-card fadeIn" style={{
+                  padding: isMobile ? '1.5rem' : '2rem',
+                  textAlign: 'left',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  height: '100%'
+                }}>
                   <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'bold', textTransform: 'uppercase' }}>{t.sport}</span>
                   <h3 style={{ margin: '0.5rem 0 1rem', color: 'white' }}>{t.name}</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', opacity: 0.6, fontSize: '0.9rem' }}>
@@ -78,19 +116,25 @@ const Home: React.FC = () => {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', maxWidth: '1200px' }}>
-        <div className="glass-card" style={{ padding: '2rem' }}>
-          <ShieldCheck size={48} color="#00f2fe" style={{ marginBottom: '1rem' }} />
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: isMobile ? '1rem' : '2rem',
+        maxWidth: '1200px',
+        width: '100%'
+      }}>
+        <div className="glass-card" style={{ padding: isMobile ? '1.5rem' : '2rem' }}>
+          <ShieldCheck size={isMobile ? 36 : 48} color="#00f2fe" style={{ marginBottom: '1rem' }} />
           <h3>Gestión Administrador</h3>
           <p style={{ opacity: 0.7 }}>Control total sobre la creación y edición de torneos con perfiles seguros.</p>
         </div>
-        <div className="glass-card" style={{ padding: '2rem' }}>
-          <Zap size={48} color="#ff007c" style={{ marginBottom: '1rem' }} />
+        <div className="glass-card" style={{ padding: isMobile ? '1.5rem' : '2rem' }}>
+          <Zap size={isMobile ? 36 : 48} color="#ff007c" style={{ marginBottom: '1rem' }} />
           <h3>8+ Deportes</h3>
           <p style={{ opacity: 0.7 }}>Desde Racquetball hasta Futbol, todo en un solo lugar.</p>
         </div>
-        <div className="glass-card" style={{ padding: '2rem' }}>
-          <Trophy size={48} color="#4facfe" style={{ marginBottom: '1rem' }} />
+        <div className="glass-card" style={{ padding: isMobile ? '1.5rem' : '2rem' }}>
+          <Trophy size={isMobile ? 36 : 48} color="#4facfe" style={{ marginBottom: '1rem' }} />
           <h3>Tablas Dinámicas</h3>
           <p style={{ opacity: 0.7 }}>Actualizaciones en tiempo real y seguimiento de resultados premium.</p>
         </div>

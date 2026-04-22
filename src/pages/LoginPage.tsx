@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import bgImage from '../assets/login-bg.png';
+import useIsMobile from '../hooks/useIsMobile';
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -12,6 +13,7 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile(768);
 
   useEffect(() => {
     generateCaptcha();
@@ -53,10 +55,10 @@ const LoginPage: React.FC = () => {
       backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url(${bgImage})`,
       backgroundSize: 'cover', backgroundPosition: 'center',
       display: 'flex', justifyContent: 'center', alignItems: 'center',
-      padding: '2rem'
+      padding: isMobile ? '1rem' : '2rem'
     }}>
       <div className="glass-card fadeIn" style={{
-        width: '100%', maxWidth: '450px', padding: '3rem',
+        width: '100%', maxWidth: '450px', padding: isMobile ? '2rem 1.5rem' : '3rem',
         backgroundColor: 'rgba(18, 20, 27, 0.9)', backdropFilter: 'blur(15px)',
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)'
       }}>

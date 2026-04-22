@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Users, Trophy, Activity, CheckCircle2, RotateCcw, Plus, X, AlertTriangle, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import useIsMobile from '../hooks/useIsMobile';
 
 interface Pair {
   id: string;
@@ -83,6 +84,7 @@ const GroupDetails: React.FC = () => {
   const [showAddPlayer, setShowAddPlayer] = useState(false);
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [registerModal, setRegisterModal] = useState({ show: false, name: '' });
+  const isMobile = useIsMobile(768);
   const [resultModal, setResultModal] = useState<{
     show: boolean;
     match: Match | null;
@@ -432,17 +434,24 @@ const GroupDetails: React.FC = () => {
 
   return (
     <div style={{
-      minHeight: '100vh', padding: '120px 2rem 50px',
+      minHeight: '100vh', padding: isMobile ? '80px 0.8rem 30px' : '120px 2rem 50px',
       backgroundImage: 'linear-gradient(135deg, #0c0e14 0%, #1a1d23 100%)', color: 'white'
     }}>
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <header style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <header style={{
+          marginBottom: isMobile ? '1.5rem' : '3rem',
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          justifyContent: 'space-between',
+          alignItems: isMobile ? 'flex-start' : 'center',
+          gap: isMobile ? '1rem' : '0'
+        }}>
           <div>
             <Link to={group ? `/tournament/${group.category.tournamentId}` : '/'} style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.5)', textDecoration: 'none', marginBottom: '1rem' }}>
               <ChevronLeft size={18} /> Volver al Torneo
             </Link>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-              <h1 className="gradient-text" style={{ fontSize: '3rem', margin: 0 }}>{group?.name}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <h1 className="gradient-text" style={{ fontSize: isMobile ? 'clamp(1.5rem, 7vw, 2.2rem)' : '3rem', margin: 0 }}>{group?.name}</h1>
               {isAdmin && (
                 <button
                   onClick={handleDeleteGroup}
@@ -467,13 +476,18 @@ const GroupDetails: React.FC = () => {
               )}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: '0.8rem',
+            width: isMobile ? '100%' : 'auto'
+          }}>
             {isAdmin && (
               <>
-                <button onClick={() => setShowAddPlayer(true)} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button onClick={() => setShowAddPlayer(true)} className="btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <Plus size={18} /> Asignar Jugadores
                 </button>
-                <button onClick={resetGroup} className="btn-primary" style={{ background: 'rgba(255,75,43,0.1)', color: '#ff4b2b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button onClick={resetGroup} className="btn-primary" style={{ background: 'rgba(255,75,43,0.1)', color: '#ff4b2b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <RotateCcw size={18} /> Reiniciar Grupo
                 </button>
               </>
@@ -487,8 +501,8 @@ const GroupDetails: React.FC = () => {
               <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
                 <Trophy size={22} color="var(--primary)" /> Tabla de Posiciones
               </h2>
-              <div className="glass-card fadeIn" style={{ padding: '2rem', overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <div className="glass-card fadeIn" style={{ padding: isMobile ? '1rem' : '2rem', overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: isMobile ? '0.8rem' : undefined }}>
                   <thead>
                     <tr style={{ textAlign: 'left', opacity: 0.5, fontSize: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                       <th style={{ padding: '12px' }}>#</th>
@@ -591,8 +605,8 @@ const GroupDetails: React.FC = () => {
               <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
                 <CheckCircle2 color="var(--primary)" /> Detalle de Partidos
               </h2>
-              <div className="glass-card" style={{ padding: '1.5rem' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <div className="glass-card" style={{ padding: isMobile ? '0.8rem' : '1.5rem', overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: isMobile ? '0.75rem' : undefined, minWidth: isMobile ? '600px' : undefined }}>
                   <thead>
                     <tr style={{ textAlign: 'left', opacity: 0.5, fontSize: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                       <th style={{ padding: '12px' }}>Partido</th>

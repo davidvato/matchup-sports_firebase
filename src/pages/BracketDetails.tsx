@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Trophy, CheckCircle2, Trash2, RotateCcw, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import useIsMobile from '../hooks/useIsMobile';
 
 interface Pair {
   id: string;
@@ -52,6 +53,7 @@ const BracketDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [categoryPairs, setCategoryPairs] = useState<Pair[]>([]);
   const [registerModal, setRegisterModal] = useState({ show: false, name: '' });
+  const isMobile = useIsMobile(768);
   const [selectModal, setSelectModal] = useState<{
     show: boolean;
     matchId: string;
@@ -314,18 +316,25 @@ const BracketDetails: React.FC = () => {
 
   return (
     <div style={{
-      minHeight: '100vh', padding: '120px 2rem 50px',
+      minHeight: '100vh', padding: isMobile ? '80px 0.8rem 30px' : '120px 2rem 50px',
       backgroundImage: 'linear-gradient(135deg, #0c0e14 0%, #1a1d23 100%)', color: 'white',
       overflowX: 'auto'
     }}>
-      <div style={{ minWidth: '1000px', maxWidth: '1400px', margin: '0 auto' }}>
-        <header style={{ marginBottom: '4rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <div style={{ minWidth: isMobile ? undefined : '1000px', maxWidth: '1400px', margin: '0 auto' }}>
+        <header style={{
+          marginBottom: isMobile ? '2rem' : '4rem',
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          justifyContent: 'space-between',
+          alignItems: isMobile ? 'flex-start' : 'flex-end',
+          gap: isMobile ? '1rem' : '0'
+        }}>
           <div>
             <Link to={bracket ? `/tournament/${bracket.category.tournamentId}` : '/'} style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.5)', textDecoration: 'none', marginBottom: '1rem' }}>
               <ChevronLeft size={18} /> Volver al Torneo
             </Link>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-              <h1 className="gradient-text" style={{ fontSize: '3.5rem', margin: 0 }}>{bracket?.name}</h1>
+              <h1 className="gradient-text" style={{ fontSize: isMobile ? 'clamp(1.5rem, 7vw, 2.2rem)' : '3.5rem', margin: 0 }}>{bracket?.name}</h1>
               {isAdmin && (
                 <button
                   onClick={handleDeleteBracket}
@@ -351,7 +360,12 @@ const BracketDetails: React.FC = () => {
             </div>
           </div>
           {isAdmin && (
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: isMobile ? 'column' : 'row',
+              gap: '0.8rem',
+              width: isMobile ? '100%' : 'auto'
+            }}>
               <button
                 onClick={handleResetBracket}
                 className="btn-primary"
@@ -401,16 +415,26 @@ const BracketDetails: React.FC = () => {
           )}
         </header>
 
-        <div style={{ display: 'flex', gap: '4rem', alignItems: 'center', padding: '2rem 0' }}>
+        <div style={{
+          display: 'flex',
+          gap: isMobile ? '2rem' : '4rem',
+          alignItems: 'center',
+          padding: '2rem 0',
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch'
+        }}>
           {roundNumbers.map(rNum => (
             <div key={rNum} style={{ display: 'flex', flexDirection: 'column', gap: '2rem', flex: 1 }}>
               <h3 style={{ textAlign: 'center', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.9rem' }}>
                 {rNum === maxRound ? 'Final' : (rNum === maxRound - 1 ? 'Semifinales' : `Ronda ${rNum}`)}
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', height: '500px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', height: isMobile ? '400px' : '500px' }}>
                 {rounds[rNum].sort((a, b) => a.matchIndex - b.matchIndex).map(match => (
                   <div key={match.id} className="glass-card fadeIn" style={{
-                    padding: '1rem', width: '220px', position: 'relative',
+                    padding: isMobile ? '0.8rem' : '1rem',
+                    width: isMobile ? '180px' : '220px',
+                    position: 'relative',
+                    flexShrink: 0,
                     border: match.winnerId ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)'
                   }}>
                     <div

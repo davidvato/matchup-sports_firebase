@@ -6,6 +6,25 @@ import {
   ChevronRight, ChevronLeft, Tags
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import useIsMobile from '../hooks/useIsMobile';
+
+// --- Constraints ---
+const MAX_NAME_LENGTH = 100;
+const MAX_LOCATION_LENGTH = 150;
+
+/**
+ * Sanitise free-text input:
+ * - Strips SQL comment markers (--)
+ * - Strips characters used in SQL injection / XSS (; ' " \ * < >)
+ * - Allows single hyphens (e.g. "Sub-20") and slashes (e.g. addresses)
+ * - Trims leading/trailing whitespace
+ */
+const sanitizeInput = (value: string): string => {
+  return value
+    .replace(/--/g, '')
+    .replace(/[;'"\\*<>]/g, '')
+    .trim();
+};
 
 interface CategoryConfig {
   name: string;
@@ -19,6 +38,7 @@ interface CategoryConfig {
 const TournamentCreation: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile(768);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -98,6 +118,16 @@ const TournamentCreation: React.FC = () => {
 
   const nextStep = () => {
     if (step === 1) {
+      // --- Character-length validations ---
+      if (name.length > MAX_NAME_LENGTH) {
+        setError(`El nombre del torneo no puede exceder ${MAX_NAME_LENGTH} caracteres.`);
+        return;
+      }
+      if (location.length > MAX_LOCATION_LENGTH) {
+        setError(`La ubicación no puede exceder ${MAX_LOCATION_LENGTH} caracteres.`);
+        return;
+      }
+
       if (!startDate || !endDate) {
         setError('Por favor selecciona ambas fechas (inicio y fin).');
         return;
@@ -135,36 +165,73 @@ const TournamentCreation: React.FC = () => {
 
   return (
     <div style={{
-      minHeight: '100vh', padding: '120px 2rem 50px',
-      backgroundImage: 'linear-gradient(135deg, #0c0e14 0%, #1a1d23 100%)', color: 'white'
+      minHeight: '100vh',
+      padding: isMobile ? '80px 1rem 30px' : '120px 2rem 50px',
+      backgroundImage: 'linear-gradient(135deg, #0c0e14 0%, #1a1d23 100%)',
+      color: 'white'
     }}>
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-        <header style={{ textAlign: 'center', marginBottom: '4rem' }}>
-          <h1 className="gradient-text" style={{ fontSize: '3.5rem', margin: '0 0 1rem' }}>MatchUp Tournament</h1>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+        <header style={{ textAlign: 'center', marginBottom: isMobile ? '2rem' : '4rem' }}>
+          <h1 className="gradient-text" style={{
+            fontSize: 'clamp(2rem, 8vw, 3.5rem)',
+            margin: '0 0 1rem'
+          }}>MatchUp Tournament</h1>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: isMobile ? '1rem' : '1.5rem', flexWrap: 'wrap' }}>
             <StepIndicator current={step} target={1} label="Información" />
             <StepIndicator current={step} target={2} label="Categorías" />
           </div>
         </header>
 
-        <div className="glass-card fadeIn" style={{ padding: '3.5rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="glass-card fadeIn" style={{
+          padding: isMobile ? '1.5rem' : '3.5rem',
+          border: '1px solid rgba(255,255,255,0.05)'
+        }}>
 
           {/* STEP 1: BASIC INFO */}
           {step === 1 && (
             <div className="slideIn">
-              <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2.5rem' }}>
-                <Trophy color="var(--primary)" size={28} /> Información Básica
+              <h2 style={{
+                display: 'flex', alignItems: 'center', gap: '12px',
+                marginBottom: isMobile ? '1.5rem' : '2.5rem',
+                fontSize: isMobile ? '1.2rem' : undefined
+              }}>
+                <Trophy color="var(--primary)" size={isMobile ? 22 : 28} /> Información Básica
               </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                <div style={{ gridColumn: 'span 2' }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                gap: isMobile ? '1.2rem' : '2rem'
+              }}>
+                <div style={{ gridColumn: 'span 1', ...(isMobile ? {} : { gridColumn: 'span 2' }) }}>
                   <label style={{ display: 'block', marginBottom: '0.8rem', opacity: 0.7 }}>Nombre del Torneo</label>
-                  <input type="text" className="input-field" placeholder="Ej: Torneo Relámpago 2024" value={name} onChange={(e) => setName(e.target.value)} />
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="Ej: Torneo Relámpago 2024"
+                    maxLength={MAX_NAME_LENGTH}
+                    value={name}
+                    onChange={(e) => setName(sanitizeInput(e.target.value))}
+                  />
+                  <div style={{ textAlign: 'right', fontSize: '0.75rem', marginTop: '0.4rem', opacity: name.length > MAX_NAME_LENGTH * 0.9 ? 1 : 0.4, color: name.length > MAX_NAME_LENGTH * 0.9 ? '#ff4b2b' : 'inherit' }}>
+                    {name.length}/{MAX_NAME_LENGTH}
+                  </div>
                 </div>
-                <div style={{ gridColumn: 'span 2' }}>
+                <div style={{ gridColumn: 'span 1', ...(isMobile ? {} : { gridColumn: 'span 2' }) }}>
                   <label style={{ display: 'block', marginBottom: '0.8rem', opacity: 0.7 }}>Lugar / Ubicación</label>
                   <div style={{ position: 'relative' }}>
                     <MapPin size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
-                    <input type="text" className="input-field" style={{ paddingLeft: '40px' }} placeholder="Escribe la ubicación..." value={location} onChange={(e) => setLocation(e.target.value)} />
+                    <input
+                      type="text"
+                      className="input-field"
+                      style={{ paddingLeft: '40px' }}
+                      placeholder="Escribe la ubicación..."
+                      maxLength={MAX_LOCATION_LENGTH}
+                      value={location}
+                      onChange={(e) => setLocation(sanitizeInput(e.target.value))}
+                    />
+                  </div>
+                  <div style={{ textAlign: 'right', fontSize: '0.75rem', marginTop: '0.4rem', opacity: location.length > MAX_LOCATION_LENGTH * 0.9 ? 1 : 0.4, color: location.length > MAX_LOCATION_LENGTH * 0.9 ? '#ff4b2b' : 'inherit' }}>
+                    {location.length}/{MAX_LOCATION_LENGTH}
                   </div>
                 </div>
                 <div>
@@ -181,7 +248,7 @@ const TournamentCreation: React.FC = () => {
                     <input type="date" className="input-field" style={{ paddingLeft: '40px' }} value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                   </div>
                 </div>
-                <div style={{ gridColumn: 'span 2' }}>
+                <div style={{ gridColumn: 'span 1', ...(isMobile ? {} : { gridColumn: 'span 2' }) }}>
                   <label style={{ display: 'block', marginBottom: '0.8rem', opacity: 0.7 }}>Deporte</label>
                   <select
                     className="input-field"
@@ -217,10 +284,18 @@ const TournamentCreation: React.FC = () => {
                 <div style={{
                   position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
                   background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+                  padding: isMobile ? '1rem' : '2rem'
                 }}>
-                  <div className="glass-card fadeIn" style={{ padding: '3rem', maxWidth: '600px', border: '1px solid var(--primary)' }}>
-                    <h3 style={{ marginTop: 0, marginBottom: '2rem', textAlign: 'center' }}>Selecciona el Tipo de Torneo de Racquetball</h3>
+                  <div className="glass-card fadeIn" style={{
+                    padding: isMobile ? '2rem 1.5rem' : '3rem',
+                    maxWidth: '600px',
+                    width: '100%',
+                    border: '1px solid var(--primary)'
+                  }}>
+                    <h3 style={{ marginTop: 0, marginBottom: '2rem', textAlign: 'center', fontSize: isMobile ? '1.1rem' : undefined }}>
+                      Selecciona el Tipo de Torneo de Racquetball
+                    </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                       <button
                         className="btn-primary"
@@ -231,7 +306,7 @@ const TournamentCreation: React.FC = () => {
                       </button>
                       <button
                         className="btn-primary"
-                        style={{ background: description === '3 de 5 sets a 11 puntos, punto directo, con diferencia de dos puntos' ? 'var(--primary)' : 'rgba(255,255,255,0.05)', color: description === '3 de 5 sets a 11 puntos, punto directo, con diferencia de dos puntos' ? '#000' : 'white' }}
+                        style={{ background: description === '3 de 5 sets a 11 puntos, punto directo, con diferencia de dos puntos' ? 'var(--primary)' : 'rgba(255,255,255,0.05)', color: description === '3 de 5 sets a 11 puntos, punto directo, con diferencia de dos puntos' ? '#000' : 'white', fontSize: isMobile ? '0.8rem' : undefined }}
                         onClick={() => setDescription('3 de 5 sets a 11 puntos, punto directo, con diferencia de dos puntos')}
                       >
                         3 de 5 sets a 11 puntos, punto directo, con diferencia de dos puntos
@@ -269,13 +344,18 @@ const TournamentCreation: React.FC = () => {
                   padding: '1rem',
                   borderRadius: '12px',
                   marginBottom: '2rem',
+                  marginTop: '1rem',
                   textAlign: 'center',
                   fontSize: '0.9rem'
                 }}>
                   {error}
                 </div>
               )}
-              <button className="btn-primary" onClick={nextStep} disabled={!name} style={{ width: '100%', marginTop: '1rem', padding: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+              <button className="btn-primary" onClick={nextStep} disabled={!name} style={{
+                width: '100%', marginTop: '1rem',
+                padding: isMobile ? '1rem' : '1.2rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+              }}>
                 Continuar a Categorías <ArrowRight size={20} />
               </button>
             </div>
@@ -284,10 +364,15 @@ const TournamentCreation: React.FC = () => {
           {/* STEP 2: CATEGORIES */}
           {step === 2 && (
             <div className="slideIn">
-              <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
-                <Tags color="var(--primary)" size={28} /> Categorías
+              <h2 style={{
+                display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem',
+                fontSize: isMobile ? '1.2rem' : undefined
+              }}>
+                <Tags color="var(--primary)" size={isMobile ? 22 : 28} /> Categorías
               </h2>
-              <p style={{ opacity: 0.6, marginBottom: '2.5rem' }}>Define las categorias de competencia (ej: Rama Varonil, Sub-20, etc.)</p>
+              <p style={{ opacity: 0.6, marginBottom: '2.5rem', fontSize: isMobile ? '0.9rem' : undefined }}>
+                Define las categorias de competencia (ej: Rama Varonil, Sub-20, etc.)
+              </p>
 
               <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
                 <input
@@ -298,7 +383,7 @@ const TournamentCreation: React.FC = () => {
                   onChange={(e) => setNewCatName(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && addCategory()}
                 />
-                <button onClick={addCategory} className="btn-primary" style={{ padding: '0 2rem' }}>
+                <button onClick={addCategory} className="btn-primary" style={{ padding: '0 1.5rem', flexShrink: 0 }}>
                   <Plus size={24} />
                 </button>
               </div>
@@ -322,13 +407,26 @@ const TournamentCreation: React.FC = () => {
                 )}
               </div>
 
-              <div style={{ display: 'flex', gap: '1.5rem', marginTop: '4rem' }}>
-                <button className="btn-primary" onClick={prevStep} style={{ background: 'rgba(255,255,255,0.05)', flex: 1 }}>Atrás</button>
+              <div style={{
+                display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
+                gap: '1.5rem',
+                marginTop: isMobile ? '2rem' : '4rem'
+              }}>
+                <button className="btn-primary" onClick={prevStep} style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  flex: isMobile ? undefined : 1,
+                  order: isMobile ? 2 : 1
+                }}>Atrás</button>
                 <button 
                   className="btn-primary" 
                   onClick={handleSubmit} 
                   disabled={categories.length === 0 || loading} 
-                  style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                  style={{
+                    flex: isMobile ? undefined : 2,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                    order: 1
+                  }}
                 >
                   {loading ? 'Procesando...' : 'Crear Torneo'} <CheckCircle2 size={20} />
                 </button>

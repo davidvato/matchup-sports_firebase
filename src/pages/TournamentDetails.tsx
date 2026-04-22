@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { sportsData } from '../data/sports';
+import useIsMobile from '../hooks/useIsMobile';
 
 interface Group {
   id: string;
@@ -56,6 +57,7 @@ const TournamentDetails: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', location: '', startDate: '', endDate: '' });
+  const isMobile = useIsMobile(768);
 
   // Custom Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState<{
@@ -334,7 +336,7 @@ const TournamentDetails: React.FC = () => {
 
   return (
     <div style={{
-      minHeight: '100vh', padding: '120px 2rem 50px',
+      minHeight: '100vh', padding: isMobile ? '80px 0.8rem 30px' : '120px 2rem 50px',
       backgroundImage: 'linear-gradient(135deg, #0c0e14 0%, #1a1d23 100%)', color: 'white'
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -346,21 +348,21 @@ const TournamentDetails: React.FC = () => {
           <>
             <header style={{
               position: 'relative',
-              marginBottom: '3rem',
-              borderRadius: '24px',
+              marginBottom: isMobile ? '1.5rem' : '3rem',
+              borderRadius: isMobile ? '16px' : '24px',
               overflow: 'hidden',
-              minHeight: '350px',
+              minHeight: isMobile ? '220px' : '350px',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'flex-end',
-              padding: '3rem',
+              padding: isMobile ? '1.5rem' : '3rem',
               backgroundImage: `linear-gradient(to top, rgba(12, 14, 20, 1) 0%, rgba(12, 14, 20, 0.4) 100%), url(${sportInfo.image})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               border: '1px solid rgba(255,255,255,0.1)',
               boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%' }}>
+              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'flex-end', width: '100%', gap: isMobile ? '1rem' : '0' }}>
                 <div>
                   <span style={{
                     backgroundColor: 'rgba(0, 242, 254, 0.2)',
@@ -376,10 +378,10 @@ const TournamentDetails: React.FC = () => {
                   }}>
                     {tournament?.sport}
                   </span>
-                  <h1 className="gradient-text" style={{ fontSize: '4.5rem', margin: '0 0 0.5rem', lineHeight: 1, textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+                  <h1 className="gradient-text" style={{ fontSize: isMobile ? 'clamp(1.8rem, 7vw, 2.5rem)' : '4.5rem', margin: '0 0 0.5rem', lineHeight: 1, textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
                     {tournament?.name}
                   </h1>
-                  <div style={{ display: 'flex', gap: '2rem', opacity: 0.9, fontSize: '1.1rem', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '0.5rem' : '2rem', opacity: 0.9, fontSize: isMobile ? '0.9rem' : '1.1rem', flexWrap: 'wrap' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin size={18} /> {tournament?.location || 'Sin ubicación'}</span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={18} /> {formatDate(tournament?.startDate!)} - {formatDate(tournament?.endDate!)}</span>
                     {tournament?.description && (
@@ -440,16 +442,17 @@ const TournamentDetails: React.FC = () => {
             <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.9 }}>
               <Layers size={24} color="#00f2fe" /> Categorías del Torneo
             </h2>
-            <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1px', marginBottom: '3rem' }}>
+            <div className="tabs-scroll" style={{ display: 'flex', gap: isMobile ? '0.5rem' : '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1px', marginBottom: isMobile ? '1.5rem' : '3rem' }}>
               {tournament?.categories.map((cat, idx) => (
                 <button
                   key={cat.id}
                   onClick={() => setActiveTab(idx)}
                   style={{
-                    padding: '1rem 2rem', background: 'none', border: 'none', color: activeTab === idx ? 'var(--primary)' : 'rgba(255,255,255,0.5)',
+                    padding: isMobile ? '0.7rem 1rem' : '1rem 2rem', background: 'none', border: 'none', color: activeTab === idx ? 'var(--primary)' : 'rgba(255,255,255,0.5)',
                     cursor: 'pointer', borderBottom: activeTab === idx ? '3px solid var(--primary)' : '3px solid transparent',
                     fontWeight: activeTab === idx ? 'bold' : 'normal', transition: 'all 0.3s',
-                    display: 'flex', alignItems: 'center', gap: '10px'
+                    display: 'flex', alignItems: 'center', gap: '10px', whiteSpace: 'nowrap',
+                    fontSize: isMobile ? '0.85rem' : undefined
                   }}
                 >
                   {cat.name}
@@ -497,13 +500,13 @@ const TournamentDetails: React.FC = () => {
             </div>
           </>
         ) : (
-          <header style={{ marginBottom: '4rem' }}>
+          <header style={{ marginBottom: isMobile ? '2rem' : '4rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
               <div>
                 <span className="badge" style={{ backgroundColor: 'rgba(0, 242, 254, 0.1)', color: 'var(--primary)', padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '1rem', display: 'inline-block' }}>
                   {tournament?.sport}
                 </span>
-                <h1 className="gradient-text" style={{ fontSize: '4rem', margin: '0 0 0.5rem', lineHeight: 1 }}>{tournament?.name}</h1>
+                <h1 className="gradient-text" style={{ fontSize: isMobile ? 'clamp(1.8rem, 7vw, 2.5rem)' : '4rem', margin: '0 0 0.5rem', lineHeight: 1 }}>{tournament?.name}</h1>
                 {tournament?.description && (
                   <p style={{ fontSize: '1.2rem', opacity: 0.6, margin: '0 0 1.5rem', maxWidth: '800px', fontStyle: 'italic' }}>
                     {tournament.description}
@@ -563,7 +566,7 @@ const TournamentDetails: React.FC = () => {
             <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.8 }}>
               <Layers size={24} color="var(--primary)" /> Categorías del Torneo
             </h2>
-            <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1px' }}>
+            <div className="tabs-scroll" style={{ display: 'flex', gap: isMobile ? '0.5rem' : '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1px' }}>
               {tournament?.categories.map((cat, idx) => (
                 <button
                   key={cat.id}
@@ -621,7 +624,7 @@ const TournamentDetails: React.FC = () => {
           </header>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '3rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 350px', gap: isMobile ? '1.5rem' : '3rem' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
 
             {/* Groups Section */}
@@ -988,7 +991,7 @@ const TournamentDetails: React.FC = () => {
           justifyContent: 'center', zIndex: 3000, padding: '2rem', backdropFilter: 'blur(8px)'
         }}>
           <div className="glass-card fadeIn" style={{
-            padding: '3rem', maxWidth: '450px', width: '100%',
+            padding: isMobile ? '1.5rem' : '3rem', maxWidth: '450px', width: '100%',
             backgroundColor: '#1a1d23', textAlign: 'center',
             border: '1px solid rgba(255,75,43,0.3)'
           }}>
@@ -1033,7 +1036,7 @@ const TournamentDetails: React.FC = () => {
           justifyContent: 'center', zIndex: 3100, padding: '2rem', backdropFilter: 'blur(8px)'
         }}>
           <div className="glass-card fadeIn" style={{
-            padding: '3rem', maxWidth: '450px', width: '100%',
+            padding: isMobile ? '1.5rem' : '3rem', maxWidth: '450px', width: '100%',
             backgroundColor: '#1a1d23', textAlign: 'center'
           }}>
             <h2 style={{ marginBottom: '1.5rem', color: 'white' }}>{promptModal.title}</h2>

@@ -46,15 +46,42 @@ app.get('/api/tournaments', async (req, res) => {
   }
 });
 
+// --- Server-side input sanitization & constraints ---
+const MAX_TOURNAMENT_NAME_LENGTH = 100;
+const MAX_TOURNAMENT_LOCATION_LENGTH = 150;
+
+/**
+ * Strip characters commonly used in SQL injection and XSS attacks.
+ * Prisma already uses parameterised queries, but this adds defence-in-depth.
+ */
+const sanitizeText = (value: string | undefined | null): string => {
+  if (!value) return '';
+  return value.replace(/--/g, '').replace(/[;'"\\*<>]/g, '').trim();
+};
+
 // Tournaments: Create
 app.post('/api/tournaments', async (req, res) => {
   const { 
-    name, location, startDate, endDate, sport, description, creatorId, 
+    name: rawName, location: rawLocation, startDate, endDate, sport, description, creatorId, 
     categories 
   } = req.body;
   
   // categories: Array of { name, hasGroups, groupCount, hasBrackets, bracketSize, participants }
   
+  // --- Sanitise & validate free-text fields ---
+  const name = sanitizeText(rawName);
+  const location = sanitizeText(rawLocation);
+
+  if (!name || name.length === 0) {
+    return res.status(400).json({ success: false, message: 'El nombre del torneo es obligatorio.' });
+  }
+  if (name.length > MAX_TOURNAMENT_NAME_LENGTH) {
+    return res.status(400).json({ success: false, message: `El nombre del torneo no puede exceder ${MAX_TOURNAMENT_NAME_LENGTH} caracteres.` });
+  }
+  if (location && location.length > MAX_TOURNAMENT_LOCATION_LENGTH) {
+    return res.status(400).json({ success: false, message: `La ubicación no puede exceder ${MAX_TOURNAMENT_LOCATION_LENGTH} caracteres.` });
+  }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 

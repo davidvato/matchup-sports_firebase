@@ -72,6 +72,7 @@ body {
   width: 100%;
   box-sizing: border-box;
   transition: border-color 0.2s;
+  font-size: 16px; /* Prevents iOS zoom on focus */
 }
 
 .input-field:focus {
@@ -106,4 +107,95 @@ h3 {
 
 .fadeIn {
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ==============================
+   RESPONSIVE UTILITIES
+   ============================== */
+
+/* Responsive table wrapper - prevents horizontal page overflow */
+.responsive-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -0.5rem;
+  padding: 0 0.5rem;
+}
+
+/* Scrollable tabs container */
+.tabs-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+.tabs-scroll::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* Mobile drawer overlay */
+.mobile-drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: fadeIn 0.2s ease forwards;
+}
+
+/* Mobile drawer */
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 280px;
+  max-width: 80vw;
+  background: #1a1d23;
+  border-left: 1px solid var(--glass-border);
+  z-index: 1001;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  overflow-y: auto;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* ==============================
+   MOBILE BREAKPOINTS
+   ============================== */
+
+@media (max-width: 768px) {
+  .btn-primary {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-primary:hover {
+    transform: none; /* Disable hover lift on touch */
+    box-shadow: none;
+  }
+
+  .glass-card {
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn-primary {
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+  }
 }
