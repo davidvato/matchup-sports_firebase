@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Trophy, CheckCircle2, Trash2, RotateCcw, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import useIsMobile from '../hooks/useIsMobile';
+import { sanitizeText, LIMITS } from '../utils/validation';
 
 interface Pair {
   id: string;
@@ -599,8 +600,9 @@ const BracketDetails: React.FC = () => {
                 className="input-field"
                 autoFocus
                 placeholder="Nombre del jugador..."
+                maxLength={LIMITS.PLAYER_NAME}
                 value={registerModal.name}
-                onChange={(e) => setRegisterModal({ ...registerModal, name: e.target.value })}
+                onChange={(e) => setRegisterModal({ ...registerModal, name: sanitizeText(e.target.value) })}
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') handleRegisterPair();
                 }}

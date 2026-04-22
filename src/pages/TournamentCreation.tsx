@@ -8,24 +8,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import useIsMobile from '../hooks/useIsMobile';
 
-// --- Constraints ---
-const MAX_NAME_LENGTH = 100;
-const MAX_LOCATION_LENGTH = 150;
-
-/**
- * Sanitise free-text input:
- * - Strips SQL comment markers (--)
- * - Strips characters used in SQL injection / XSS (; ' " \ * < >)
- * - Allows single hyphens (e.g. "Sub-20") and slashes (e.g. addresses)
- * - Trims leading/trailing whitespace
- */
-const sanitizeInput = (value: string): string => {
-  return value
-    .replace(/--/g, '')
-    .replace(/[;'"\\*<>]/g, '')
-    .trim();
-};
-
+import { sanitizeText, LIMITS } from '../utils/validation';
 interface CategoryConfig {
   name: string;
   hasGroups: boolean;
@@ -119,12 +102,12 @@ const TournamentCreation: React.FC = () => {
   const nextStep = () => {
     if (step === 1) {
       // --- Character-length validations ---
-      if (name.length > MAX_NAME_LENGTH) {
-        setError(`El nombre del torneo no puede exceder ${MAX_NAME_LENGTH} caracteres.`);
+      if (name.length > LIMITS.TOURNAMENT_NAME) {
+        setError(`El nombre del torneo no puede exceder ${LIMITS.TOURNAMENT_NAME} caracteres.`);
         return;
       }
-      if (location.length > MAX_LOCATION_LENGTH) {
-        setError(`La ubicación no puede exceder ${MAX_LOCATION_LENGTH} caracteres.`);
+      if (location.length > LIMITS.LOCATION) {
+        setError(`La ubicación no puede exceder ${LIMITS.LOCATION} caracteres.`);
         return;
       }
 
@@ -208,12 +191,12 @@ const TournamentCreation: React.FC = () => {
                     type="text"
                     className="input-field"
                     placeholder="Ej: Torneo Relámpago 2024"
-                    maxLength={MAX_NAME_LENGTH}
+                    maxLength={LIMITS.TOURNAMENT_NAME}
                     value={name}
-                    onChange={(e) => setName(sanitizeInput(e.target.value))}
+                    onChange={(e) => setName(sanitizeText(e.target.value))}
                   />
-                  <div style={{ textAlign: 'right', fontSize: '0.75rem', marginTop: '0.4rem', opacity: name.length > MAX_NAME_LENGTH * 0.9 ? 1 : 0.4, color: name.length > MAX_NAME_LENGTH * 0.9 ? '#ff4b2b' : 'inherit' }}>
-                    {name.length}/{MAX_NAME_LENGTH}
+                  <div style={{ textAlign: 'right', fontSize: '0.75rem', marginTop: '0.4rem', opacity: name.length > LIMITS.TOURNAMENT_NAME * 0.9 ? 1 : 0.4, color: name.length > LIMITS.TOURNAMENT_NAME * 0.9 ? '#ff4b2b' : 'inherit' }}>
+                    {name.length}/{LIMITS.TOURNAMENT_NAME}
                   </div>
                 </div>
                 <div style={{ gridColumn: 'span 1', ...(isMobile ? {} : { gridColumn: 'span 2' }) }}>
@@ -225,13 +208,13 @@ const TournamentCreation: React.FC = () => {
                       className="input-field"
                       style={{ paddingLeft: '40px' }}
                       placeholder="Escribe la ubicación..."
-                      maxLength={MAX_LOCATION_LENGTH}
+                      maxLength={LIMITS.LOCATION}
                       value={location}
-                      onChange={(e) => setLocation(sanitizeInput(e.target.value))}
+                      onChange={(e) => setLocation(sanitizeText(e.target.value))}
                     />
                   </div>
-                  <div style={{ textAlign: 'right', fontSize: '0.75rem', marginTop: '0.4rem', opacity: location.length > MAX_LOCATION_LENGTH * 0.9 ? 1 : 0.4, color: location.length > MAX_LOCATION_LENGTH * 0.9 ? '#ff4b2b' : 'inherit' }}>
-                    {location.length}/{MAX_LOCATION_LENGTH}
+                  <div style={{ textAlign: 'right', fontSize: '0.75rem', marginTop: '0.4rem', opacity: location.length > LIMITS.LOCATION * 0.9 ? 1 : 0.4, color: location.length > LIMITS.LOCATION * 0.9 ? '#ff4b2b' : 'inherit' }}>
+                    {location.length}/{LIMITS.LOCATION}
                   </div>
                 </div>
                 <div>
@@ -379,8 +362,9 @@ const TournamentCreation: React.FC = () => {
                   type="text"
                   className="input-field"
                   placeholder="Nombre de la categoría..."
+                  maxLength={LIMITS.CATEGORY_NAME}
                   value={newCatName}
-                  onChange={(e) => setNewCatName(e.target.value)}
+                  onChange={(e) => setNewCatName(sanitizeText(e.target.value))}
                   onKeyPress={(e) => e.key === 'Enter' && addCategory()}
                 />
                 <button onClick={addCategory} className="btn-primary" style={{ padding: '0 1.5rem', flexShrink: 0 }}>

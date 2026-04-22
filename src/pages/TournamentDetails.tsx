@@ -8,6 +8,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { sportsData } from '../data/sports';
 import useIsMobile from '../hooks/useIsMobile';
+import { sanitizeText, LIMITS } from '../utils/validation';
 
 interface Group {
   id: string;
@@ -1046,8 +1047,9 @@ const TournamentDetails: React.FC = () => {
                 className="input-field"
                 autoFocus
                 placeholder={promptModal.placeholder}
+                maxLength={LIMITS.CATEGORY_NAME} // Same limit for group names
                 value={promptModal.value}
-                onChange={(e) => setPromptModal({ ...promptModal, value: e.target.value })}
+                onChange={(e) => setPromptModal({ ...promptModal, value: sanitizeText(e.target.value) })}
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     promptModal.onConfirm(promptModal.value);
@@ -1140,8 +1142,9 @@ const TournamentDetails: React.FC = () => {
               <label style={{ display: 'block', marginBottom: '0.8rem', opacity: 0.7, fontSize: '0.9rem' }}>Nombre de la categoría</label>
               <input
                 type="text"
+                maxLength={LIMITS.CATEGORY_NAME}
                 value={newCategoryModal.name}
-                onChange={(e) => setNewCategoryModal({ ...newCategoryModal, name: e.target.value })}
+                onChange={(e) => setNewCategoryModal({ ...newCategoryModal, name: sanitizeText(e.target.value) })}
                 placeholder="Ej: Categoría A, Open, etc."
                 style={{
                   width: '100%',

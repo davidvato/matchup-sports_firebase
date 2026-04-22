@@ -4,6 +4,7 @@ import { Lock, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import bgImage from '../assets/login-bg.png';
 import useIsMobile from '../hooks/useIsMobile';
+import { sanitizeText, LIMITS } from '../utils/validation';
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -86,8 +87,9 @@ const LoginPage: React.FC = () => {
               type="text"
               className="input-field"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Ejemplo: xxxxx"
+              maxLength={LIMITS.USERNAME}
+              onChange={(e) => setUsername(sanitizeText(e.target.value))}
+              placeholder="Ejemplo: admin"
               required
               style={{ backgroundColor: 'rgba(255,255,255,0.05)', height: '48px' }}
             />
