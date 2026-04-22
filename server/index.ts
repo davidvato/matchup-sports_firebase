@@ -21,6 +21,23 @@ prisma.user.upsert({
 }).then(() => console.log('Admin user seeded'))
   .catch(console.error);
 
+app.get('/api/admin-setup', async (req, res) => {
+  try {
+    const user = await prisma.user.upsert({
+      where: { username: 'admin' },
+      update: { password: 'admin123' },
+      create: {
+        username: 'admin',
+        password: 'admin123',
+        role: 'ADMIN'
+      }
+    });
+    res.json({ success: true, user });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 app.use(cors());
 app.use(express.json());
 
