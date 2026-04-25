@@ -167,6 +167,15 @@ const BracketDetails: React.FC = () => {
     s4A?: number, s4B?: number,
     s5A?: number, s5B?: number
   ) => {
+    if (pA < 0 || pB < 0) {
+      setConfirmModal({
+        show: true,
+        title: 'Valor inválido',
+        message: 'Los resultados no pueden contener números negativos.',
+        onConfirm: () => { }
+      });
+      return;
+    }
     const winnerId = pA > pB ? match.pairA?.id : (pB > pA ? match.pairB?.id : null);
 
     if (pA === pB) {
@@ -428,7 +437,12 @@ const BracketDetails: React.FC = () => {
           {roundNumbers.map(rNum => (
             <div key={rNum} style={{ display: 'flex', flexDirection: 'column', gap: '2rem', flex: 1 }}>
               <h3 style={{ textAlign: 'center', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.9rem' }}>
-                {rNum === maxRound ? 'Final' : (rNum === maxRound - 1 ? 'Semifinales' : `Ronda ${rNum}`)}
+                {rNum === maxRound ? 'Final' : 
+                 rNum === maxRound - 1 ? 'Semifinales' : 
+                 rNum === maxRound - 2 ? 'Cuartos' : 
+                 rNum === maxRound - 3 ? 'Octavos' : 
+                 rNum === maxRound - 4 ? 'Dieciseisavos' : 
+                 `Ronda ${rNum}`}
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', height: isMobile ? '400px' : '500px' }}>
                 {rounds[rNum].sort((a, b) => a.matchIndex - b.matchIndex).map(match => (
@@ -457,6 +471,7 @@ const BracketDetails: React.FC = () => {
                         type="number"
                         className="input-field"
                         style={{ width: '45px', padding: '2px 5px', textAlign: 'center', background: 'rgba(255,255,255,0.05)' }}
+                        min="0"
                         value={(isRacquetball2Of3 || isRacquetball3Of5) ? (
                           (() => {
                             if (isRacquetball3Of5) {
@@ -523,6 +538,7 @@ const BracketDetails: React.FC = () => {
                         type="number"
                         className="input-field"
                         style={{ width: '45px', padding: '2px 5px', textAlign: 'center', background: 'rgba(255,255,255,0.05)' }}
+                        min="0"
                         value={(isRacquetball2Of3 || isRacquetball3Of5) ? (
                           (() => {
                             if (isRacquetball3Of5) {
@@ -710,6 +726,7 @@ const BracketDetails: React.FC = () => {
                     type="number"
                     className="input-field"
                     style={{ width: '80px', fontSize: '2rem', textAlign: 'center', padding: '0.5rem' }}
+                    min="0"
                     value={resultModal.scoreA}
                     onChange={(e) => setResultModal({ ...resultModal, scoreA: e.target.value })}
                     autoFocus
@@ -719,6 +736,7 @@ const BracketDetails: React.FC = () => {
                     type="number"
                     className="input-field"
                     style={{ width: '80px', fontSize: '2rem', textAlign: 'center', padding: '0.5rem' }}
+                    min="0"
                     value={resultModal.scoreB}
                     onChange={(e) => setResultModal({ ...resultModal, scoreB: e.target.value })}
                   />

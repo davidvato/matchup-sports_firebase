@@ -1106,6 +1106,7 @@ const TournamentDetails: React.FC = () => {
                 <option value={4}>Semis (4 jugadores)</option>
                 <option value={8}>Cuartos (8 jugadores)</option>
                 <option value={16}>Octavos (16 jugadores)</option>
+                <option value={32}>Dieciseisavos (32 jugadores)</option>
               </select>
             </div>
 

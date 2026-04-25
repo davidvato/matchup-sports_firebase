@@ -249,6 +249,15 @@ const GroupDetails: React.FC = () => {
     set4A?: number, set4B?: number,
     set5A?: number, set5B?: number
   ) => {
+    if (pointsA < 0 || pointsB < 0) {
+      setConfirmModal({
+        show: true,
+        title: 'Valor inválido',
+        message: 'Los resultados no pueden contener números negativos.',
+        onConfirm: () => { }
+      });
+      return;
+    }
     if ((isBasketball || isRacquetball || isPickleball) && pointsA === pointsB) {
       setConfirmModal({
         show: true,
@@ -887,13 +896,13 @@ const GroupDetails: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', marginBottom: '3rem' }}>
                 <div style={{ flex: 1, textAlign: 'right' }}>
                   <div style={{ fontSize: '1.2rem', marginBottom: '10px', fontWeight: 'bold' }}>
-                    {resultModal.rowPair?.name}{resultModal.match?.pairA2Id === resultModal.rowPair?.id ? ` / ${resultModal.match?.pairA.name}` : (resultModal.match?.pairAId === resultModal.rowPair?.id ? ` / ${resultModal.match?.pairA2?.name}` : '')}
-                    {resultModal.match?.pairBId === resultModal.rowPair?.id ? ` / ${resultModal.match?.pairB2?.name}` : (resultModal.match?.pairB2Id === resultModal.rowPair?.id ? ` / ${resultModal.match?.pairB?.name}` : '')}
+                    {resultModal.rowPair?.name}
                   </div>
                   <input
                     type="number"
                     className="input-field"
                     style={{ width: '80px', fontSize: '2rem', textAlign: 'center', padding: '0.5rem' }}
+                    min="0"
                     value={resultModal.scoreRow}
                     onChange={(e) => setResultModal({ ...resultModal, scoreRow: e.target.value })}
                     autoFocus
@@ -902,13 +911,13 @@ const GroupDetails: React.FC = () => {
                 <div style={{ fontSize: '2rem', opacity: 0.3 }}>-</div>
                 <div style={{ flex: 1, textAlign: 'left' }}>
                   <div style={{ fontSize: '1.2rem', marginBottom: '10px', fontWeight: 'bold' }}>
-                    {resultModal.colPair?.name}{resultModal.match?.pairA2Id === resultModal.colPair?.id ? ` / ${resultModal.match?.pairA.name}` : (resultModal.match?.pairAId === resultModal.colPair?.id ? ` / ${resultModal.match?.pairA2?.name}` : '')}
-                    {resultModal.match?.pairBId === resultModal.colPair?.id ? ` / ${resultModal.match?.pairB2?.name}` : (resultModal.match?.pairB2Id === resultModal.colPair?.id ? ` / ${resultModal.match?.pairB?.name}` : '')}
+                    {resultModal.colPair?.name}
                   </div>
                   <input
                     type="number"
                     className="input-field"
                     style={{ width: '80px', fontSize: '2rem', textAlign: 'center', padding: '0.5rem' }}
+                    min="0"
                     value={resultModal.scoreCol}
                     onChange={(e) => setResultModal({ ...resultModal, scoreCol: e.target.value })}
                   />
@@ -1340,10 +1349,12 @@ const SetRow: React.FC<{ label: string; valA: string; valB: string; onChangeA: (
     <div style={{ textAlign: 'right', fontSize: '0.9rem', opacity: 0.7 }}>{label}</div>
     <input
       type="number" className="input-field" style={{ textAlign: 'center', padding: '0.5rem' }}
+      min="0"
       value={valA} onChange={(e) => onChangeA(e.target.value)}
     />
     <input
       type="number" className="input-field" style={{ textAlign: 'center', padding: '0.5rem' }}
+      min="0"
       value={valB} onChange={(e) => onChangeB(e.target.value)}
     />
     <div />
