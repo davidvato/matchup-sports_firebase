@@ -92,9 +92,13 @@ const TournamentCreation: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         navigate(`/tournament/${data.id}`);
+      } else {
+        const errorData = await response.json().catch(() => null);
+        setError(errorData?.message || 'Error al crear el torneo. Verifica los datos o tu conexión.');
       }
     } catch (error) {
       console.error('Error creating tournament:', error);
+      setError('Error de conexión con el servidor.');
     } finally {
       setLoading(false);
     }

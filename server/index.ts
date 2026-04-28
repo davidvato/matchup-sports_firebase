@@ -113,6 +113,8 @@ app.post('/api/tournaments', async (req, res) => {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  // Restamos 1 día para tolerar las diferencias de zona horaria entre el cliente (ej. UTC-6) y el servidor (UTC).
+  today.setDate(today.getDate() - 1);
 
   if (startDate) {
     const [sy, sm, sd] = startDate.split('-').map(Number);
