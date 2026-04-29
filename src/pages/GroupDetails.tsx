@@ -46,8 +46,14 @@ interface RacquetballStats {
 
 interface Match {
   id: string;
+  pairAId: string;
+  pairBId: string | null;
+  pairA2Id?: string | null;
+  pairB2Id?: string | null;
   pairA: Pair;
   pairB: Pair;
+  pairA2?: Pair | null;
+  pairB2?: Pair | null;
   winnerId: string | null;
   pointsA: number;
   pointsB: number;
@@ -99,6 +105,10 @@ const GroupDetails: React.FC = () => {
     set2Col: string;
     set3Row: string;
     set3Col: string;
+    set4Row: string;
+    set4Col: string;
+    set5Row: string;
+    set5Col: string;
   }>({
     show: false,
     match: null,
