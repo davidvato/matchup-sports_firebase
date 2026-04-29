@@ -269,7 +269,11 @@ app.get('/api/tournaments/:id', async (req, res) => {
                 _count: { select: { matches: true } }
               }
             },
-            pairs: true
+            pairs: {
+              include: {
+                groups: true
+              }
+            }
           }
         }
       }
@@ -304,7 +308,7 @@ app.get('/api/categories/:id', async (req, res) => {
       include: {
         pairs: {
           include: {
-            group: true,
+            groups: true,
             bracketMatchesAsA: { include: { bracket: true } },
             bracketMatchesAsB: { include: { bracket: true } }
           }
@@ -433,11 +437,18 @@ app.post('/api/groups/:id/pairs', async (req, res) => {
     const result = await prisma.$transaction(async (tx) => {
       const updatedPair = await tx.pair.update({
         where: { id: pairId },
-        data: { groupId }
+        data: { 
+          groups: {
+            connect: { id: groupId }
+          }
+        }
       });
 
       const existingPairs = await tx.pair.findMany({
-        where: { groupId, id: { not: pairId } }
+        where: { 
+          groups: { some: { id: groupId } },
+          id: { not: pairId } 
+        }
       });
 
       for (const p of existingPairs) {
@@ -587,7 +598,7 @@ app.post('/api/brackets/:id/seed', async (req, res) => {
       const pairs = await tx.pair.findMany({
         where: { 
           categoryId: bracket.categoryId,
-          groupId: null
+          groups: { none: {} }
         }
       });
 
@@ -747,10 +758,16 @@ app.post('/api/groups/:id/pairs/batch', async (req, res) => {
   try {
     const result = await prisma.$transaction(async (tx) => {
       // 1. Assign pairs to group
-      await tx.pair.updateMany({
-        where: { id: { in: pairIds } },
-        data: { groupId }
-      });
+      for (const pairId of pairIds) {
+        await tx.pair.update({
+          where: { id: pairId },
+          data: {
+            groups: {
+              connect: { id: groupId }
+            }
+          }
+        });
+      }
 
       // 2. Clear existing matches for this group to start fresh
       await tx.match.deleteMany({
@@ -759,7 +776,7 @@ app.post('/api/groups/:id/pairs/batch', async (req, res) => {
 
       // 3. Get all pairs now in the group
       const allPairs = await tx.pair.findMany({
-        where: { groupId }
+        where: { groups: { some: { id: groupId } } }
       });
 
       const group = await tx.group.findUnique({
@@ -879,7 +896,9 @@ app.post('/api/groups/:id/pairs/batch', async (req, res) => {
 app.post('/api/groups/:id/reset', async (req, res) => {
   const groupId = req.params.id;
   try {
-    const pairs = await prisma.pair.findMany({ where: { groupId } });
+    const pairs = await prisma.pair.findMany({ 
+      where: { groups: { some: { id: groupId } } } 
+    });
     await prisma.$transaction(async (tx) => {
       for (const pair of pairs) {
         await tx.score.deleteMany({ where: { pairId: pair.id } });
@@ -907,7 +926,9 @@ app.post('/api/categories/:id/reset', async (req, res) => {
       // 1. Reset all groups in this category
       const groups = await tx.group.findMany({ where: { categoryId } });
       for (const group of groups) {
-        const pairs = await tx.pair.findMany({ where: { groupId: group.id } });
+        const pairs = await tx.pair.findMany({ 
+          where: { groups: { some: { id: group.id } } } 
+        });
         for (const pair of pairs) {
           await tx.score.deleteMany({ where: { pairId: pair.id } });
           await tx.pair.update({

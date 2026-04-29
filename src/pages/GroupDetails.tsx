@@ -10,8 +10,7 @@ interface Pair {
   id: string;
   name: string;
   totalScore: number;
-  groupId?: string | null;
-  group?: { name: string } | null;
+  groups?: { id: string, name: string }[];
   bracketMatchesAsA?: { bracket: { name: string } }[];
   bracketMatchesAsB?: { bracket: { name: string } }[];
 }
@@ -194,9 +193,14 @@ const GroupDetails: React.FC = () => {
     if (!isSelected) {
       // Check for existing assignments
       let warningMessage = '';
-      if (pair.group && pair.groupId !== id) {
-        warningMessage = `Este jugador ya está asignado al grupo: ${pair.group.name}.`;
-      } else {
+      if (pair.groups && pair.groups.length > 0) {
+        const otherGroups = pair.groups.filter(g => g.id !== id);
+        if (otherGroups.length > 0) {
+          warningMessage = `Este jugador ya está asignado a: ${otherGroups.map(g => g.name).join(', ')}.`;
+        }
+      }
+
+      if (!warningMessage) {
         const bracketA = pair.bracketMatchesAsA?.[0]?.bracket?.name;
         const bracketB = pair.bracketMatchesAsB?.[0]?.bracket?.name;
         const bracketName = bracketA || bracketB;
@@ -209,7 +213,7 @@ const GroupDetails: React.FC = () => {
         setConfirmModal({
           show: true,
           title: 'Jugador ya asignado',
-          message: `${warningMessage}\n\n¿Deseas seleccionarlo de todas formas? Se moverá a este grupo al guardar.`,
+          message: `${warningMessage}\n\n¿Deseas asignarlo también a este grupo?`,
           onConfirm: () => {
             setSelectedPairs(prev => [...prev, pair.id]);
           }

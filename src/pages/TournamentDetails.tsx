@@ -27,7 +27,7 @@ interface Bracket {
 interface Pair {
   id: string;
   name: string;
-  groupId?: string | null;
+  groups?: { id: string, name: string }[];
 }
 
 interface Category {
@@ -445,7 +445,7 @@ const TournamentDetails: React.FC = () => {
               <Layers size={24} color="#00f2fe" /> Categorías del Torneo
             </h2>
             <div className="tabs-scroll" style={{ display: 'flex', gap: isMobile ? '0.5rem' : '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1px', marginBottom: isMobile ? '1.5rem' : '3rem' }}>
-              {tournament?.categories.map((cat, idx) => (
+              {tournament?.categories?.map((cat, idx) => (
                 <button
                   key={cat.id}
                   onClick={() => setActiveTab(idx)}
@@ -569,7 +569,7 @@ const TournamentDetails: React.FC = () => {
               <Layers size={24} color="var(--primary)" /> Categorías del Torneo
             </h2>
             <div className="tabs-scroll" style={{ display: 'flex', gap: isMobile ? '0.5rem' : '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1px' }}>
-              {tournament?.categories.map((cat, idx) => (
+              {tournament?.categories?.map((cat, idx) => (
                 <button
                   key={cat.id}
                   onClick={() => setActiveTab(idx)}
@@ -661,7 +661,7 @@ const TournamentDetails: React.FC = () => {
                   )}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-                  {currentCategory.groups.map(group => (
+                  {currentCategory?.groups?.map(group => (
                     <div key={group.id} className="glass-card" style={{ padding: '1.5rem', border: '1px solid rgba(255,255,255,0.05)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                         <h3 style={{ margin: 0 }}>{group.name}</h3>
@@ -734,7 +734,7 @@ const TournamentDetails: React.FC = () => {
                   )}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
-                  {currentCategory.brackets.map(bracket => (
+                  {currentCategory?.brackets?.map(bracket => (
                     <div key={bracket.id} className="glass-card" style={{ padding: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '0.5rem' }}>
@@ -836,8 +836,8 @@ const TournamentDetails: React.FC = () => {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-                {tournament?.categories.map(cat => {
-                  const unassignedPairs = cat.pairs.filter(p => !p.groupId);
+                {tournament?.categories?.map(cat => {
+                  const unassignedPairs = cat.pairs.filter(p => !p.groups || p.groups.length === 0);
 
                   return (
                     <div key={cat.id}>
@@ -876,7 +876,7 @@ const TournamentDetails: React.FC = () => {
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         {/* Groups in this category */}
-                        {cat.groups.map(group => (
+                        {cat?.groups?.map(group => (
                           <div key={group.id} style={{ paddingLeft: '0.5rem', borderLeft: '2px solid rgba(255,255,255,0.05)' }}>
                             <div style={{ fontSize: '0.8rem', opacity: 0.5, marginBottom: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>
                               {group.name}

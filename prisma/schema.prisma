@@ -49,9 +49,10 @@ model Group {
   categoryId   String
   category     Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   matches      Match[]
-  pairs        Pair[]
+  pairs        Pair[]     @relation("GroupPairs")
   createdAt    DateTime   @default(now())
 }
+
 
 model Bracket {
   id           String     @id @default(cuid())
@@ -67,8 +68,8 @@ model Pair {
   name         String
   categoryId   String
   category     Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  groupId      String?
-  group        Group?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groups       Group[]  @relation("GroupPairs")
+
   scores       Score[]
   totalScore   Int      @default(0)
   
