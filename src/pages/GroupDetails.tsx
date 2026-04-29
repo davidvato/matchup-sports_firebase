@@ -817,13 +817,20 @@ const GroupDetails: React.FC = () => {
             <p style={{ opacity: 0.6, marginBottom: '2rem' }}>Selecciona los jugadores de la categoría para unirlos a este grupo:</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '300px', overflowY: 'auto', paddingRight: '10px', marginBottom: '2rem' }}>
               {availablePairs.map(pair => {
-                const isAssigned = (pair.group && pair.groupId !== id) ||
+                const otherGroups = pair.groups?.filter(g => g.id !== id) || [];
+                const inThisGroup = pair.groups?.some(g => g.id === id);
+                const isAssigned = otherGroups.length > 0 ||
                   (pair.bracketMatchesAsA?.length! > 0) ||
                   (pair.bracketMatchesAsB?.length! > 0);
+                
                 let assignmentLabel = '';
-                if (pair.group && pair.groupId !== id) assignmentLabel = `(En ${pair.group.name})`;
-                else if (pair.bracketMatchesAsA?.[0]?.bracket?.name || pair.bracketMatchesAsB?.[0]?.bracket?.name) {
-                  assignmentLabel = `(En ${pair.bracketMatchesAsA?.[0]?.bracket?.name || pair.bracketMatchesAsB?.[0]?.bracket?.name})`;
+                if (otherGroups.length > 0) {
+                  assignmentLabel = `(En ${otherGroups.map(g => g.name).join(', ')})`;
+                } else {
+                  const bracketName = pair.bracketMatchesAsA?.[0]?.bracket?.name || pair.bracketMatchesAsB?.[0]?.bracket?.name;
+                  if (bracketName) {
+                    assignmentLabel = `(En ${bracketName})`;
+                  }
                 }
 
                 return (
@@ -839,8 +846,8 @@ const GroupDetails: React.FC = () => {
                       background: selectedPairs.includes(pair.id) ? 'rgba(0, 242, 254, 0.1)' : 'rgba(255,255,255,0.02)',
                       border: selectedPairs.includes(pair.id) ? '1px solid var(--primary)' : '1px solid transparent',
                       cursor: 'pointer',
-                      opacity: pair.groupId === id ? 0.3 : 1, // Dim if already in THIS group
-                      pointerEvents: pair.groupId === id ? 'none' : 'auto'
+                      opacity: inThisGroup ? 0.3 : 1, // Dim if already in THIS group
+                      pointerEvents: inThisGroup ? 'none' : 'auto'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
