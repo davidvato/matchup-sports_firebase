@@ -1180,6 +1180,85 @@ const TournamentDetails: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Edit Tournament Modal */}
+      {isEditing && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 4000, padding: '2rem', backdropFilter: 'blur(8px)'
+        }}>
+          <div className="glass-card fadeIn" style={{
+            padding: isMobile ? '2rem' : '3rem', maxWidth: '500px', width: '100%',
+            backgroundColor: '#1a1d23', border: '1px solid rgba(255,255,255,0.1)'
+          }}>
+            <h2 style={{ marginBottom: '2rem', color: 'white', textAlign: 'center' }}>Editar Información del Torneo</h2>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2.5rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.7, fontSize: '0.9rem' }}>Nombre del Torneo</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: sanitizeText(e.target.value) })}
+                  maxLength={LIMITS.TOURNAMENT_NAME}
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.7, fontSize: '0.9rem' }}>Ubicación</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={editForm.location}
+                  onChange={(e) => setEditForm({ ...editForm, location: sanitizeText(e.target.value) })}
+                  maxLength={LIMITS.LOCATION}
+                />
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.7, fontSize: '0.9rem' }}>Fecha Inicio</label>
+                  <input
+                    type="date"
+                    className="input-field"
+                    value={editForm.startDate}
+                    onChange={(e) => setEditForm({ ...editForm, startDate: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.7, fontSize: '0.9rem' }}>Fecha Fin</label>
+                  <input
+                    type="date"
+                    className="input-field"
+                    value={editForm.endDate}
+                    onChange={(e) => setEditForm({ ...editForm, endDate: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button
+                className="btn-primary"
+                onClick={() => setIsEditing(false)}
+                style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn-primary"
+                onClick={handleUpdateTournament}
+                style={{ flex: 1 }}
+              >
+                Guardar Cambios
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
