@@ -203,13 +203,7 @@ footer a:hover {
   transform: translateX(5px);
 }
 
-.footer-logo {
-  transition: transform 0.5s ease;
-}
 
-footer:hover .footer-logo {
-  transform: rotate(5deg) scale(1.05);
-}
 
 @media (max-width: 480px) {
   .btn-primary {

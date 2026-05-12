@@ -60,16 +60,34 @@ const Footer: React.FC = () => {
             alignItems: 'center',
             opacity: 0.8
           }}>
-            <img
-              src={sponsorDeporte}
-              alt="Deporte con Sentido"
-              style={{ height: '140px', objectFit: 'contain' }}
-            />
-            <img
-              src={sponsorRP}
-              alt="Racquet & Pickleball"
-              style={{ height: '140px', objectFit: 'contain' }}
-            />
+            <a
+              href="https://www.instagram.com/gearbox_gdl?igsh=b3B3azd4Nzc2cjE0"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ transition: 'opacity 0.3s ease' }}
+              onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+              onMouseOut={(e) => e.currentTarget.style.opacity = '0.8'}
+            >
+              <img
+                src={sponsorDeporte}
+                alt="Deporte con Sentido"
+                style={{ height: '140px', objectFit: 'contain', cursor: 'pointer' }}
+              />
+            </a>
+            <a
+              href="https://www.instagram.com/gearbox_gdl?igsh=b3B3azd4Nzc2cjE0"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ transition: 'opacity 0.3s ease' }}
+              onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+              onMouseOut={(e) => e.currentTarget.style.opacity = '0.8'}
+            >
+              <img
+                src={sponsorRP}
+                alt="Racquet & Pickleball"
+                style={{ height: '140px', objectFit: 'contain', cursor: 'pointer' }}
+              />
+            </a>
           </div>
 
           <div style={{ textAlign: isMobile ? 'center' : 'right', marginTop: '0.5rem' }}>
