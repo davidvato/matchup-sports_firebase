@@ -11,6 +11,7 @@ import ExploreSports from './pages/ExploreSports';
 
 import GroupDetails from './pages/GroupDetails';
 import BracketDetails from './pages/BracketDetails';
+import Footer from './components/Footer';
 const AppContent: React.FC = () => {
   const location = useLocation();
   const showNavbar = location.pathname !== '/login' &&
@@ -19,7 +20,7 @@ const AppContent: React.FC = () => {
     !location.pathname.startsWith('/group/');
 
   return (
-    <div style={{ minHeight: '100vh', width: '100%' }}>
+    <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column' }}>
       {showNavbar && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
@@ -31,6 +32,7 @@ const AppContent: React.FC = () => {
         <Route path="/bracket/:id" element={<BracketDetails />} />
         <Route path="/sport/:sportId" element={<SportPage />} />
       </Routes>
+      <Footer />
     </div>
   );
 };

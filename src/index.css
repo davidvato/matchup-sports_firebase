@@ -193,6 +193,24 @@ h3 {
   }
 }
 
+footer a {
+  transition: all 0.3s ease;
+}
+
+footer a:hover {
+  opacity: 1 !important;
+  color: var(--primary) !important;
+  transform: translateX(5px);
+}
+
+.footer-logo {
+  transition: transform 0.5s ease;
+}
+
+footer:hover .footer-logo {
+  transform: rotate(5deg) scale(1.05);
+}
+
 @media (max-width: 480px) {
   .btn-primary {
     padding: 0.6rem 1rem;
