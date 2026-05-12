@@ -1,5 +1,6 @@
-import React from 'react';
 import logo from '../assets/skulldevs-logo.png';
+import sponsorDeporte from '../assets/sponsor-deporte.png';
+import sponsorRP from '../assets/sponsor-rp.png';
 import useIsMobile from '../hooks/useIsMobile';
 
 const Footer: React.FC = () => {
@@ -21,7 +22,7 @@ const Footer: React.FC = () => {
         flexDirection: isMobile ? 'column' : 'row',
         justifyContent: 'space-between',
         alignItems: isMobile ? 'center' : 'flex-start',
-        gap: isMobile ? '2rem' : '1rem'
+        gap: isMobile ? '2rem' : '2rem'
       }}>
         <div style={{ textAlign: isMobile ? 'center' : 'left', maxWidth: '300px' }}>
           <img
@@ -39,9 +40,42 @@ const Footer: React.FC = () => {
           </p>
         </div>
 
-        <div style={{ textAlign: isMobile ? 'center' : 'right' }}>
-          <h4 style={{ margin: 0, color: 'var(--primary)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Contacto</h4>
-          <p style={{ margin: 0, fontSize: '0.9rem', opacity: 0.6 }}>skulldevs2020@gmail.com</p>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: isMobile ? 'center' : 'flex-end',
+          gap: '1.5rem'
+        }}>
+          <h4 style={{
+            margin: 0,
+            color: 'rgba(255,255,255,0.4)',
+            fontSize: '0.75rem',
+            textTransform: 'uppercase',
+            letterSpacing: '2px'
+          }}>Nuestros Patrocinadores</h4>
+
+          <div style={{
+            display: 'flex',
+            gap: '2rem',
+            alignItems: 'center',
+            opacity: 0.8
+          }}>
+            <img
+              src={sponsorDeporte}
+              alt="Deporte con Sentido"
+              style={{ height: '140px', objectFit: 'contain' }}
+            />
+            <img
+              src={sponsorRP}
+              alt="Racquet & Pickleball"
+              style={{ height: '140px', objectFit: 'contain' }}
+            />
+          </div>
+
+          <div style={{ textAlign: isMobile ? 'center' : 'right', marginTop: '0.5rem' }}>
+            <h4 style={{ margin: 0, color: 'var(--primary)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Contacto</h4>
+            <p style={{ margin: 0, fontSize: '0.9rem', opacity: 0.6 }}>skulldevs2020@gmail.com</p>
+          </div>
         </div>
       </div>
 
