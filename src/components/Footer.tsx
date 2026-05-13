@@ -25,16 +25,26 @@ const Footer: React.FC = () => {
         gap: isMobile ? '2rem' : '2rem'
       }}>
         <div style={{ textAlign: isMobile ? 'center' : 'left', maxWidth: '300px' }}>
-          <img
-            src={logo}
-            alt="SkullDevs Logo"
-            className="footer-logo"
-            style={{
-              height: '55px',
-              marginBottom: '1rem',
-              filter: 'brightness(0) invert(1)'
-            }}
-          />
+          <a
+            href="https://www.skulldevs.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: 'inline-block', transition: 'opacity 0.3s ease' }}
+            onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
+            onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+          >
+            <img
+              src={logo}
+              alt="SkullDevs Logo"
+              className="footer-logo"
+              style={{
+                height: '55px',
+                marginBottom: '1rem',
+                filter: 'brightness(0) invert(1)',
+                cursor: 'pointer'
+              }}
+            />
+          </a>
           <p style={{ fontSize: '0.9rem', opacity: 0.6 }}>
             Soluciones de software de alto nivel para deportistas y organizaciones.
           </p>
@@ -106,7 +116,14 @@ const Footer: React.FC = () => {
         fontSize: '0.8rem',
         opacity: 0.4
       }}>
-        © {new Date().getFullYear()} MatchUp Sports. Desarrollado por <span style={{ color: 'white', opacity: 1, fontWeight: 'bold' }}>SKULLDEVS</span>.
+        © {new Date().getFullYear()} MatchUp Sports. Desarrollado por <a
+          href="https://www.skulldevs.dev"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: 'white', opacity: 1, fontWeight: 'bold', textDecoration: 'none', transition: 'all 0.3s ease' }}
+          onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
+          onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
+        >SKULLDEVS</a>.
       </div>
     </footer>
   );
