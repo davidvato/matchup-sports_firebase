@@ -1,6 +1,7 @@
 import logo from '../assets/skulldevs-logo.png';
 import sponsorDeporte from '../assets/sponsor-deporte.png';
 import sponsorRP from '../assets/sponsor-rp.png';
+import sponsorTRS from '../assets/sponsor-trs.png';
 import useIsMobile from '../hooks/useIsMobile';
 
 const Footer: React.FC = () => {
@@ -66,7 +67,9 @@ const Footer: React.FC = () => {
 
           <div style={{
             display: 'flex',
-            gap: '2rem',
+            flexWrap: 'wrap',
+            gap: isMobile ? '1rem' : '2rem',
+            justifyContent: isMobile ? 'center' : 'flex-end',
             alignItems: 'center',
             opacity: 0.8
           }}>
@@ -81,7 +84,20 @@ const Footer: React.FC = () => {
               <img
                 src={sponsorDeporte}
                 alt="Deporte con Sentido"
-                style={{ height: '140px', objectFit: 'contain', cursor: 'pointer' }}
+                style={{
+                  height: isMobile ? '100px' : '120px',
+                  objectFit: 'contain',
+                  cursor: 'pointer',
+                  transition: 'transform 0.3s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                  e.currentTarget.parentElement!.style.opacity = '1';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.parentElement!.style.opacity = '0.8';
+                }}
               />
             </a>
             <a
@@ -95,7 +111,48 @@ const Footer: React.FC = () => {
               <img
                 src={sponsorRP}
                 alt="Racquet & Pickleball"
-                style={{ height: '140px', objectFit: 'contain', cursor: 'pointer' }}
+                style={{
+                  height: isMobile ? '100px' : '120px',
+                  objectFit: 'contain',
+                  cursor: 'pointer',
+                  transition: 'transform 0.3s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                  e.currentTarget.parentElement!.style.opacity = '1';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.parentElement!.style.opacity = '0.8';
+                }}
+              />
+            </a>
+            <a
+              href="https://dev.trsarena.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ transition: 'opacity 0.3s ease' }}
+              onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+              onMouseOut={(e) => e.currentTarget.style.opacity = '0.8'}
+            >
+              <img
+                src={sponsorTRS}
+                alt="TRS"
+                style={{
+                  height: isMobile ? '100px' : '120px',
+                  objectFit: 'contain',
+                  cursor: 'pointer',
+                  filter: 'invert(1)',
+                  transition: 'transform 0.3s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                  e.currentTarget.parentElement!.style.opacity = '1';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.parentElement!.style.opacity = '0.8';
+                }}
               />
             </a>
           </div>
