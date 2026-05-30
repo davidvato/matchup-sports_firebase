@@ -176,16 +176,33 @@ const BracketDetails: React.FC = () => {
       });
       return;
     }
-    const winnerId = pA > pB ? match.pairA?.id : (pB > pA ? match.pairB?.id : null);
 
-    if (pA === pB) {
-      setConfirmModal({
-        show: true,
-        title: 'Empate no permitido',
-        message: 'En Brackets debe haber un ganador para avanzar a la siguiente ronda. Por favor ingresa un marcador diferente.',
-        onConfirm: () => { }
-      });
-      return;
+    const isSetSport = isRacquetball2Of3 || isRacquetball3Of5 || isPickleballLogic;
+    let winnerId = null;
+
+    if (isSetSport) {
+      const sets = [
+        { a: s1A || 0, b: s1B || 0 },
+        { a: s2A || 0, b: s2B || 0 },
+        { a: s3A || 0, b: s3B || 0 },
+        { a: s4A || 0, b: s4B || 0 },
+        { a: s5A || 0, b: s5B || 0 }
+      ];
+      const setsWinA = sets.filter(s => s.a > s.b).length;
+      const setsWinB = sets.filter(s => s.b > s.a).length;
+      winnerId = setsWinA > setsWinB ? match.pairA?.id : (setsWinB > setsWinA ? match.pairB?.id : null);
+    } else {
+      winnerId = pA > pB ? match.pairA?.id : (pB > pA ? match.pairB?.id : null);
+
+      if (pA === pB) {
+        setConfirmModal({
+          show: true,
+          title: 'Empate no permitido',
+          message: 'En Brackets debe haber un ganador para avanzar a la siguiente ronda. Por favor ingresa un marcador diferente.',
+          onConfirm: () => { }
+        });
+        return;
+      }
     }
 
     if (!winnerId) return;

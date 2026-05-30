@@ -272,7 +272,10 @@ const GroupDetails: React.FC = () => {
       });
       return;
     }
-    if ((isBasketball || isRacquetball || isPickleball) && pointsA === pointsB) {
+
+    const isSetSport = isRacquetball2Of3 || isRacquetball3Of5 || isPickleballLogic;
+
+    if (!isSetSport && (isBasketball || isRacquetball || isPickleball) && pointsA === pointsB) {
       setConfirmModal({
         show: true,
         title: 'Empate no permitido',
@@ -282,7 +285,21 @@ const GroupDetails: React.FC = () => {
       return;
     }
 
-    const winnerId = pointsA > pointsB ? pairAId : (pointsB > pointsA ? pairBId : 'DRAW');
+    let winnerId = 'DRAW';
+    if (isSetSport) {
+      const sets = [
+        { a: set1A || 0, b: set1B || 0 },
+        { a: set2A || 0, b: set2B || 0 },
+        { a: set3A || 0, b: set3B || 0 },
+        { a: set4A || 0, b: set4B || 0 },
+        { a: set5A || 0, b: set5B || 0 }
+      ];
+      const setsWinA = sets.filter(s => s.a > s.b).length;
+      const setsWinB = sets.filter(s => s.b > s.a).length;
+      winnerId = setsWinA > setsWinB ? pairAId : (setsWinB > setsWinA ? pairBId : 'DRAW');
+    } else {
+      winnerId = pointsA > pointsB ? pairAId : (pointsB > pointsA ? pairBId : 'DRAW');
+    }
     try {
       const res = await fetch(`${API_URL}/matches/${matchId}/result`, {
         method: 'POST',
@@ -413,7 +430,7 @@ const GroupDetails: React.FC = () => {
       stats.pf += selfPoints;
       stats.pc += oppPoints;
 
-      if (selfPoints > oppPoints) {
+      if (m.winnerId === pairId) {
         stats.g++;
       } else {
         stats.p++;
@@ -451,8 +468,8 @@ const GroupDetails: React.FC = () => {
       const statsA = getRacquetballStats(a.id);
       const statsB = getRacquetballStats(b.id);
       
-      if (statsB.pts !== statsA.pts) return statsB.pts - statsA.pts;
-      return statsB.g - statsA.g;
+      if (statsB.g !== statsA.g) return statsB.g - statsA.g;
+      return statsB.pts - statsA.pts;
     }
     return b.totalScore - a.totalScore;
   });
@@ -561,10 +578,7 @@ const GroupDetails: React.FC = () => {
                         <>
                           <th style={{ padding: '12px', textAlign: 'center' }}>PJ</th>
                           <th style={{ padding: '12px', textAlign: 'center' }}>PG</th>
-                          <th style={{ padding: '12px', textAlign: 'center' }}>PP</th>
-                          <th style={{ padding: '12px', textAlign: 'center' }}>PF</th>
-                          <th style={{ padding: '12px', textAlign: 'center' }}>PC</th>
-                          <th style={{ padding: '12px', textAlign: 'right' }}>Pts</th>
+                          <th style={{ padding: '12px', textAlign: 'right' }}>PP</th>
                         </>
                       ) : (
                         <th style={{ padding: '12px', textAlign: 'right' }}>Pts</th>
@@ -608,11 +622,8 @@ const GroupDetails: React.FC = () => {
                           ) : isRacquetball && statsR ? (
                             <>
                               <td style={{ padding: '15px 12px', textAlign: 'center' }}>{statsR.pj}</td>
-                              <td style={{ padding: '15px 12px', textAlign: 'center' }}>{statsR.g}</td>
-                              <td style={{ padding: '15px 12px', textAlign: 'center' }}>{statsR.p}</td>
-                              <td style={{ padding: '15px 12px', textAlign: 'center' }}>{statsR.pf}</td>
-                              <td style={{ padding: '15px 12px', textAlign: 'center' }}>{statsR.pc}</td>
-                              <td style={{ padding: '15px 12px', textAlign: 'right', color: 'var(--primary)', fontWeight: 'bold' }}>{statsR.pts}</td>
+                              <td style={{ padding: '15px 12px', textAlign: 'center', color: 'var(--primary)', fontWeight: 'bold' }}>{statsR.g}</td>
+                              <td style={{ padding: '15px 12px', textAlign: 'right' }}>{statsR.p}</td>
                             </>
                           ) : (
                             <td style={{ padding: '15px 12px', textAlign: 'right', color: 'var(--primary)', fontWeight: 'bold' }}>{pair.totalScore}</td>
