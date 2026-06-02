@@ -42,7 +42,7 @@ interface Bracket {
   categoryId: string;
   category: {
     tournamentId: string;
-    tournament: { sport: string; description: string };
+    tournament: { sport: string; description: string; creatorId: number };
   };
   matches: BracketMatch[];
 }
@@ -50,8 +50,10 @@ interface Bracket {
 const BracketDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
+  const { isAdmin: isSystemAdmin, user } = useAuth();
   const [bracket, setBracket] = useState<Bracket | null>(null);
+  
+  const isAdmin = isSystemAdmin || !!(user && bracket && bracket.category.tournament.creatorId === user.id);
   const [loading, setLoading] = useState(true);
   const [categoryPairs, setCategoryPairs] = useState<Pair[]>([]);
   const [registerModal, setRegisterModal] = useState({ show: false, name: '' });

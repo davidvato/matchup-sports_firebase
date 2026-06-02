@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Trophy, Users, Plus, Trash2,
@@ -20,12 +20,46 @@ interface CategoryConfig {
 }
 
 const TournamentCreation: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile(768);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  const [organizers, setOrganizers] = useState<{ id: number; username: string }[]>([]);
+  const [selectedOrganizerId, setSelectedOrganizerId] = useState<number | ''>('');
+
+  // Redirect organizers if they land here
+  useEffect(() => {
+    if (user && user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {
+      fetch(`${API_URL}/tournaments?creatorId=${user.id}`)
+        .then(res => res.json())
+        .then(tournaments => {
+          if (tournaments && tournaments.length > 0) {
+            navigate(`/tournament/${tournaments[0].id}`);
+          } else {
+            navigate('/');
+          }
+        })
+        .catch(() => navigate('/'));
+    }
+  }, [user, navigate]);
+
+  // Fetch organizers if admin
+  useEffect(() => {
+    if (isAdmin) {
+      fetch(`${API_URL}/users`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            const orgs = data.filter((u: any) => u.role === 'ORGANIZER');
+            setOrganizers(orgs);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [isAdmin]);
 
   // Section 1: Basic Info
   const [name, setName] = useState('');
@@ -81,7 +115,7 @@ const TournamentCreation: React.FC = () => {
           endDate,
           sport,
           description,
-          creatorId: user?.id,
+          creatorId: selectedOrganizerId || user?.id,
           categories: categories.map(cat => ({
             ...cat,
             participants: [] // No participants added during creation anymore
@@ -265,6 +299,35 @@ const TournamentCreation: React.FC = () => {
                     <option disabled style={{ color: 'rgba(255,255,255,0.3)' }}>Tenis (Próximamente)</option>
                   </select>
                 </div>
+
+                {isAdmin && (
+                  <div style={{ gridColumn: 'span 1', ...(isMobile ? {} : { gridColumn: 'span 2' }) }}>
+                    <label style={{ display: 'block', marginBottom: '0.8rem', opacity: 0.7 }}>Asignar Organizador de Torneo</label>
+                    {organizers.length > 0 ? (
+                      <select
+                        className="input-field"
+                        value={selectedOrganizerId}
+                        onChange={(e) => setSelectedOrganizerId(e.target.value === '' ? '' : parseInt(e.target.value))}
+                      >
+                        <option value="">Asignarme a mí mismo (Administrador)</option>
+                        {organizers.map(org => (
+                          <option key={org.id} value={org.id}>{org.username}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div style={{
+                        padding: '0.8rem 1rem',
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '10px',
+                        fontSize: '0.9rem',
+                        opacity: 0.6
+                      }}>
+                        No hay organizadores registrados. El torneo se asignará al Administrador.
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Racquetball Rules Modal */}

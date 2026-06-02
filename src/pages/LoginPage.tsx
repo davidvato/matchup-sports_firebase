@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import bgImage from '../assets/login-bg.png';
 import useIsMobile from '../hooks/useIsMobile';
 import { sanitizeText, LIMITS } from '../utils/validation';
+import { API_URL } from '../config';
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -42,9 +43,29 @@ const LoginPage: React.FC = () => {
       return;
     }
 
-    const success = await login(username, password);
-    if (success) {
-      navigate('/create');
+    const loggedUser = await login(username, password);
+    if (loggedUser) {
+      if (loggedUser.role === 'ADMIN' || loggedUser.role === 'SUPERADMIN') {
+        navigate('/create');
+      } else {
+        // Organizer: fetch their assigned tournament
+        try {
+          const res = await fetch(`${API_URL}/tournaments?creatorId=${loggedUser.id}`);
+          if (res.ok) {
+            const tournaments = await res.json();
+            if (tournaments && tournaments.length > 0) {
+              navigate(`/tournament/${tournaments[0].id}`);
+            } else {
+              navigate('/');
+            }
+          } else {
+            navigate('/');
+          }
+        } catch (err) {
+          console.error('Error fetching tournaments for redirect:', err);
+          navigate('/');
+        }
+      }
     } else {
       setError('Credenciales incorrectas o error de servidor.');
     }

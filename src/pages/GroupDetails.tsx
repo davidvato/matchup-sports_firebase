@@ -75,7 +75,7 @@ interface Group {
   categoryId: string;
   category: {
     tournamentId: string;
-    tournament: { sport: string; description: string };
+    tournament: { sport: string; description: string; creatorId: number };
   };
   pairs: Pair[];
   matches: Match[];
@@ -84,8 +84,10 @@ interface Group {
 const GroupDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
+  const { isAdmin: isSystemAdmin, user } = useAuth();
   const [group, setGroup] = useState<Group | null>(null);
+  
+  const isAdmin = isSystemAdmin || !!(user && group && group.category.tournament.creatorId === user.id);
   const [loading, setLoading] = useState(true);
   const [availablePairs, setAvailablePairs] = useState<Pair[]>([]);
   const [showAddPlayer, setShowAddPlayer] = useState(false);

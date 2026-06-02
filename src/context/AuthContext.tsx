@@ -1,22 +1,56 @@
 import { API_URL } from '../config';
-import React, { createContext, useContext, useState, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
-interface User {
+export interface User {
   id: number;
   username: string;
   role: string;
+  token?: string;
 }
 
 interface AuthContextType {
   isAdmin: boolean;
+  isOrganizer: boolean;
   user: User | null;
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (username: string, password: string) => Promise<User | null>;
   register: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Global Fetch Interceptor to automatically attach JWT authorization headers
+const setupFetchInterceptor = () => {
+  const originalFetch = window.fetch;
+  window.fetch = async (input, init) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    
+    // Only intercept requests to our backend API
+    if (url.startsWith(API_URL)) {
+      const saved = localStorage.getItem('matchup_user');
+      if (saved) {
+        try {
+          const userData = JSON.parse(saved) as User;
+          if (userData && userData.token) {
+            init = init || {};
+            // Prepare headers safely preserving existing headers
+            const headers = new Headers(init.headers || {});
+            if (!headers.has('Authorization')) {
+              headers.set('Authorization', `Bearer ${userData.token}`);
+            }
+            init.headers = headers;
+          }
+        } catch (e) {
+          console.error('Error parsing auth token in fetch interceptor:', e);
+        }
+      }
+    }
+    return originalFetch(input, init);
+  };
+};
+
+// Execute interceptor setup
+setupFetchInterceptor();
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
@@ -33,14 +67,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
       const data = await response.json();
       if (data.success) {
-        setUser(data.user);
-        localStorage.setItem('matchup_user', JSON.stringify(data.user));
-        return true;
+        const loggedUser: User = {
+          ...data.user,
+          token: data.token
+        };
+        setUser(loggedUser);
+        localStorage.setItem('matchup_user', JSON.stringify(loggedUser));
+        return loggedUser;
       }
-      return false;
+      return null;
     } catch (error) {
       console.error('Login error:', error);
-      return false;
+      return null;
     }
   };
 
@@ -52,7 +90,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         body: JSON.stringify({ username, password })
       });
       const data = await response.json();
-      return data.success;
+      if (data.success) {
+        const loggedUser: User = {
+          ...data.user,
+          token: data.token
+        };
+        setUser(loggedUser);
+        localStorage.setItem('matchup_user', JSON.stringify(loggedUser));
+        return true;
+      }
+      return false;
     } catch (error) {
       console.error('Register error:', error);
       return false;
@@ -64,9 +111,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.removeItem('matchup_user');
   };
 
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
+  const isOrganizer = user?.role === 'ORGANIZER';
+
   return (
     <AuthContext.Provider value={{ 
-      isAdmin: !!user, 
+      isAdmin,
+      isOrganizer,
       user, 
       login, 
       register, 

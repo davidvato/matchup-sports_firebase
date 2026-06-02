@@ -46,14 +46,17 @@ interface Tournament {
   endDate: string;
   sport: string;
   description?: string;
+  creatorId: number;
   categories: Category[];
 }
 
 const TournamentDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { isAdmin } = useAuth();
+  const { isAdmin: isSystemAdmin, user } = useAuth();
   const navigate = useNavigate();
   const [tournament, setTournament] = useState<Tournament | null>(null);
+  
+  const isAdmin = isSystemAdmin || !!(user && tournament && tournament.creatorId === user.id);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
@@ -421,19 +424,23 @@ const TournamentDetails: React.FC = () => {
                         >
                           Editar Información
                         </button>
-                        <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '5px 0' }} />
-                        <button
-                          onClick={handleDeleteTournament}
-                          style={{
-                            width: '100%', padding: '10px', background: 'none', border: 'none',
-                            color: '#ff4b2b', cursor: 'pointer', textAlign: 'left', borderRadius: '8px',
-                            display: 'flex', alignItems: 'center', gap: '10px'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,75,43,0.1)'}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                        >
-                          Eliminar Torneo
-                        </button>
+                        {isSystemAdmin && (
+                          <>
+                            <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '5px 0' }} />
+                            <button
+                              onClick={handleDeleteTournament}
+                              style={{
+                                width: '100%', padding: '10px', background: 'none', border: 'none',
+                                color: '#ff4b2b', cursor: 'pointer', textAlign: 'left', borderRadius: '8px',
+                                display: 'flex', alignItems: 'center', gap: '10px'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,75,43,0.1)'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                              Eliminar Torneo
+                            </button>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
@@ -546,19 +553,23 @@ const TournamentDetails: React.FC = () => {
                       >
                         Editar Información
                       </button>
-                      <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '5px 0' }} />
-                      <button
-                        onClick={handleDeleteTournament}
-                        style={{
-                          width: '100%', padding: '10px', background: 'none', border: 'none',
-                          color: '#ff4b2b', cursor: 'pointer', textAlign: 'left', borderRadius: '8px',
-                          display: 'flex', alignItems: 'center', gap: '10px'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,75,43,0.1)'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      >
-                        Eliminar Torneo
-                      </button>
+                      {isSystemAdmin && (
+                        <>
+                          <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '5px 0' }} />
+                          <button
+                            onClick={handleDeleteTournament}
+                            style={{
+                              width: '100%', padding: '10px', background: 'none', border: 'none',
+                              color: '#ff4b2b', cursor: 'pointer', textAlign: 'left', borderRadius: '8px',
+                              display: 'flex', alignItems: 'center', gap: '10px'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,75,43,0.1)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                          >
+                            Eliminar Torneo
+                          </button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

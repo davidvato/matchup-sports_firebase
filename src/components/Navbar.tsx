@@ -7,14 +7,34 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import useIsMobile from '../hooks/useIsMobile';
+import { API_URL } from '../config';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const { isAdmin, logout, user } = useAuth();
+  const [myTournamentId, setMyTournamentId] = useState<string | null>(null);
+  const { isAdmin, isOrganizer, logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile(768);
+
+  // Fetch assigned tournament for organizers
+  useEffect(() => {
+    if (isOrganizer && user) {
+      fetch(`${API_URL}/tournaments?creatorId=${user.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setMyTournamentId(data[0].id);
+          } else {
+            setMyTournamentId(null);
+          }
+        })
+        .catch(() => setMyTournamentId(null));
+    } else {
+      setMyTournamentId(null);
+    }
+  }, [isOrganizer, user]);
 
   // Close drawer on route change
   useEffect(() => {
@@ -87,7 +107,7 @@ const Navbar: React.FC = () => {
               </div>
 
               {/* User info */}
-              {isAdmin && user && (
+              {user && (
                 <div style={{
                   padding: '1rem', background: 'rgba(0, 242, 254, 0.05)',
                   borderRadius: '12px', marginBottom: '1rem',
@@ -96,6 +116,9 @@ const Navbar: React.FC = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <User size={18} color="var(--primary)" />
                     <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>{user.username}</span>
+                    <span style={{ fontSize: '0.75rem', opacity: 0.5, marginLeft: 'auto', textTransform: 'capitalize' }}>
+                      {user.role.toLowerCase()}
+                    </span>
                   </div>
                 </div>
               )}
@@ -105,8 +128,18 @@ const Navbar: React.FC = () => {
                 Inicio
               </Link>
               {isAdmin && (
+                <Link to="/users" style={drawerLinkStyle}>
+                  Gestionar Usuarios
+                </Link>
+              )}
+              {isAdmin && (
                 <Link to="/create" style={drawerLinkStyle}>
                   Crear Torneo
+                </Link>
+              )}
+              {isOrganizer && myTournamentId && (
+                <Link to={`/tournament/${myTournamentId}`} style={drawerLinkStyle}>
+                  Mi Torneo
                 </Link>
               )}
               <Link to="/explore" style={drawerLinkStyle}>
@@ -136,7 +169,7 @@ const Navbar: React.FC = () => {
 
               {/* Bottom actions */}
               <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                {isAdmin ? (
+                {user ? (
                   <button
                     className="btn-primary"
                     onClick={() => { logout(); navigate('/'); setIsDrawerOpen(false); }}
@@ -179,8 +212,18 @@ const Navbar: React.FC = () => {
           Inicio
         </Link>
         {isAdmin && (
+          <Link to="/users" style={{ color: 'white', textDecoration: 'none', fontWeight: 600 }}>
+            Gestionar Usuarios
+          </Link>
+        )}
+        {isAdmin && (
           <Link to="/create" style={{ color: 'white', textDecoration: 'none', fontWeight: 600 }}>
             Crear Torneo
+          </Link>
+        )}
+        {isOrganizer && myTournamentId && (
+          <Link to={`/tournament/${myTournamentId}`} style={{ color: 'white', textDecoration: 'none', fontWeight: 600 }}>
+            Mi Torneo
           </Link>
         )}
 
@@ -214,9 +257,9 @@ const Navbar: React.FC = () => {
           )}
         </div>
 
-        {isAdmin ? (
+        {user ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>{user?.username}</span>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>{user.username}</span>
             <button className="btn-primary" onClick={() => { logout(); navigate('/'); }} style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <LogOut size={16} /> Salir
             </button>

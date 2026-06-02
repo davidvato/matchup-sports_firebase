@@ -11,6 +11,7 @@ import ExploreSports from './pages/ExploreSports';
 
 import GroupDetails from './pages/GroupDetails';
 import BracketDetails from './pages/BracketDetails';
+import UserManagement from './pages/UserManagement';
 import Footer from './components/Footer';
 const AppContent: React.FC = () => {
   const location = useLocation();
@@ -31,6 +32,7 @@ const AppContent: React.FC = () => {
         <Route path="/group/:id" element={<GroupDetails />} />
         <Route path="/bracket/:id" element={<BracketDetails />} />
         <Route path="/sport/:sportId" element={<SportPage />} />
+        <Route path="/users" element={<UserManagement />} />
       </Routes>
       <Footer />
     </div>
