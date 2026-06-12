@@ -72,7 +72,8 @@ body {
   width: 100%;
   box-sizing: border-box;
   transition: border-color 0.2s;
-  font-size: 16px; /* Prevents iOS zoom on focus */
+  font-size: 16px;
+  /* Prevents iOS zoom on focus */
 }
 
 .input-field:focus {
@@ -125,10 +126,13 @@ h3 {
 .tabs-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
+  /* Firefox */
 }
+
 .tabs-scroll::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
+  display: none;
+  /* Chrome/Safari */
 }
 
 /* Mobile drawer overlay */
@@ -167,6 +171,7 @@ h3 {
   from {
     transform: translateX(100%);
   }
+
   to {
     transform: translateX(0);
   }
@@ -184,7 +189,8 @@ h3 {
   }
 
   .btn-primary:hover {
-    transform: none; /* Disable hover lift on touch */
+    transform: none;
+    /* Disable hover lift on touch */
     box-shadow: none;
   }
 

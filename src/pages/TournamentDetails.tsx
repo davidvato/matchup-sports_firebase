@@ -47,6 +47,7 @@ interface Tournament {
   sport: string;
   description?: string;
   creatorId: number;
+  creator?: { id: number; username: string };
   categories: Category[];
 }
 
@@ -61,8 +62,23 @@ const TournamentDetails: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '', location: '', startDate: '', endDate: '' });
+  const [editForm, setEditForm] = useState({ name: '', location: '', startDate: '', endDate: '', creatorId: 0 });
+  const [organizers, setOrganizers] = useState<{ id: number; username: string }[]>([]);
   const isMobile = useIsMobile(768);
+
+  useEffect(() => {
+    if (isSystemAdmin) {
+      fetch(`${API_URL}/users`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            const orgs = data.filter((u: any) => u.role === 'ORGANIZER');
+            setOrganizers(orgs);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [isSystemAdmin]);
 
   // Custom Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState<{
@@ -305,7 +321,8 @@ const TournamentDetails: React.FC = () => {
         name: tournament.name,
         location: tournament.location || '',
         startDate: tournament.startDate ? tournament.startDate.split('T')[0] : '',
-        endDate: tournament.endDate ? tournament.endDate.split('T')[0] : ''
+        endDate: tournament.endDate ? tournament.endDate.split('T')[0] : '',
+        creatorId: tournament.creatorId
       });
     }
   }, [tournament]);
@@ -392,6 +409,11 @@ const TournamentDetails: React.FC = () => {
                     {tournament?.description && (
                       <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)' }}>
                         <Trophy size={18} /> {tournament.description}
+                      </span>
+                    )}
+                    {tournament?.creator && (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#00f2fe' }}>
+                        <Users size={18} /> Organizador: {tournament.creator.username}
                       </span>
                     )}
                   </div>
@@ -521,9 +543,14 @@ const TournamentDetails: React.FC = () => {
                     {tournament.description}
                   </p>
                 )}
-                <div style={{ display: 'flex', gap: '2rem', opacity: 0.7 }}>
+                <div style={{ display: 'flex', gap: '2rem', opacity: 0.7, flexWrap: 'wrap' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin size={18} /> {tournament?.location || 'Sin ubicación'}</span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={18} /> {formatDate(tournament?.startDate!)} - {formatDate(tournament?.endDate!)}</span>
+                  {tournament?.creator && (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#00f2fe' }}>
+                      <Users size={18} /> Organizador: {tournament.creator.username}
+                    </span>
+                  )}
                 </div>
               </div>
               {isAdmin && (
@@ -1248,6 +1275,48 @@ const TournamentDetails: React.FC = () => {
                   />
                 </div>
               </div>
+
+              {isSystemAdmin && (
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.7, fontSize: '0.9rem' }}>Organizador del Torneo</label>
+                  {organizers.length > 0 ? (
+                    <select
+                      className="input-field"
+                      value={editForm.creatorId}
+                      onChange={(e) => setEditForm({ ...editForm, creatorId: parseInt(e.target.value) })}
+                      style={{
+                        width: '100%',
+                        backgroundColor: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '8px',
+                        color: 'white',
+                        padding: '0.8rem 1rem',
+                        fontSize: '1rem',
+                        outline: 'none'
+                      }}
+                    >
+                      <option value={user?.id} style={{ backgroundColor: '#1a1d23', color: 'white' }}>Asignarme a mí mismo (Administrador)</option>
+                      {organizers.map(org => (
+                        <option key={org.id} value={org.id} style={{ backgroundColor: '#1a1d23', color: 'white' }}>{org.username}</option>
+                      ))}
+                      {!organizers.some(org => org.id === editForm.creatorId) && editForm.creatorId !== user?.id && (
+                        <option value={editForm.creatorId} style={{ backgroundColor: '#1a1d23', color: 'white' }}>Organizador actual (ID: {editForm.creatorId})</option>
+                      )}
+                    </select>
+                  ) : (
+                    <div style={{
+                      padding: '0.8rem 1rem',
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '10px',
+                      fontSize: '0.9rem',
+                      opacity: 0.6
+                    }}>
+                      No hay organizadores registrados.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div style={{ display: 'flex', gap: '1rem' }}>

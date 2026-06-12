@@ -26,7 +26,8 @@ router.get('/', async (req, res) => {
         ...(creatorId ? { creatorId: parseInt(creatorId as string) } : {})
       },
       include: { 
-        _count: { select: { categories: true } } 
+        _count: { select: { categories: true } },
+        creator: { select: { id: true, username: true } }
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -42,6 +43,7 @@ router.get('/:id', async (req, res) => {
     const tournament = await prisma.tournament.findUnique({
       where: { id: req.params.id },
       include: {
+        creator: { select: { id: true, username: true } },
         categories: {
           include: {
             groups: {
@@ -235,11 +237,16 @@ router.post('/', authenticateJWT, async (req: AuthenticatedRequest, res) => {
 
 // Tournaments: Update (Protected, only creator or admin)
 router.patch('/:id', authenticateJWT, requireEntityAccess('tournament'), async (req, res) => {
-  const { name: rawName, location: rawLocation, startDate, endDate, sport } = req.body;
+  const { name: rawName, location: rawLocation, startDate, endDate, sport, creatorId } = req.body;
   const name = rawName ? sanitizeText(rawName) : undefined;
   const location = rawLocation ? sanitizeText(rawLocation) : undefined;
 
   try {
+    let creatorIdVal = undefined;
+    if ((req.user!.role === 'ADMIN' || req.user!.role === 'SUPERADMIN') && creatorId !== undefined) {
+      creatorIdVal = typeof creatorId === 'number' ? creatorId : parseInt(creatorId);
+    }
+
     const tournament = await prisma.tournament.update({
       where: { id: req.params.id },
       data: {
@@ -247,7 +254,8 @@ router.patch('/:id', authenticateJWT, requireEntityAccess('tournament'), async (
         location,
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
-        sport
+        sport,
+        ...(creatorIdVal !== undefined ? { creatorId: creatorIdVal } : {})
       }
     });
     res.json(tournament);

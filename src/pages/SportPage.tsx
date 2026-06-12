@@ -12,6 +12,7 @@ interface Tournament {
   location: string;
   startDate: string;
   sport: string;
+  creator?: { id: number; username: string };
 }
 
 const SportPage: React.FC = () => {
@@ -154,6 +155,11 @@ const SportPage: React.FC = () => {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', opacity: 0.6, fontSize: '0.9rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin size={14} /> {t.location}</div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={14} /> {t.startDate ? new Date(t.startDate).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : 'Por definir'}</div>
+                        {t.creator && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#00f2fe', marginTop: '4px', fontWeight: '500' }}>
+                            <span>Organizador: {t.creator.username}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </Link>

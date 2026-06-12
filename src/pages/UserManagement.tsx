@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Trash2, Plus, Lock, UserPlus, AlertTriangle } from 'lucide-react';
+import { Users, Trash2, Plus, Lock, UserPlus, AlertTriangle, Edit } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
 import useIsMobile from '../hooks/useIsMobile';
@@ -11,6 +11,7 @@ interface UserItem {
   username: string;
   role: string;
   createdAt: string;
+  tournaments?: { id: string; name: string }[];
 }
 
 const UserManagement: React.FC = () => {
@@ -25,6 +26,20 @@ const UserManagement: React.FC = () => {
   const [role, setRole] = useState('ORGANIZER');
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [tournamentsList, setTournamentsList] = useState<{ id: string; name: string; creatorId: number }[]>([]);
+  const [editUserModal, setEditUserModal] = useState<{
+    show: boolean;
+    userId: number | null;
+    username: string;
+    password?: string;
+    tournamentId: string;
+  }>({
+    show: false,
+    userId: null,
+    username: '',
+    password: '',
+    tournamentId: 'none'
+  });
 
   // Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState<{
@@ -44,8 +59,21 @@ const UserManagement: React.FC = () => {
     }
   }, [isAdmin, loading, navigate]);
 
+  const fetchTournaments = async () => {
+    try {
+      const res = await fetch(`${API_URL}/tournaments`);
+      if (res.ok) {
+        const data = await res.json();
+        setTournamentsList(data);
+      }
+    } catch (err) {
+      console.error('Error fetching tournaments:', err);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchTournaments();
   }, []);
 
   const fetchUsers = async () => {
@@ -125,6 +153,54 @@ const UserManagement: React.FC = () => {
       console.error(err);
       setError('Error al conectar con el servidor.');
       setConfirmModal({ show: false, userId: null, username: '' });
+    }
+  };
+
+  const handleOpenEditModal = (usr: UserItem) => {
+    const assignedTournament = tournamentsList.find(t => t.creatorId === usr.id);
+    setEditUserModal({
+      show: true,
+      userId: usr.id,
+      username: usr.username,
+      password: '',
+      tournamentId: assignedTournament ? assignedTournament.id : 'none'
+    });
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMsg('');
+
+    if (editUserModal.password && editUserModal.password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/users/${editUserModal.userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: editUserModal.username,
+          password: editUserModal.password || undefined,
+          tournamentId: editUserModal.tournamentId
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setSuccessMsg(`Usuario "${editUserModal.username}" actualizado correctamente.`);
+        setEditUserModal({ show: false, userId: null, username: '', password: '', tournamentId: 'none' });
+        fetchUsers();
+        fetchTournaments();
+      } else {
+        setError(data.message || 'Error al actualizar el usuario.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Error al conectar con el servidor.');
     }
   };
 
@@ -238,6 +314,7 @@ const UserManagement: React.FC = () => {
                   <tr style={{ textAlign: 'left', opacity: 0.5, fontSize: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                     <th style={{ padding: '10px' }}>Usuario</th>
                     <th style={{ padding: '10px' }}>Rol</th>
+                    <th style={{ padding: '10px' }}>Torneo Asignado</th>
                     <th style={{ padding: '10px', textAlign: 'right' }}>Acción</th>
                   </tr>
                 </thead>
@@ -257,7 +334,38 @@ const UserManagement: React.FC = () => {
                           {usr.role === 'ADMIN' ? 'Administrador' : 'Organizador'}
                         </span>
                       </td>
-                      <td style={{ padding: '12px 10px', textAlign: 'right' }}>
+                      <td style={{ padding: '12px 10px' }}>
+                        {usr.role === 'ORGANIZER' ? (
+                          usr.tournaments && usr.tournaments.length > 0 ? (
+                            <span style={{ color: 'var(--primary)', fontWeight: '500' }}>
+                              {usr.tournaments.map(t => t.name).join(', ')}
+                            </span>
+                          ) : (
+                            <span style={{ opacity: 0.4, fontStyle: 'italic', fontSize: '0.85rem' }}>Ninguno</span>
+                          )
+                        ) : (
+                          <span style={{ opacity: 0.3, fontStyle: 'italic', fontSize: '0.85rem' }}>N/A</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '12px 10px', textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                        {usr.role === 'ORGANIZER' && (
+                          <button
+                            onClick={() => handleOpenEditModal(usr)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#00f2fe',
+                              cursor: 'pointer',
+                              padding: '5px',
+                              borderRadius: '4px',
+                              display: 'flex',
+                              alignItems: 'center'
+                            }}
+                            title="Editar cuenta"
+                          >
+                            <Edit size={16} />
+                          </button>
+                        )}
                         {usr.username !== 'admin' && user?.id !== usr.id ? (
                           <button
                             onClick={() => setConfirmModal({ show: true, userId: usr.id, username: usr.username })}
@@ -267,7 +375,9 @@ const UserManagement: React.FC = () => {
                               color: '#ff4b2b',
                               cursor: 'pointer',
                               padding: '5px',
-                              borderRadius: '4px'
+                              borderRadius: '4px',
+                              display: 'flex',
+                              alignItems: 'center'
                             }}
                             title="Eliminar usuario"
                           >
@@ -326,6 +436,95 @@ const UserManagement: React.FC = () => {
                 Eliminar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {editUserModal.show && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 4000, padding: '2rem', backdropFilter: 'blur(8px)'
+        }}>
+          <div className="glass-card fadeIn" style={{
+            padding: '2.5rem', maxWidth: '450px', width: '100%',
+            backgroundColor: '#1a1d23', border: '1px solid rgba(255,255,255,0.1)'
+          }}>
+            <h2 style={{ marginBottom: '1.8rem', color: 'white', fontSize: '1.4rem', marginTop: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Edit color="#00f2fe" size={22} /> Editar Cuenta Organizador
+            </h2>
+            
+            <form onSubmit={handleUpdateUser} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.4rem', color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Usuario</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={editUserModal.username}
+                  maxLength={LIMITS.USERNAME}
+                  onChange={(e) => setEditUserModal({ ...editUserModal, username: sanitizeText(e.target.value) })}
+                  placeholder="Nombre de usuario"
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.4rem', color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Contraseña (Dejar en blanco para no cambiar)</label>
+                <input
+                  type="password"
+                  className="input-field"
+                  value={editUserModal.password || ''}
+                  onChange={(e) => setEditUserModal({ ...editUserModal, password: e.target.value })}
+                  placeholder="Mínimo 8 caracteres"
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.4rem', color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>Asignar a Torneo</label>
+                <select
+                  value={editUserModal.tournamentId}
+                  onChange={(e) => setEditUserModal({ ...editUserModal, tournamentId: e.target.value })}
+                  style={{
+                    width: '100%',
+                    height: '46px',
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    color: 'white',
+                    padding: '0 10px',
+                    fontSize: '0.9rem',
+                    outline: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="none" style={{ backgroundColor: '#1a1d23', color: 'white' }}>Ninguno</option>
+                  {tournamentsList.map(t => (
+                    <option key={t.id} value={t.id} style={{ backgroundColor: '#1a1d23', color: 'white' }}>
+                      {t.name} {t.creatorId && t.creatorId !== editUserModal.userId ? `(Asignado a otro)` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => setEditUserModal({ show: false, userId: null, username: '', password: '', tournamentId: 'none' })}
+                  style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{ flex: 1 }}
+                >
+                  Guardar
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

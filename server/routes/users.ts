@@ -14,7 +14,13 @@ router.get('/', authenticateJWT, requireRole(['ADMIN', 'SUPERADMIN']), async (re
         id: true,
         username: true,
         role: true,
-        createdAt: true
+        createdAt: true,
+        tournaments: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -94,6 +100,92 @@ router.delete('/:id', authenticateJWT, requireRole(['ADMIN', 'SUPERADMIN']), asy
   } catch (error) {
     console.error('Error deleting user:', error);
     res.status(500).json({ success: false, message: 'Error al eliminar el usuario' });
+  }
+});
+
+const sanitizeText = (value: string | undefined | null): string => {
+  if (!value) return '';
+  return value.replace(/--/g, '').replace(/[;'"\\*<>]/g, '').trim();
+};
+
+// Users: Update user (Admin only)
+router.patch('/:id', authenticateJWT, requireRole(['ADMIN', 'SUPERADMIN']), async (req, res) => {
+  const userId = parseInt(req.params.id);
+  if (isNaN(userId)) {
+    return res.status(400).json({ success: false, message: 'ID de usuario inválido' });
+  }
+
+  const { username, password, tournamentId } = req.body;
+
+  try {
+    const userToUpdate = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!userToUpdate) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    }
+
+    // Prepare update data
+    const updateData: any = {};
+    if (username) {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          username,
+          id: { not: userId }
+        }
+      });
+      if (existingUser) {
+        return res.status(400).json({ success: false, message: 'El nombre de usuario ya está en uso' });
+      }
+      updateData.username = sanitizeText(username);
+    }
+
+    if (password) {
+      if (password.length < 8) {
+        return res.status(400).json({ success: false, message: 'La contraseña debe tener al menos 8 caracteres' });
+      }
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
+    // Update in transaction
+    await prisma.$transaction(async (tx) => {
+      if (Object.keys(updateData).length > 0) {
+        await tx.user.update({
+          where: { id: userId },
+          data: updateData
+        });
+      }
+
+      // Handle tournament assignment
+      if (tournamentId !== undefined) {
+        // Reassign all currently managed tournaments of this user to the admin performing the action
+        const currentTournaments = await tx.tournament.findMany({
+          where: { creatorId: userId }
+        });
+
+        const adminId = req.user!.id;
+        for (const t of currentTournaments) {
+          await tx.tournament.update({
+            where: { id: t.id },
+            data: { creatorId: adminId }
+          });
+        }
+
+        // If a valid tournament is specified
+        if (tournamentId && tournamentId !== 'none') {
+          await tx.tournament.update({
+            where: { id: tournamentId },
+            data: { creatorId: userId }
+          });
+        }
+      }
+    });
+
+    res.json({ success: true, message: 'Usuario actualizado correctamente' });
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ success: false, message: 'Error al actualizar el usuario' });
   }
 });
 
