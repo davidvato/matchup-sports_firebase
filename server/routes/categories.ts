@@ -184,7 +184,17 @@ router.get('/groups/:id', async (req, res) => {
     const group = await prisma.group.findUnique({
       where: { id: req.params.id },
       include: {
-        category: { include: { tournament: true } },
+        category: {
+          include: {
+            tournament: {
+              include: {
+                creator: {
+                  select: { id: true, username: true }
+                }
+              }
+            }
+          }
+        },
         pairs: { include: { _count: { select: { scores: true } } } },
         matches: {
           include: {
@@ -426,7 +436,13 @@ router.get('/brackets/:id', async (req, res) => {
       include: {
         category: {
           include: {
-            tournament: true
+            tournament: {
+              include: {
+                creator: {
+                  select: { id: true, username: true }
+                }
+              }
+            }
           }
         },
         matches: {

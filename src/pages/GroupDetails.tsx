@@ -5,6 +5,7 @@ import { ChevronLeft, Users, Trophy, Activity, CheckCircle2, RotateCcw, Plus, X,
 import { useAuth } from '../context/AuthContext';
 import useIsMobile from '../hooks/useIsMobile';
 import { sanitizeText, LIMITS } from '../utils/validation';
+import TournamentBanner from '../components/TournamentBanner';
 
 interface Pair {
   id: string;
@@ -75,7 +76,17 @@ interface Group {
   categoryId: string;
   category: {
     tournamentId: string;
-    tournament: { sport: string; description: string; creatorId: number };
+    tournament: {
+      id?: string;
+      name: string;
+      location?: string;
+      startDate?: string;
+      endDate?: string;
+      sport: string;
+      description?: string;
+      creatorId: number;
+      creator?: { id?: number; username: string };
+    };
   };
   pairs: Pair[];
   matches: Match[];
@@ -482,6 +493,14 @@ const GroupDetails: React.FC = () => {
       backgroundImage: 'linear-gradient(135deg, #0c0e14 0%, #1a1d23 100%)', color: 'white'
     }}>
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+        <Link to={group ? `/tournament/${group.category.tournamentId}` : '/'} style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.5)', textDecoration: 'none', marginBottom: '1.5rem' }}>
+          <ChevronLeft size={18} /> Volver al Torneo
+        </Link>
+
+        {isRacquetball && group?.category?.tournament && (
+          <TournamentBanner tournament={group.category.tournament} isMobile={isMobile} />
+        )}
+
         <header style={{
           marginBottom: isMobile ? '1.5rem' : '3rem',
           display: 'flex',
@@ -491,9 +510,6 @@ const GroupDetails: React.FC = () => {
           gap: isMobile ? '1rem' : '0'
         }}>
           <div>
-            <Link to={group ? `/tournament/${group.category.tournamentId}` : '/'} style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.5)', textDecoration: 'none', marginBottom: '1rem' }}>
-              <ChevronLeft size={18} /> Volver al Torneo
-            </Link>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <h1 className="gradient-text" style={{ fontSize: isMobile ? 'clamp(1.5rem, 7vw, 2.2rem)' : '3rem', margin: 0 }}>{group?.name}</h1>
               {isAdmin && (

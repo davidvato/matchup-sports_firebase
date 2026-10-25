@@ -5,6 +5,7 @@ import { ChevronLeft, Trophy, CheckCircle2, Trash2, RotateCcw, AlertTriangle } f
 import { useAuth } from '../context/AuthContext';
 import useIsMobile from '../hooks/useIsMobile';
 import { sanitizeText, LIMITS } from '../utils/validation';
+import TournamentBanner from '../components/TournamentBanner';
 
 interface Pair {
   id: string;
@@ -42,7 +43,17 @@ interface Bracket {
   categoryId: string;
   category: {
     tournamentId: string;
-    tournament: { sport: string; description: string; creatorId: number };
+    tournament: {
+      id?: string;
+      name: string;
+      location?: string;
+      startDate?: string;
+      endDate?: string;
+      sport: string;
+      description?: string;
+      creatorId: number;
+      creator?: { id?: number; username: string };
+    };
   };
   matches: BracketMatch[];
 }
@@ -153,9 +164,10 @@ const BracketDetails: React.FC = () => {
     }
   };
 
-  const isRacquetball2Of3 = bracket?.category?.tournament?.sport?.toLowerCase() === 'racquetball' &&
+  const isRacquetball = bracket?.category?.tournament?.sport?.toLowerCase() === 'racquetball';
+  const isRacquetball2Of3 = isRacquetball &&
     bracket?.category?.tournament?.description === '2 de 3 sets a 15 puntos con cambios';
-  const isRacquetball3Of5 = bracket?.category?.tournament?.sport?.toLowerCase() === 'racquetball' &&
+  const isRacquetball3Of5 = isRacquetball &&
     bracket?.category?.tournament?.description === '3 de 5 sets a 11 puntos, punto directo, con diferencia de dos puntos';
   const isPickleballLogic = bracket?.category?.tournament?.sport?.toLowerCase() === 'pickleball' &&
     bracket?.category?.tournament?.description === '1 set a 7 puntos minimo';
@@ -351,6 +363,14 @@ const BracketDetails: React.FC = () => {
       overflowX: 'auto'
     }}>
       <div style={{ minWidth: isMobile ? undefined : '1000px', maxWidth: '1400px', margin: '0 auto' }}>
+        <Link to={bracket ? `/tournament/${bracket.category.tournamentId}` : '/'} style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.5)', textDecoration: 'none', marginBottom: '1.5rem' }}>
+          <ChevronLeft size={18} /> Volver al Torneo
+        </Link>
+
+        {isRacquetball && bracket?.category?.tournament && (
+          <TournamentBanner tournament={bracket.category.tournament} isMobile={isMobile} />
+        )}
+
         <header style={{
           marginBottom: isMobile ? '2rem' : '4rem',
           display: 'flex',
@@ -360,9 +380,6 @@ const BracketDetails: React.FC = () => {
           gap: isMobile ? '1rem' : '0'
         }}>
           <div>
-            <Link to={bracket ? `/tournament/${bracket.category.tournamentId}` : '/'} style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.5)', textDecoration: 'none', marginBottom: '1rem' }}>
-              <ChevronLeft size={18} /> Volver al Torneo
-            </Link>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
               <h1 className="gradient-text" style={{ fontSize: isMobile ? 'clamp(1.5rem, 7vw, 2.2rem)' : '3.5rem', margin: 0 }}>{bracket?.name}</h1>
               {isAdmin && (
