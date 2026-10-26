@@ -4,7 +4,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft, Users, Trophy, Activity,
   ArrowRight, Settings, MapPin, Calendar,
-  Layers, Trash2, AlertTriangle, Plus, RotateCcw
+  Layers, Trash2, AlertTriangle, Plus, RotateCcw,
+  Pencil
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { sportsData } from '../data/sports';
@@ -292,6 +293,38 @@ const TournamentDetails: React.FC = () => {
             body: JSON.stringify({ name })
           });
           if (res.ok) fetchTournament();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    });
+  };
+
+  const handleEditPair = (pairId: string, currentName: string) => {
+    setPromptModal({
+      show: true,
+      title: 'Editar Jugador',
+      value: currentName,
+      placeholder: 'Nombre del jugador o pareja...',
+      onConfirm: async (name) => {
+        if (!name.trim() || name.trim() === currentName) return;
+        try {
+          const res = await fetch(`${API_URL}/pairs/${pairId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name.trim() })
+          });
+          if (res.ok) {
+            fetchTournament();
+          } else {
+            const data = await res.json();
+            setConfirmModal({
+              show: true,
+              title: 'Error al actualizar',
+              message: data.message || 'No se pudo actualizar el jugador',
+              onConfirm: () => { }
+            });
+          }
         } catch (err) {
           console.error(err);
         }
@@ -936,21 +969,44 @@ const TournamentDetails: React.FC = () => {
                                 >
                                   <span>{pair.name}</span>
                                   {isAdmin && (
-                                    <button
-                                      onClick={() => handleDeletePair(pair.id, pair.name)}
-                                      style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: 'rgba(255,75,43,0.3)',
-                                        cursor: 'pointer',
-                                        padding: '2px',
-                                        transition: 'color 0.3s'
-                                      }}
-                                      onMouseEnter={(e) => e.currentTarget.style.color = '#ff4b2b'}
-                                      onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,75,43,0.3)'}
-                                    >
-                                      <Trash2 size={14} />
-                                    </button>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      <button
+                                        onClick={() => handleEditPair(pair.id, pair.name)}
+                                        style={{
+                                          background: 'none',
+                                          border: 'none',
+                                          color: 'rgba(0, 242, 254, 0.4)',
+                                          cursor: 'pointer',
+                                          padding: '2px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          transition: 'color 0.3s'
+                                        }}
+                                        title="Editar jugador"
+                                        onMouseEnter={(e) => e.currentTarget.style.color = '#00f2fe'}
+                                        onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(0, 242, 254, 0.4)'}
+                                      >
+                                        <Pencil size={14} />
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeletePair(pair.id, pair.name)}
+                                        style={{
+                                          background: 'none',
+                                          border: 'none',
+                                          color: 'rgba(255,75,43,0.3)',
+                                          cursor: 'pointer',
+                                          padding: '2px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          transition: 'color 0.3s'
+                                        }}
+                                        title="Eliminar jugador"
+                                        onMouseEnter={(e) => e.currentTarget.style.color = '#ff4b2b'}
+                                        onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,75,43,0.3)'}
+                                      >
+                                        <Trash2 size={14} />
+                                      </button>
+                                    </div>
                                   )}
                                 </div>
                               ))}
@@ -986,21 +1042,44 @@ const TournamentDetails: React.FC = () => {
                                 >
                                   <span>{pair.name}</span>
                                   {isAdmin && (
-                                    <button
-                                      onClick={() => handleDeletePair(pair.id, pair.name)}
-                                      style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: 'rgba(255,75,43,0.3)',
-                                        cursor: 'pointer',
-                                        padding: '2px',
-                                        transition: 'color 0.3s'
-                                      }}
-                                      onMouseEnter={(e) => e.currentTarget.style.color = '#ff4b2b'}
-                                      onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,75,43,0.3)'}
-                                    >
-                                      <Trash2 size={14} />
-                                    </button>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      <button
+                                        onClick={() => handleEditPair(pair.id, pair.name)}
+                                        style={{
+                                          background: 'none',
+                                          border: 'none',
+                                          color: 'rgba(0, 242, 254, 0.4)',
+                                          cursor: 'pointer',
+                                          padding: '2px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          transition: 'color 0.3s'
+                                        }}
+                                        title="Editar jugador"
+                                        onMouseEnter={(e) => e.currentTarget.style.color = '#00f2fe'}
+                                        onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(0, 242, 254, 0.4)'}
+                                      >
+                                        <Pencil size={14} />
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeletePair(pair.id, pair.name)}
+                                        style={{
+                                          background: 'none',
+                                          border: 'none',
+                                          color: 'rgba(255,75,43,0.3)',
+                                          cursor: 'pointer',
+                                          padding: '2px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          transition: 'color 0.3s'
+                                        }}
+                                        title="Eliminar jugador"
+                                        onMouseEnter={(e) => e.currentTarget.style.color = '#ff4b2b'}
+                                        onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,75,43,0.3)'}
+                                      >
+                                        <Trash2 size={14} />
+                                      </button>
+                                    </div>
                                   )}
                                 </div>
                               ))}
@@ -1113,7 +1192,7 @@ const TournamentDetails: React.FC = () => {
                 }}
                 style={{ flex: 1 }}
               >
-                {promptModal.title === 'Agregar Jugador' ? 'Guardar' : 'Crear Grupo'}
+                {promptModal.title === 'Editar Jugador' ? 'Guardar Cambios' : (promptModal.title === 'Agregar Jugador' ? 'Guardar' : 'Crear Grupo')}
               </button>
             </div>
           </div>

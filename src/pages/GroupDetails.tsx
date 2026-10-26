@@ -1,7 +1,7 @@
 import { API_URL } from '../config';
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Users, Trophy, Activity, CheckCircle2, RotateCcw, Plus, X, AlertTriangle, Trash2 } from 'lucide-react';
+import { ChevronLeft, Users, Trophy, Activity, CheckCircle2, RotateCcw, Plus, X, AlertTriangle, Trash2, Pencil } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import useIsMobile from '../hooks/useIsMobile';
 import { sanitizeText, LIMITS } from '../utils/validation';
@@ -104,6 +104,7 @@ const GroupDetails: React.FC = () => {
   const [showAddPlayer, setShowAddPlayer] = useState(false);
   const [selectedPairs, setSelectedPairs] = useState<string[]>([]);
   const [registerModal, setRegisterModal] = useState({ show: false, name: '' });
+  const [editPairModal, setEditPairModal] = useState({ show: false, pairId: '', name: '' });
   const isMobile = useIsMobile(768);
   const [resultModal, setResultModal] = useState<{
     show: boolean;
@@ -261,6 +262,31 @@ const GroupDetails: React.FC = () => {
       if (res.ok) {
         setRegisterModal({ show: false, name: '' });
         fetchGroup();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveEditPair = async () => {
+    if (!editPairModal.name.trim() || !editPairModal.pairId) return;
+    try {
+      const res = await fetch(`${API_URL}/pairs/${editPairModal.pairId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editPairModal.name.trim() })
+      });
+      if (res.ok) {
+        setEditPairModal({ show: false, pairId: '', name: '' });
+        fetchGroup();
+      } else {
+        const data = await res.json();
+        setConfirmModal({
+          show: true,
+          title: 'Error al actualizar',
+          message: data.message || 'No se pudo actualizar el jugador',
+          onConfirm: () => { }
+        });
       }
     } catch (err) {
       console.error(err);
@@ -611,7 +637,31 @@ const GroupDetails: React.FC = () => {
                       return (
                         <tr key={pair.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: idx === 0 ? 'rgba(0, 242, 254, 0.05)' : 'transparent' }}>
                           <td style={{ padding: '15px 12px', opacity: 0.5 }}>{idx + 1}</td>
-                          <td style={{ padding: '15px 12px', fontWeight: idx === 0 ? 'bold' : 'normal' }}>{pair.name}</td>
+                          <td style={{ padding: '15px 12px', fontWeight: idx === 0 ? 'bold' : 'normal' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span>{pair.name}</span>
+                              {isAdmin && (
+                                <button
+                                  onClick={() => setEditPairModal({ show: true, pairId: pair.id, name: pair.name })}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'rgba(0, 242, 254, 0.4)',
+                                    cursor: 'pointer',
+                                    padding: '2px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    transition: 'color 0.3s'
+                                  }}
+                                  title="Editar nombre"
+                                  onMouseEnter={(e) => e.currentTarget.style.color = '#00f2fe'}
+                                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(0, 242, 254, 0.4)'}
+                                >
+                                  <Pencil size={13} />
+                                </button>
+                              )}
+                            </div>
+                          </td>
                           {isFootball && statsF ? (
                             <>
                               <td style={{ padding: '15px 12px', textAlign: 'center' }}>{statsF.pj}</td>
@@ -1340,6 +1390,51 @@ const GroupDetails: React.FC = () => {
                 style={{ flex: 1, background: 'linear-gradient(90deg, #00f2fe 0%, #4facfe 100%)', color: '#000', border: 'none' }}
               >
                 Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Player Modal */}
+      {editPairModal.show && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div className="glass-card fadeIn" style={{ padding: '2.5rem', maxWidth: '450px', width: '100%', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <h2 style={{ marginTop: 0, color: 'white', marginBottom: '1.5rem' }}>Editar Jugador</h2>
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.8rem', opacity: 0.7, fontSize: '0.9rem' }}>Nombre o Pareja</label>
+              <input
+                type="text"
+                autoFocus
+                className="input-field"
+                placeholder="Nombre del jugador..."
+                maxLength={LIMITS.PLAYER_NAME}
+                value={editPairModal.name}
+                onChange={(e) => setEditPairModal({ ...editPairModal, name: sanitizeText(e.target.value) })}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') handleSaveEditPair();
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button
+                className="btn-primary"
+                onClick={() => setEditPairModal({ show: false, pairId: '', name: '' })}
+                style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white' }}
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn-primary"
+                onClick={handleSaveEditPair}
+                style={{ flex: 1, background: 'linear-gradient(90deg, #00f2fe 0%, #4facfe 100%)', color: '#000', border: 'none' }}
+              >
+                Guardar Cambios
               </button>
             </div>
           </div>

@@ -725,6 +725,54 @@ router.post('/matches/:id/result', authenticateJWT, requireEntityAccess('match')
 // 5. PAIRS ROUTES
 // ==========================================
 
+// Pairs: Update (Protected)
+router.patch('/pairs/:id', authenticateJWT, requireEntityAccess('pair'), async (req, res) => {
+  const { name } = req.body;
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    return res.status(400).json({ success: false, message: 'El nombre es obligatorio' });
+  }
+
+  try {
+    const existing = await prisma.pair.findUnique({
+      where: { id: req.params.id }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Jugador no encontrado' });
+    }
+
+    const trimmedName = name.trim();
+
+    // Check duplicate name within the same category
+    if (trimmedName !== existing.name) {
+      const duplicate = await prisma.pair.findUnique({
+        where: {
+          categoryId_name: {
+            categoryId: existing.categoryId,
+            name: trimmedName
+          }
+        }
+      });
+      if (duplicate) {
+        return res.status(400).json({
+          success: false,
+          message: 'Ya existe un jugador o pareja con ese nombre en esta categoría'
+        });
+      }
+    }
+
+    const updatedPair = await prisma.pair.update({
+      where: { id: req.params.id },
+      data: { name: trimmedName }
+    });
+
+    res.json(updatedPair);
+  } catch (error) {
+    console.error('Error al actualizar competidor:', error);
+    res.status(500).json({ success: false, message: 'Error al actualizar el competidor' });
+  }
+});
+
 // Pairs: Delete (Protected)
 router.delete('/pairs/:id', authenticateJWT, requireEntityAccess('pair'), async (req, res) => {
   try {
